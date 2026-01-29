@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - FinCart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a1a1a;
+            --secondary: #f8f6f3;
+            --accent: #d4af37;
+            --text-dark: #2c2c2c;
+            --text-light: #666;
+            --white: #ffffff;
+            --off-white: #fafaf9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            background: var(--white);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            box-shadow: 0 2px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:not(.btn-login):hover {
+            color: var(--accent);
+        }
+
+        .nav-links a:not(.btn-login)::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:not(.btn-login):hover::after {
+            width: 100%;
+        }
+
+        .btn-login {
+            padding: 10px 28px;
+            background: var(--primary);
+            color: var(--white) !important;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary);
+        }
+
+        .btn-login:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 100px;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 60px 0;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, 30px) rotate(5deg); }
+            50% { transform: translate(0, 60px) rotate(10deg); }
+            75% { transform: translate(-30px, 30px) rotate(5deg); }
+        }
+
+        .hero-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            line-height: 1.2;
+            letter-spacing: -2px;
+        }
+
+        .hero-content p {
+            font-size: 20px;
+            color: var(--text-light);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Mission Section */
+        .mission-section {
+            padding: 120px 0;
+            background: var(--white);
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 70px;
+            color: var(--primary);
+            letter-spacing: -1px;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 50px;
+            align-items: center;
+            margin-bottom: 80px;
+        }
+
+        .mission-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .mission-content p {
+            color: var(--text-light);
+            line-height: 1.8;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .value-card {
+            background: var(--off-white);
+            padding: 40px 35px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .value-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+            transform-origin: left;
+        }
+
+        .value-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .value-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            background: var(--white);
+        }
+
+        .value-icon {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+        }
+
+        .value-card h4 {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .value-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--primary) 0%, #2c2c2c 100%);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            bottom: -200px;
+            left: -200px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            font-size: 18px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Team Section */
+        .team-section {
+            padding: 120px 0;
+            background: var(--white);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .team-card {
+            background: var(--off-white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .team-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+        }
+
+        .team-image {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(212, 175, 55, 0.5) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+        }
+
+        .team-info {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .team-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .team-role {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .team-bio {
+            color: var(--text-light);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Journey Section */
+        .journey-section {
+            padding: 120px 0;
+            background: var(--off-white);
+        }
+
+        .journey-timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .timeline-item {
+            margin-bottom: 50px;
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 4px solid var(--white);
+            box-shadow: 0 0 0 4px var(--accent);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 20px;
+            width: 4px;
+            height: 30px;
+            background: var(--accent);
+            opacity: 0.3;
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .timeline-year {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .timeline-description {
+            color: var(--text-light);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--primary) 0%, #2c2c2c 100%);
+            text-align: center;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-section h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            margin-bottom: 25px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .cta-section p {
+            font-size: 18px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 16px 45px;
+            background: var(--accent);
+            color: var(--primary) !important;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.4s ease;
+            border: 2px solid var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            background: var(--white);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Footer */
+        footer {
+            background-color: #1a1a1a;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 20px;
+            }
+
+            .hero-content h2 {
+                font-size: 36px;
+            }
+
+            .section-title {
+                font-size: 36px;
+                margin-bottom: 50px;
+            }
+
+            .mission-grid {
+                gap: 30px;
+            }
+
+            .stat-number {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar" id="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>Fincart</h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="service.html">Services</a></li>
+                    <li><a href="aboutus.html">About Us</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="login.php" class="btn-login">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>About FinCart</h2>
+                <p>Leading the financial services industry with innovation, integrity, and customer-centric solutions since 2015</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section">
+        <div class="container">
+            <h2 class="section-title">Our Mission & Vision</h2>
+            
+            <div class="mission-grid">
+                <div class="mission-content">
+                    <h3>Our Mission</h3>
+                    <p>To empower individuals and businesses with cutting-edge financial tools and expert guidance, enabling them to achieve their financial goals with confidence and transparency.</p>
+                    <p>We believe that everyone deserves access to world-class financial services, regardless of their background or experience level.</p>
+                </div>
+                <div class="mission-content">
+                    <h3>Our Vision</h3>
+                    <p>To become the most trusted and innovative financial partner globally, recognized for our commitment to excellence and customer success.</p>
+                    <p>We envision a world where financial management is simple, accessible, and empowering for all, with technology and human expertise working seamlessly together.</p>
+                </div>
+            </div>
+
+            <h2 class="section-title">Core Values</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">🎯</div>
+                    <h4>Integrity</h4>
+                    <p>We operate with complete transparency and honesty in all our dealings, maintaining the highest ethical standards.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🚀</div>
+                    <h4>Innovation</h4>
+                    <p>We continuously evolve our services and technology to stay ahead of market trends and customer needs.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">👥</div>
+                    <h4>Customer Focus</h4>
+                    <p>Your success is our success. We prioritize understanding and exceeding customer expectations every day.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🔒</div>
+                    <h4>Security</h4>
+                    <p>We employ industry-leading security measures to protect your data and financial assets with utmost care.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🌍</div>
+                    <h4>Responsibility</h4>
+                    <p>We are committed to sustainable practices and contributing positively to the communities we serve.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">⭐</div>
+                    <h4>Excellence</h4>
+                    <p>We strive for perfection in every aspect of our service, from product development to customer support.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">500K+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">$2.5B+</div>
+                    <div class="stat-label">Assets Under Management</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">150+</div>
+                    <div class="stat-label">Countries Served</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Customer Satisfaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Journey Section -->
+    <section class="journey-section">
+        <div class="container">
+            <h2 class="section-title">Our Journey</h2>
+            <div class="journey-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-year">2015</div>
+                    <div class="timeline-description">FinCart was founded with a vision to revolutionize personal financial management through innovative technology and expert guidance.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2016</div>
+                    <div class="timeline-description">Launched our mobile banking application, reaching 50,000 users in the first month. Expanded services to include investment advisory.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2017</div>
+                    <div class="timeline-description">Achieved 100,000 active users milestone. Obtained financial services license and expanded to 15 countries.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2018</div>
+                    <div class="timeline-description">Introduced AI-powered financial analytics and personalized investment recommendations to our platform.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2019</div>
+                    <div class="timeline-description">Surpassed 250,000 users. Launched enterprise solutions for institutional clients and corporate financial management.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2021</div>
+                    <div class="timeline-description">Reached 400,000 users globally. Introduced cryptocurrency trading and blockchain-based services.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2023</div>
+                    <div class="timeline-description">Hit 500,000 active users. Expanded to 150 countries. Launched advanced wealth management features and sustainable investment options.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2024</div>
+                    <div class="timeline-description">Achieved $2.5B in assets under management. Recognized as industry leader in fintech innovation and customer satisfaction.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="container">
+            <h2 class="section-title">Leadership Team</h2>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-image">👨‍💼</div>
+                    <div class="team-info">
+                        <div class="team-name">Michael Chen</div>
+                        <div class="team-role">Chief Executive Officer</div>
+                        <div class="team-bio">20+ years in finance. Former VP at leading investment firm with expertise in fintech innovation.</div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-image">👩‍💼</div>
+                    <div class="team-info">
+                        <div class="team-name">Sarah Williams</div>
+                        <div class="team-role">Chief Technology Officer</div>
+                        <div class="team-bio">Tech visionary with 15+ years in software development and cloud architecture leadership.</div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-image">👨‍💼</div>
+                    <div class="team-info">
+                        <div class="team-name">Robert Johnson</div>
+                        <div class="team-role">Chief Financial Officer</div>
+                        <div class="team-bio">Certified CPA with 18 years of experience in financial planning and risk management.</div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-image">👩‍💼</div>
+                    <div class="team-info">
+                        <div class="team-name">Emma Rodriguez</div>
+                        <div class="team-role">Head of Customer Success</div>
+                        <div class="team-bio">Customer experience expert dedicated to building long-term client relationships and satisfaction.</div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-image">👨‍💼</div>
+                    <div class="team-info">
+                        <div class="team-name">David Kumar</div>
+                        <div class="team-role">Chief Investment Officer</div>
+                        <div class="team-bio">Portfolio management expert with 16+ years optimizing investment strategies and returns.</div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-image">👩‍💼</div>
+                    <div class="team-info">
+                        <div class="team-name">Lisa Anderson</div>
+                        <div class="team-role">Head of Compliance</div>
+                        <div class="team-bio">Regulatory compliance specialist ensuring adherence to global financial standards and regulations.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="mission-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose FinCart</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">🏆</div>
+                    <h4>Award-Winning Platform</h4>
+                    <p>Recognized globally for innovation, customer service excellence, and technological advancement in fintech.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🔒</div>
+                    <h4>Enterprise-Grade Security</h4>
+                    <p>Military-level encryption, multi-factor authentication, and 24/7 security monitoring protect your assets.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">💰</div>
+                    <h4>Competitive Rates</h4>
+                    <p>Industry-leading interest rates and low fees maximize your returns and minimize unnecessary costs.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🎓</div>
+                    <h4>Educational Resources</h4>
+                    <p>Comprehensive learning materials, webinars, and expert guidance help you make informed financial decisions.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">📱</div>
+                    <h4>Seamless Integration</h4>
+                    <p>Fully responsive design works seamlessly across all devices. Sync your data instantly across platforms.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🌟</div>
+                    <h4>24/7 Support</h4>
+                    <p>Dedicated customer support team available round-the-clock via chat, email, and phone.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h3>Ready to Take Control of Your Finances?</h3>
+                <p>Join thousands of satisfied users who have transformed their financial future with FinCart. Start your journey to financial success today.</p>
+                <a href="login.html" class="btn-primary">Get Started Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <p>&copy; 2026 FinCart. All rights reserved. | Secure Financial Solutions for Your Future</p>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

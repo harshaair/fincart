@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fincart — Your Financial Partner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1a1a1a;
+      --secondary: #f8f6f3;
+      --accent: #d4af37;
+      --text-dark: #2c2c2c;
+      --text-light: #666;
+      --white: #ffffff;
+      --off-white: #fafaf9;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      box-shadow: 0 2px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .logo h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-dark);
+      font-weight: 500;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .nav-links a:not(.btn-login):hover {
+      color: var(--accent);
+    }
+
+    .nav-links a:not(.btn-login)::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:not(.btn-login):hover::after {
+      width: 100%;
+    }
+
+    .btn-login {
+      padding: 10px 28px;
+      background: var(--primary);
+      color: var(--white) !important;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      border: 2px solid var(--primary);
+    }
+
+    .btn-login:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Hero Section */
+    .hero {
+      margin-top: 80px;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+      top: -200px;
+      right: -200px;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(30px, 30px) rotate(5deg); }
+      50% { transform: translate(0, 60px) rotate(10deg); }
+      75% { transform: translate(-30px, 30px) rotate(5deg); }
+    }
+
+    .hero-content {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-content h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 64px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 25px;
+      line-height: 1.2;
+      letter-spacing: -2px;
+    }
+
+    .hero-content p {
+      font-size: 20px;
+      color: var(--text-light);
+      margin-bottom: 40px;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 18px 48px;
+      background: var(--primary);
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      transition: all 0.4s ease;
+      border: 2px solid var(--primary);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      transition: left 0.4s ease;
+      z-index: -1;
+    }
+
+    .btn-primary:hover::before {
+      left: 0;
+    }
+
+    .btn-primary:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Services Section */
+    .services {
+      padding: 120px 0;
+      background: var(--white);
+    }
+
+    .services h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 70px;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .service-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 40px;
+    }
+
+    .card {
+      background: var(--off-white);
+      padding: 50px 40px;
+      border-radius: 20px;
+      transition: all 0.4s ease;
+      border: 1px solid rgba(212, 175, 55, 0.1);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    .card.visible {
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+      transform: scaleX(0);
+      transition: transform 0.4s ease;
+      transform-origin: left;
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+      background: var(--white);
+    }
+
+    .card h4 {
+      font-size: 26px;
+      margin-bottom: 18px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .card p {
+      color: var(--text-light);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* About Section */
+    .about {
+      padding: 120px 0;
+      background: linear-gradient(135deg, var(--secondary) 0%, var(--off-white) 100%);
+    }
+
+    .about h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 40px;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .about p {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.9;
+      color: var(--text-light);
+      font-weight: 300;
+    }
+
+    /* Features Section */
+    .features {
+      padding: 120px 0;
+      background: var(--white);
+    }
+
+    .features h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 70px;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 40px;
+    }
+
+    .feature-item {
+      text-align: center;
+      padding: 40px 30px;
+    }
+
+    .feature-icon {
+      font-size: 4em;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .feature-item h4 {
+      font-size: 22px;
+      color: var(--primary);
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .feature-item p {
+      color: var(--text-light);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+      padding: 120px 0;
+      background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+    }
+
+    .how-it-works h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 70px;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+
+    .step {
+      background: var(--white);
+      padding: 40px 35px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      transition: all 0.4s ease;
+    }
+
+    .step:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .step-number {
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: var(--white);
+      border-radius: 50%;
+      line-height: 60px;
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .step h4 {
+      font-size: 22px;
+      color: var(--primary);
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .step p {
+      color: var(--text-light);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    /* Stats Section */
+    .stats {
+      padding: 100px 0;
+      background: linear-gradient(135deg, var(--primary) 0%, #2c2c2c 100%);
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stats::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+      top: -200px;
+      right: -200px;
+    }
+
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 50px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    /* Testimonials Section */
+    .testimonials {
+      padding: 120px 0;
+      background: var(--white);
+    }
+
+    .testimonials h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 70px;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+    }
+
+    .testimonial-card {
+      background: var(--off-white);
+      padding: 40px;
+      border-radius: 15px;
+      border-left: 5px solid var(--accent);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      transition: all 0.4s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .stars {
+      color: var(--accent);
+      font-size: 18px;
+      margin-bottom: 15px;
+      letter-spacing: 3px;
+    }
+
+    .testimonial-text {
+      color: var(--text-light);
+      line-height: 1.8;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    .testimonial-role {
+      color: var(--accent);
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    /* FAQ Section */
+    .faq {
+      padding: 120px 0;
+      background: var(--off-white);
+    }
+
+    .faq h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 70px;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+
+    .faq-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      background: var(--white);
+      margin-bottom: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .faq-question {
+      padding: 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: var(--primary);
+      transition: all 0.3s ease;
+      background: var(--white);
+    }
+
+    .faq-question:hover {
+      background: var(--off-white);
+      color: var(--accent);
+    }
+
+    .faq-question.active {
+      background: linear-gradient(135deg, var(--primary) 0%, #2c2c2c 100%);
+      color: var(--white);
+    }
+
+    .faq-arrow {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .faq-question.active .faq-arrow {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      padding: 0 20px;
+      color: var(--text-light);
+      line-height: 1.8;
+    }
+
+    .faq-answer.active {
+      max-height: 500px;
+      padding: 20px;
+    }
+
+    /* Newsletter Section */
+    .newsletter {
+      padding: 100px 0;
+      background: linear-gradient(135deg, var(--primary) 0%, #2c2c2c 100%);
+      color: var(--white);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .newsletter::before {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+    }
+
+    .newsletter-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .newsletter h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    .newsletter p {
+      font-size: 18px;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 50px;
+      font-size: 15px;
+      background: var(--white);
+      color: var(--primary);
+    }
+
+    .newsletter-form input::placeholder {
+      color: #999;
+    }
+
+    .newsletter-form button {
+      padding: 14px 40px;
+      background: var(--accent);
+      color: var(--primary);
+      border: none;
+      border-radius: 50px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .newsletter-form button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
+    }
+
+    /* CTA Section */
+    .cta {
+      padding: 100px 0;
+      background: linear-gradient(135deg, var(--accent) 0%, rgba(212, 175, 55, 0.8) 100%);
+      color: var(--primary);
+      text-align: center;
+    }
+
+    .cta h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    .cta p {
+      font-size: 18px;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    .cta .btn-secondary {
+      display: inline-block;
+      padding: 16px 45px;
+      background: var(--primary);
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 16px;
+      transition: all 0.4s ease;
+      border: 2px solid var(--primary);
+    }
+
+    .cta .btn-secondary:hover {
+      background: transparent;
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--primary);
+      color: var(--white);
+      padding: 60px 0 30px;
+      text-align: center;
+    }
+
+    .footer h4 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .footer p {
+      margin: 10px 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 15px;
+    }
+
+    /* Scroll Progress Bar */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .hero-content h2 {
+        font-size: 42px;
+      }
+
+      .hero-content p {
+        font-size: 18px;
+      }
+
+      .services h3, .about h3 {
+        font-size: 36px;
+      }
+
+      .service-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar" id="progressBar"></div>
+  
+  <header class="navbar" id="navbar">
+    <div class="container">
+      <div class="logo">
+        <h1>Fincart</h1>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="service.html">Services</a></li>
+          <li><a href="aboutus.html">About Us</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="login.html" class="btn-login">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-content">
+      <h2>Your Trusted Finance & Investment Partner</h2>
+      <p>Secure your future with smart investment solutions and expert financial advice.</p>
+      <a href="service.html" class="btn-primary">Explore Services</a>
+    </div>
+  </section>
+
+  <section id="services" class="services">
+    <div class="container">
+      <h3>Our Services</h3>
+      <div class="service-cards">
+        <div class="card">
+          <h4>Investment Planning</h4>
+          <p>Customized investment strategies to grow your wealth with expert guidance and market insights.</p>
+        </div>
+        <div class="card">
+          <h4>Retirement Planning</h4>
+          <p>Secure your future with long-term financial plans designed for a comfortable retirement.</p>
+        </div>
+        <div class="card">
+          <h4>Tax & Compliance</h4>
+          <p>Expert guidance on taxes, compliance and financial regulations to keep you protected.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="container">
+      <h3>About Fincart</h3>
+      <p>Fincart is committed to bringing you top-notch financial services with integrity, transparency, and customer focus. With years of experience in finance, we help clients make informed decisions that secure their financial future and build lasting wealth.</p>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="container">
+      <h3>Why Choose Fincart?</h3>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <h4>Bank-Level Security</h4>
+          <p>Your data is protected with military-grade encryption and multi-factor authentication.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <h4>Lightning Fast</h4>
+          <p>Execute transactions in seconds with our optimized platform and instant notifications.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <h4>Smart Analytics</h4>
+          <p>AI-powered insights to help you understand your spending and optimize your finances.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🌐</div>
+          <h4>Global Access</h4>
+          <p>Manage your finances from anywhere in the world with our mobile-first platform.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">👥</div>
+          <h4>Expert Support</h4>
+          <p>24/7 customer support team ready to help with any questions or concerns.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">💎</div>
+          <h4>Premium Benefits</h4>
+          <p>Exclusive rewards, cashback, and premium features for our valued members.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works">
+    <div class="container">
+      <h3>How It Works</h3>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h4>Sign Up</h4>
+          <p>Create your free account in less than 5 minutes with just your email and basic information.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h4>Verify Identity</h4>
+          <p>Complete quick identity verification for security and compliance with regulations.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h4>Connect Accounts</h4>
+          <p>Link your bank accounts and payment methods securely to start managing finances.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <h4>Start Investing</h4>
+          <p>Begin your financial journey with our tools, advice, and investment opportunities.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-container">
+        <div class="stat">
+          <div class="stat-number">500K+</div>
+          <div class="stat-label">Happy Users</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">$2.5B+</div>
+          <div class="stat-label">Managed Assets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">150+</div>
+          <div class="stat-label">Countries</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Support Available</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials">
+    <div class="container">
+      <h3>What Our Users Say</h3>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="testimonial-text">"Fincart has completely transformed how I manage my finances. The interface is intuitive and the investment advice is invaluable!"</div>
+          <div class="testimonial-author">Rajesh Kumar</div>
+          <div class="testimonial-role">Investor, Delhi</div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="testimonial-text">"Best financial platform I've used. The analytics dashboard gives me clear insights into my spending patterns and savings goals."</div>
+          <div class="testimonial-author">Priya Sharma</div>
+          <div class="testimonial-role">Entrepreneur, Mumbai</div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="testimonial-text">"Excellent customer support and secure platform. I feel confident managing all my investments through Fincart."</div>
+          <div class="testimonial-author">Amit Patel</div>
+          <div class="testimonial-role">Financial Advisor, Bangalore</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq">
+    <div class="container">
+      <h3>Frequently Asked Questions</h3>
+      <div class="faq-container">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">
+            <span>Is my data safe with Fincart?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Yes, we use bank-level encryption and security protocols. Your data is protected by military-grade encryption and we comply with all financial regulations and standards.
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">
+            <span>How do I get started?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Simply click "Get Started" and sign up with your email. Complete the identity verification process and you're ready to start managing your finances in minutes!
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">
+            <span>Are there any hidden fees?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            No! We believe in complete transparency. All fees are clearly displayed upfront. We offer competitive rates with no hidden charges.
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">
+            <span>Can I withdraw my money anytime?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Yes, you can withdraw your funds anytime. Most withdrawals are processed within 24-48 hours depending on your bank and investment type.
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">
+            <span>What payment methods do you accept?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            We accept bank transfers, credit/debit cards, digital wallets, and other popular payment methods for your convenience.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section -->
+  <section class="newsletter">
+    <div class="container">
+      <div class="newsletter-content">
+        <h3>Stay Updated</h3>
+        <p>Get the latest financial tips, market insights, and exclusive offers delivered to your inbox.</p>
+        <form class="newsletter-form" onsubmit="handleNewsletter(event)">
+          <input type="email" placeholder="Enter your email" required>
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container">
+      <h3>Ready to Transform Your Finances?</h3>
+      <p>Join thousands of users who are already achieving their financial goals with Fincart.</p>
+      <a href="login.html" class="btn-secondary">Get Started Free</a>
+    </div>
+  </section>
+
+  <footer id="contact" class="footer">
+    <div class="container">
+      <h4>Contact Us</h4>
+      <p>Email: contact@fincart.com | Phone: +91-XXXXXXXXXX</p>
+      <p>&copy; 2025 Fincart. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll Progress Bar
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('progressBar').style.width = scrolled + '%';
+    });
+
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Intersection Observer for card animations
+    const cards = document.querySelectorAll('.card');
+    const observerOptions = {
+      threshold: 0.2,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, index * 150);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    cards.forEach(card => {
+      observer.observe(card);
+    });
+
+    // Parallax effect for hero section
+    window.addEventListener('scroll', () => {
+      const scrolled = window.pageYOffset;
+      const hero = document.querySelector('.hero');
+      if (hero && scrolled < hero.offsetHeight) {
+        hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+      }
+    });
+
+    // FAQ Toggle Function
+    function toggleFAQ(element) {
+      const faqItem = element.parentElement;
+      const answer = faqItem.querySelector('.faq-answer');
+      
+      // Close all other FAQs
+      document.querySelectorAll('.faq-item').forEach(item => {
+        if (item !== faqItem) {
+          item.querySelector('.faq-question').classList.remove('active');
+          item.querySelector('.faq-answer').classList.remove('active');
+        }
+      });
+      
+      // Toggle current FAQ
+      element.classList.toggle('active');
+      answer.classList.toggle('active');
+    }
+
+    // Newsletter Subscription
+    function handleNewsletter(event) {
+      event.preventDefault();
+      const email = event.target.querySelector('input[type="email"]').value;
+      alert('Thank you for subscribing! Check your email for exclusive offers.');
+      event.target.reset();
+    }
+  </script>
+</body>
+</html>
