@@ -22,6 +22,20 @@ if (!$user) {
     header('Location: login.html');
     exit();
 }
+// Store role in session (if not already)
+$_SESSION['role'] = $user['role'];
+
+// Role-based redirection
+if ($user['role'] === 'professional') {
+    header("Location: professional/dashboard.php");
+    exit();
+}
+
+if ($user['role'] === 'admin') {
+    header("Location: admin/dashboard.php");
+    exit();
+}
+
 
 // Get current month and year
 $current_month = date('Y-m');
@@ -113,6 +127,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/admin.css">
     <style>
         * {
             margin: 0;
@@ -425,51 +440,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
             font-size: 13px;
         }
 
-        /* Recent Activity */
-        .activity-section {
-            background: var(--white);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .activity-section h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
-            color: var(--primary);
-            margin-bottom: 30px;
-            letter-spacing: -1px;
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: var(--off-white);
-            border-radius: 10px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .activity-icon {
-            font-size: 24px;
-            margin-right: 16px;
-        }
-
-        .activity-content {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-
-        .activity-time {
-            color: var(--text-light);
-            font-size: 13px;
-        }
+        /* Recent Activity removed */
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -527,6 +498,10 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
                     <p class="name"><?php echo htmlspecialchars($user['full_name']); ?></p>
                     <p><?php echo htmlspecialchars($user['email']); ?></p>
                 </div>
+                <?php $role = $_SESSION['role'] ?? 'user'; ?>
+                <?php if ($role === 'admin'): ?>
+                    <a href="admin/dashboard.php" class="btn btn-secondary" style="padding:10px 18px;">Admin</a>
+                <?php endif; ?>
                 <a href="logout.php" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -664,22 +639,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
             </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="activity-section">
-            <h2>Recent Activity</h2>
-            <div class="activity-item">
-                <div class="activity-icon">✅</div>
-                <div class="activity-content">
-                    <div class="activity-title">Account Created</div>
-                    <div class="activity-time">Just now</div>
-                </div>
-            </div>
-            <div class="empty-state" style="padding: 20px; border: 1px dashed rgba(0, 0, 0, 0.1); border-radius: 10px; margin-top: 20px;">
-                <div class="empty-state-icon">📝</div>
-                <p>No transactions yet. Start by adding your first transaction!</p>
-                <a href="#transactions" class="btn btn-primary">Add Transaction</a>
-            </div>
-        </div>
+        <!-- Recent Activity removed -->
     </div>
 
     <script>

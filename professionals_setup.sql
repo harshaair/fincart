@@ -1,6 +1,7 @@
 -- Professionals Table
 CREATE TABLE IF NOT EXISTS professionals (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNIQUE,
   professional_type VARCHAR(50) NOT NULL,
   name VARCHAR(100) NOT NULL,
   qualification VARCHAR(100),
@@ -16,6 +17,8 @@ CREATE TABLE IF NOT EXISTS professionals (
   consultation_fee DECIMAL(10, 2),
   status VARCHAR(20) DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  ,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Appointments/Bookings Table

@@ -57,6 +57,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($book_stmt->execute()) {
                 $message = 'Appointment booked successfully! You will receive a confirmation email shortly.';
+                // Send email notifications (if mail is available)
+                $prof_email = $professional['email'] ?? null;
+                // find an admin email
+                $admin_email = null;
+                $a = $conn->query("SELECT email FROM users WHERE role = 'admin' LIMIT 1");
+                if ($a && $a->num_rows) {
+                    $admin_row = $a->fetch_assoc();
+                    $admin_email = $admin_row['email'];
+                }
+
+                $subject = "New appointment booked with " . $professional['name'];
+                $body = "Hello,\n\nAn appointment has been booked on " . $appointment_date . " at " . $appointment_time . " by " . htmlspecialchars($_SESSION['user_name']) . ".\n\nDetails:\nProfessional: " . $professional['name'] . "\nUser: " . htmlspecialchars($_SESSION['user_name']) . " (" . htmlspecialchars($user_id) . ")\nNotes: " . htmlspecialchars($notes) . "\n\nPlease login to the admin panel to view details.\n";
+                $headers = 'From: no-reply@fincart.local' . "\r\n" . 'Reply-To: no-reply@fincart.local' . "\r\n";
+
+                if ($prof_email) {
+                    @mail($prof_email, $subject, $body, $headers);
+                }
+                if ($admin_email) {
+                    @mail($admin_email, $subject, $body, $headers);
+                }
             } else {
                 $error = 'Failed to book appointment. Please try again.';
             }

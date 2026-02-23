@@ -428,7 +428,7 @@ foreach ($professionals as $prof) {
                                     <?php endif; ?>
 
                                     <div class="contact-buttons">
-                                        <a href="booking.php?professional_id=<?php echo $prof['id']; ?>" class="btn-small btn-book">
+                                        <a href="professional/profile.php?id=<?php echo $prof['id']; ?>" class="btn-small btn-book">
                                             📅 Book Now
                                         </a>
                                         <?php if ($prof['phone']): ?>

@@ -26,12 +26,29 @@ if ($result->num_rows == 1) {
     if (password_verify($password, $user['password'])) {
 
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = $user['full_name'];
+        // Use available name fields with fallback
+        $_SESSION['user_name'] = isset($user['full_name']) ? $user['full_name'] : (isset($user['name']) ? $user['name'] : '');
         $_SESSION['user_email'] = $user['email'];
 
-        header("Location: dashboard.php");
-        exit();
+        // Normalize role for robust comparisons (handles capitalization/whitespace differences)
+        $role = isset($user['role']) ? strtolower(trim($user['role'])) : 'user';
+        $_SESSION['role'] = $role;
 
+        // Redirect by normalized role
+        if ($role === 'admin') {
+            header("Location: admin/dashboard.php");
+            exit();
+        } elseif ($role === 'professional' || $role === 'professional_approved') {
+            header("Location: professional/dashboard.php");
+            exit();
+        } elseif ($role === 'professional_pending') {
+            // Professionals pending approval go to professional dashboard (or a pending notice page)
+            header("Location: professional/dashboard.php");
+            exit();
+        } else {
+            header("Location: dashboard.php");
+            exit();
+        }
     } else {
         // Wrong password popup + redirect
         echo "<script>
