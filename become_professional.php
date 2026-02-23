@@ -28,23 +28,52 @@ include "db.php";
         <p>Please provide your professional details below.</p>
     </div>
 
+    <?php
+    // Check if user is already logged in
+    if (isset($_SESSION['user_id'])):
+    ?>
+    <div style="padding:15px;background-color:#fff3cd;border:1px solid #ffc107;border-radius:6px;margin:20px 0;color:#856404;">
+        <h3>⚠️ Already Logged In</h3>
+        <p>You are currently logged in as <strong><?php echo htmlspecialchars($_SESSION['user_name']); ?></strong></p>
+        <p>To apply as a professional with a <strong>different email address</strong>, you must log out first.</p>
+        <p style="margin-bottom:0;">
+            <a href="logout.php" class="btn btn-primary">Logout</a> 
+            <span style="margin:0 10px;">or</span>
+            <a href="professional/dashboard.php" class="btn btn-secondary">View My Profile</a>
+        </p>
+        <p style="margin-top:15px; font-size:13px; color:#888;">
+            If you want to apply with this current account, you can proceed with the form below.
+        </p>
+    </div>
+    <?php
+    endif;
+    ?>
+
     <div class="auth-body">
-        <form class="auth-form" method="post" action="professional/become_handler.php">
+        <?php
+        // Display error message if any
+        if (isset($_GET['error'])) {
+            echo '<div style="padding:12px;background-color:#fee;border:1px solid #f99;border-radius:6px;margin-bottom:20px;color:#c33;">
+                    <strong>Error:</strong> ' . htmlspecialchars(urldecode($_GET['error'])) . '
+                  </div>';
+        }
+        ?>
+        <form class="auth-form" method="post" action="professional/become_handler.php" autocomplete="off">
 
             <!-- Always ask user details -->
             <div class="form-group">
                 <label>Full name</label>
-                <input class="form-control" type="text" name="full_name" required>
+                <input class="form-control" type="text" name="full_name" required autocomplete="off">
             </div>
 
             <div class="form-group">
                 <label>Email</label>
-                <input class="form-control" type="email" name="email" required>
+                <input class="form-control" type="email" name="email" required autocomplete="off">
             </div>
 
             <div class="form-group">
                 <label>Password</label>
-                <input class="form-control" type="password" name="password" required>
+                <input class="form-control" type="password" name="password" required autocomplete="new-password">
             </div>
 
             <div class="form-group">
@@ -74,7 +103,7 @@ include "db.php";
 
             <div class="form-group">
                 <label>Phone</label>
-                <input class="form-control" type="text" name="phone">
+                <input class="form-control" type="text" name="phone" autocomplete="off">
             </div>
 
             <div class="form-group">

@@ -579,6 +579,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
                 <h3>Professional Network</h3>
                 <p>Connect with certified financial professionals - CAs, advisors, and tax consultants for expert guidance.</p>
                 <a href="professionals.php" class="card-link">Find Professionals →</a>
+                <a href="my_appointments.php" class="card-link">My Appointments →</a>
             </div>
         </div>
 

@@ -11,7 +11,24 @@ $conn->begin_transaction();
 
 try {
     $logged_in = isset($_SESSION['user_id']);
+    
     if ($logged_in) {
+        // User is already logged in
+        // Check if they're trying to apply with a DIFFERENT email
+        $submitted_email = trim($_POST['email'] ?? '');
+        
+        // Get current user's email
+        $stmt = $conn->prepare("SELECT email FROM users WHERE id = ?");
+        $stmt->bind_param('i', $_SESSION['user_id']);
+        $stmt->execute();
+        $current_user = $stmt->get_result()->fetch_assoc();
+        $current_email = $current_user['email'] ?? '';
+        
+        // If emails don't match, prevent application with different email
+        if (strtolower($submitted_email) !== strtolower($current_email)) {
+            throw new Exception('You are logged in with a different email (' . htmlspecialchars($current_email) . '). Please logout first if you want to apply with a different email address.');
+        }
+        
         $user_id = $_SESSION['user_id'];
     } else {
         // Create a new user account
@@ -55,10 +72,9 @@ try {
     $state = $_POST['state'] ?? '';
     $consultation_fee = isset($_POST['consultation_fee']) && $_POST['consultation_fee'] !== '' ? floatval($_POST['consultation_fee']) : NULL;
 
-    $name = $logged_in ? $_SESSION['user_name'] : ($full_name ?? '');
-
-    $stmt = $conn->prepare("INSERT INTO professionals (user_id, professional_type, name, qualification, experience_years, specialization, bio, phone, city, state, consultation_fee, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())");
-    $stmt->bind_param('isssisssssd', $user_id, $professional_type, $name, $qualification, $experience_years, $specialization, $bio, $phone, $city, $state, $consultation_fee);
+    // Insert into professional_applications table for admin review
+    $stmt = $conn->prepare("INSERT INTO professional_applications (user_id, professional_type, qualification, experience_years, specialization, bio, phone, city, state, consultation_fee, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())");
+    $stmt->bind_param('isssissssd', $user_id, $professional_type, $qualification, $experience_years, $specialization, $bio, $phone, $city, $state, $consultation_fee);
     if (!$stmt->execute()) {
         throw new Exception('Failed to submit professional application.');
     }
@@ -70,7 +86,9 @@ try {
 
     $conn->commit();
 
-    header('Location: ../dashboard.php');
+    // Redirect to dashboard with success message
+    $_SESSION['message'] = 'Your professional application has been submitted successfully. Please wait for admin approval.';
+    header('Location: ../dashboard.php?status=application_submitted');
     exit();
 
 } catch (Exception $e) {
