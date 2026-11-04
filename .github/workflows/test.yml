@@ -1,0 +1,37 @@
+name: FinCart CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Lint & Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mysqli, json, pdo
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Test Dependencies
+        run: npm ci
+
+      - name: Run PHP Syntax Lint
+        run: find . -name "*.php" -not -path "./node_modules/*" -exec php -l {} \;
+
+      - name: Run Vitest Test Suite
+        run: npm test

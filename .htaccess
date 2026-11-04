@@ -1,0 +1,30 @@
+# FinCart Production .htaccess Rules
+Options -Indexes
+
+# Enforce HTTPS
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Block access to database dumps, test suites, node files, and hidden directories
+<FilesMatch "^(fincart\.sql|fincartdb\.txt|composer\.json|package\.json|package-lock\.json|\.env|\.git.*)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent direct access to includes folder if accessed directly without script execution
+<IfModule mod_rewrite.c>
+    RewriteRule ^includes/ - [F,L]
+    RewriteRule ^tests/ - [F,L]
+    RewriteRule ^logs/ - [F,L]
+</IfModule>
+
+# Security HTTP Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
