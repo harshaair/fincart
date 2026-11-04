@@ -136,19 +136,19 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         }
 
         :root {
-            --primary: #1a1a1a;
-            --secondary: #f8f6f3;
-            --accent: #d4af37;
-            --text-dark: #2c2c2c;
-            --text-light: #666;
-            --white: #ffffff;
-            --off-white: #fafaf9;
+            —primary: #1a1a1a;
+            —secondary: #f8f6f3;
+            —accent: #d4af37;
+            —text-dark: #2c2c2c;
+            —text-light: #666;
+            —white: #ffffff;
+            —off-white: #fafaf9;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
-            color: var(--text-dark);
+            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
+            color: var(—text-dark);
             min-height: 100vh;
         }
 
@@ -176,7 +176,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
             font-family: 'Playfair Display', serif;
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -196,19 +196,19 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         .user-info p {
             margin: 0;
             font-size: 14px;
-            color: var(--text-light);
+            color: var(—text-light);
         }
 
         .user-info .name {
             font-weight: 700;
-            color: var(--text-dark);
+            color: var(—text-dark);
             font-size: 16px;
         }
 
         .logout-btn {
             padding: 10px 24px;
-            background: var(--primary);
-            color: var(--white);
+            background: var(—primary);
+            color: var(—white);
             border: none;
             border-radius: 50px;
             cursor: pointer;
@@ -219,8 +219,8 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         }
 
         .logout-btn:hover {
-            background: var(--accent);
-            color: var(--primary);
+            background: var(—accent);
+            color: var(—primary);
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
         }
@@ -234,7 +234,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
 
         /* Welcome Section */
         .welcome-section {
-            background: var(--white);
+            background: var(—white);
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -261,14 +261,14 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         .welcome-content h2 {
             font-family: 'Playfair Display', serif;
             font-size: 42px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 10px;
             letter-spacing: -1px;
         }
 
         .welcome-content p {
             font-size: 18px;
-            color: var(--text-light);
+            color: var(—text-light);
             margin-bottom: 30px;
             line-height: 1.6;
         }
@@ -292,26 +292,26 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         }
 
         .btn-primary {
-            background: var(--primary);
-            color: var(--white);
+            background: var(—primary);
+            color: var(—white);
         }
 
         .btn-primary:hover {
-            background: var(--accent);
-            color: var(--primary);
+            background: var(—accent);
+            color: var(—primary);
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
         }
 
         .btn-secondary {
-            background: var(--off-white);
-            color: var(--primary);
-            border: 2px solid var(--primary);
+            background: var(—off-white);
+            color: var(—primary);
+            border: 2px solid var(—primary);
         }
 
         .btn-secondary:hover {
-            background: var(--primary);
-            color: var(--white);
+            background: var(—primary);
+            color: var(—white);
             transform: translateY(-3px);
         }
 
@@ -325,7 +325,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
 
         /* Card Styles */
         .card {
-            background: var(--white);
+            background: var(—white);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -342,7 +342,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
             left: 0;
             width: 100%;
             height: 4px;
-            background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+            background: linear-gradient(90deg, var(—accent) 0%, transparent 100%);
             transform: scaleX(0);
             transition: transform 0.4s ease;
             transform-origin: left;
@@ -364,20 +364,20 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
 
         .card h3 {
             font-size: 20px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 10px;
             font-weight: 700;
         }
 
         .card p {
-            color: var(--text-light);
+            color: var(—text-light);
             font-size: 15px;
             line-height: 1.6;
             margin-bottom: 20px;
         }
 
         .card-link {
-            color: var(--accent);
+            color: var(—accent);
             text-decoration: none;
             font-weight: 600;
             display: inline-block;
@@ -385,13 +385,13 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         }
 
         .card-link:hover {
-            color: var(--primary);
+            color: var(—primary);
             transform: translateX(5px);
         }
 
         /* Stats Section */
         .stats-section {
-            background: var(--white);
+            background: var(—white);
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -401,7 +401,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         .stats-section h2 {
             font-family: 'Playfair Display', serif;
             font-size: 32px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 30px;
             letter-spacing: -1px;
         }
@@ -413,7 +413,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         }
 
         .stat-card {
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
             padding: 24px;
             border-radius: 15px;
             text-align: center;
@@ -421,7 +421,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         }
 
         .stat-label {
-            color: var(--text-light);
+            color: var(—text-light);
             font-size: 14px;
             margin-bottom: 10px;
             font-weight: 500;
@@ -430,13 +430,13 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         .stat-value {
             font-family: 'Playfair Display', serif;
             font-size: 32px;
-            color: var(--primary);
+            color: var(—primary);
             font-weight: 700;
             margin-bottom: 5px;
         }
 
         .stat-description {
-            color: var(--accent);
+            color: var(—accent);
             font-size: 13px;
         }
 
@@ -471,7 +471,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: var(--text-light);
+            color: var(—text-light);
         }
 
         .empty-state-icon {
@@ -487,14 +487,14 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!— Header —>
     <header>
         <div class="header-container">
-            <div class="logo">
+            <div class="log⭐>
                 <h1>Fincart</h1>
             </div>
             <div class="header-right">
-                <div class="user-info">
+                <div class="user-inf⭐>
                     <p class="name"><?php echo htmlspecialchars($user['full_name']); ?></p>
                     <p><?php echo htmlspecialchars($user['email']); ?></p>
                 </div>
@@ -507,9 +507,9 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!— Main Content —>
     <div class="container">
-        <!-- Welcome Section -->
+        <!— Welcome Section —>
         <div class="welcome-section">
             <div class="welcome-content">
                 <h2>Welcome back, <?php echo htmlspecialchars(explode(' ', $user['full_name'])[0]); ?>! 👋</h2>
@@ -521,7 +521,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
             </div>
         </div>
 
-        <!-- Dashboard Features Grid -->
+        <!— Dashboard Features Grid —>
         <div class="dashboard-grid">
             <div class="card">
                 <div class="card-icon">💳</div>
@@ -583,7 +583,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
             </div>
         </div>
 
-        <!-- Stats Section -->
+        <!— Stats Section —>
         <div class="stats-section">
             <h2>Account Summary</h2>
             <div class="stats-grid">
@@ -640,7 +640,7 @@ $expense_percentage_formatted = number_format($expense_percentage, 1);
             </div>
         </div>
 
-        <!-- Recent Activity removed -->
+        <!— Recent Activity removed —>
     </div>
 
     <script>

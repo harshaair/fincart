@@ -9,184 +9,237 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+$message = $_GET['notice'] ?? '';
+$error = $_GET['error'] ?? '';
 
-// Fetch user's appointments
+// Handle rating and review submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_rating') {
+    $appointment_id = intval($_POST['appointment_id'] ?? 0);
+    $professional_id = intval($_POST['professional_id'] ?? 0);
+    $rating = intval($_POST['rating'] ?? 0);
+    $review_text = trim($_POST['review_text'] ?? '');
+
+    if ($rating < 1 || $rating > 5 || $professional_id <= 0 || $appointment_id <= 0) {
+        $error = 'Please provide a valid rating between 1 and 5 stars.';
+    } else {
+        // Verify appointment belongs to user and is confirmed
+        $chk = $conn->prepare("SELECT id FROM appointments WHERE id = ? AND user_id = ? AND professional_id = ?");
+        $chk->bind_param("iii", $appointment_id, $user_id, $professional_id);
+        $chk->execute();
+        if ($chk->get_result()->num_rows > 0) {
+            $r_stmt = $conn->prepare("INSERT INTO professional_ratings (professional_id, user_id, appointment_id, rating, review_text) 
+                                      VALUES (?, ?, ?, ?, ?) 
+                                      ON DUPLICATE KEY UPDATE rating = VALUES(rating), review_text = VALUES(review_text), updated_at = NOW()");
+            $r_stmt->bind_param("iiiis", $professional_id, $user_id, $appointment_id, $rating, $review_text);
+            if ($r_stmt->execute()) {
+                $message = 'Thank you! Your feedback and star rating have been submitted.';
+            } else {
+                $error = 'Failed to submit rating. Please try again.';
+            }
+        } else {
+            $error = 'Invalid appointment verification.';
+        }
+    }
+}
+
+// Fetch user's appointments with ratings if submitted
 $stmt = $conn->prepare("
-    SELECT a.*, p.name as professional_name, p.professional_type 
+    SELECT a.*, p.name as professional_name, p.professional_type, p.qualification, p.phone as prof_phone,
+           r.rating as user_rating, r.review_text as user_review
     FROM appointments a 
     JOIN professionals p ON a.professional_id = p.id
+    LEFT JOIN professional_ratings r ON r.appointment_id = a.id AND r.user_id = a.user_id
     WHERE a.user_id = ?
     ORDER BY a.appointment_date DESC, a.appointment_time DESC
 ");
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $appointments = $stmt->get_result();
+
+$page_title = 'My Appointments - FinCart';
+include "includes/header.php";
+include "includes/navbar.php";
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My Appointments - FinCart</title>
-    <link rel="stylesheet" href="assets/css/admin.css">
-    <style>
-        .page-container { max-width: 900px; margin: 20px auto; padding: 20px; }
-        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header-section h1 { margin: 0; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn { padding: 10px 20px; border-radius: 4px; text-decoration: none; cursor: pointer; border: none; font-size: 14px; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-secondary:hover { background-color: #545b62; }
-        .notification { padding: 15px; border-radius: 4px; margin-bottom: 20px; }
-        .notification-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .notification-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .appointments-table { width: 100%; border-collapse: collapse; }
-        .appointments-table th { background-color: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
-        .appointments-table td { padding: 12px; border-bottom: 1px solid #ddd; }
-        .appointments-table tr:hover { background-color: #f9f9f9; }
-        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-confirmed { background-color: #d4edda; color: #155724; }
-        .status-rejected { background-color: #f8d7da; color: #721c24; }
-        .status-cancelled { background-color: #e2e3e5; color: #383d41; }
-        .action-buttons { display: flex; gap: 5px; }
-        .action-buttons form { display: inline; }
-        .action-buttons button { padding: 6px 12px; font-size: 12px; cursor: pointer; border: none; border-radius: 4px; }
-        .btn-cancel { background-color: #dc3545; color: white; }
-        .btn-cancel:hover { background-color: #c82333; }
-        .btn-rebook { background-color: #28a745; color: white; }
-        .btn-rebook:hover { background-color: #218838; }
-        .empty-state { text-align: center; padding: 40px; color: #666; }
-        .empty-state h3 { margin-bottom: 15px; }
-        .appointment-card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .appointment-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
-        .appointment-header h3 { margin: 0; }
-        .appointment-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px; }
-        .detail-item { }
-        .detail-item strong { display: block; color: #333; margin-bottom: 5px; }
-        .detail-item span { color: #666; }
-        .appointment-footer { display: flex; justify-content: space-between; align-items: center; }
-        .rejection-reason { background-color: #ffeaa7; padding: 10px; border-left: 4px solid #f39c12; margin-top: 10px; border-radius: 4px; }
-    </style>
-</head>
-<body>
-<header class="site-header">
-    <div class="logo"><h1>My Appointments - FinCart</h1></div>
-    <div class="header-actions">
-        <span>Welcome, <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></span>
-        <a href="logout.php" class="btn btn-primary">Logout</a>
-    </div>
-</header>
 
-<div class="page-container">
-    <?php if (isset($_GET['notice'])): ?>
-        <div class="notification notification-success">
-            ✓ <?php echo htmlspecialchars($_GET['notice']); ?>
+<div class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h1 style="font-size: 28px; margin-bottom: 6px;">My Consultation Appointments</h1>
+            <p style="color: var(--text-muted);">Manage your expert consultations, check booking status, and review verified professionals.</p>
         </div>
-    <?php endif; ?>
-    
-    <?php if (isset($_GET['error'])): ?>
-        <div class="notification notification-error">
-            ✗ <?php echo htmlspecialchars($_GET['error']); ?>
-        </div>
-    <?php endif; ?>
-
-    <div class="header-section">
-        <h2>📅 Your Appointments</h2>
-        <div class="btn-group">
-            <a href="professionals.php" class="btn btn-secondary">Browse Professionals</a>
-            <a href="dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+        <div style="display: flex; gap: 10px;">
+            <a href="professionals.php" class="btn btn-primary">+ Book New Consultation</a>
+            <a href="dashboard.php" class="btn btn-secondary">&larr; Dashboard</a>
         </div>
     </div>
+
+    <?php if (!empty($message)): ?>
+        <div class="alert alert-success">&#10003; <?php echo htmlspecialchars($message); ?></div>
+    <?php endif; ?>
+    <?php if (!empty($error)): ?>
+        <div class="alert alert-danger">&#9888; <?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
 
     <?php if ($appointments->num_rows > 0): ?>
-        <div style="display: grid; gap: 15px;">
+        <div style="display: grid; gap: 18px;">
             <?php while ($apt = $appointments->fetch_assoc()): ?>
-            <div class="appointment-card">
-                <div class="appointment-header">
-                    <div>
-                        <h3><?php echo htmlspecialchars($apt['professional_name']); ?></h3>
-                        <small><?php echo htmlspecialchars($apt['professional_type']); ?></small>
+                <div class="card" style="padding: 22px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h3 style="font-size: 18px; margin-bottom: 4px;"><?php echo htmlspecialchars($apt['professional_name']); ?></h3>
+                            <span class="badge badge-info"><?php echo htmlspecialchars($apt['professional_type']); ?></span>
+                            <span style="color: #666; font-size: 13px; margin-left: 8px;"><?php echo htmlspecialchars($apt['qualification'] ?? ''); ?></span>
+                        </div>
+                        <div>
+                            <?php
+                            $st = strtolower($apt['status']);
+                            if ($st === 'confirmed') echo '<span class="badge badge-success">&#10003; Confirmed</span>';
+                            elseif ($st === 'pending') echo '<span class="badge badge-warning">&#9203; Pending Approval</span>';
+                            elseif ($st === 'cancelled') echo '<span class="badge badge-danger">Cancelled</span>';
+                            elseif ($st === 'rejected') echo '<span class="badge badge-danger">Declined</span>';
+                            else echo '<span class="badge badge-info">' . ucfirst($st) . '</span>';
+                            ?>
+                        </div>
                     </div>
-                    <span class="status-badge status-<?php echo strtolower($apt['status']); ?>">
-                        <?php 
-                        $status_icons = ['pending' => '⏳', 'confirmed' => '✓', 'rejected' => '✗', 'cancelled' => '⊘'];
-                        echo ($status_icons[$apt['status']] ?? '') . ' ' . ucfirst($apt['status']);
-                        ?>
-                    </span>
-                </div>
 
-                <div class="appointment-details">
-                    <div class="detail-item">
-                        <strong>📅 Date & Time</strong>
-                        <span><?php echo date('d-M-Y', strtotime($apt['appointment_date'])); ?>, <?php echo date('h:i A', strtotime($apt['appointment_time'])); ?></span>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; background: var(--off-white); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 15px;">
+                        <div>
+                            <small style="color: var(--text-muted); display: block;">Date & Time</small>
+                            <strong><?php echo date('d-M-Y', strtotime($apt['appointment_date'])); ?> at <?php echo date('h:i A', strtotime($apt['appointment_time'])); ?></strong>
+                        </div>
+                        <div>
+                            <small style="color: var(--text-muted); display: block;">Session Type</small>
+                            <strong><?php echo htmlspecialchars($apt['consultation_type']); ?></strong>
+                        </div>
+                        <div>
+                            <small style="color: var(--text-muted); display: block;">Consultation Mode</small>
+                            <strong><?php echo htmlspecialchars(ucfirst($apt['consultation_mode'] ?? 'online')); ?></strong>
+                        </div>
+                        <div>
+                            <small style="color: var(--text-muted); display: block;">Booked On</small>
+                            <span><?php echo date('d-M-Y', strtotime($apt['created_at'])); ?></span>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <strong>📝 Type</strong>
-                        <span><?php echo htmlspecialchars($apt['consultation_type']); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>💻 Mode</strong>
-                        <span><?php echo htmlspecialchars(ucfirst($apt['consultation_mode'])); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>🗓️ Booked On</strong>
-                        <span><?php echo date('d-M-Y H:i', strtotime($apt['created_at'])); ?></span>
-                    </div>
-                </div>
 
-                <?php if ($apt['notes']): ?>
-                <div style="background-color: #f0f0f0; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                    <strong>Notes:</strong><br>
-                    <?php echo htmlspecialchars($apt['notes']); ?>
-                </div>
-                <?php endif; ?>
+                    <?php if (!empty($apt['notes'])): ?>
+                        <p style="font-size: 13px; color: #555; margin-bottom: 12px;">
+                            <strong>Your Notes:</strong> <?php echo htmlspecialchars($apt['notes']); ?>
+                        </p>
+                    <?php endif; ?>
 
-                <?php if ($apt['status'] === 'rejected' && $apt['rejection_reason']): ?>
-                <div class="rejection-reason">
-                    <strong>Rejection Reason:</strong><br>
-                    <?php echo htmlspecialchars($apt['rejection_reason']); ?>
-                </div>
-                <?php endif; ?>
+                    <?php if (!empty($apt['rejection_reason'])): ?>
+                        <div class="alert alert-warning" style="margin-bottom: 12px; font-size: 13px;">
+                            <strong>Reason:</strong> <?php echo htmlspecialchars($apt['rejection_reason']); ?>
+                        </div>
+                    <?php endif; ?>
 
-                <div class="appointment-footer">
-                    <div>
-                        <?php if ($apt['status'] === 'pending'): ?>
-                        <small style="color: #f39c12;">⏳ Waiting for professional to confirm...</small>
-                        <?php elseif ($apt['status'] === 'confirmed'): ?>
-                        <small style="color: #27ae60;">✓ Confirmed - Payment pending</small>
-                        <?php elseif ($apt['status'] === 'rejected'): ?>
-                        <small style="color: #e74c3c;">✗ Appointment rejected</small>
-                        <?php elseif ($apt['status'] === 'cancelled'): ?>
-                        <small style="color: #95a5a6;">⊘ Appointment cancelled</small>
-                        <?php endif; ?>
-                    </div>
-                    <div class="action-buttons">
-                        <?php if ($apt['status'] === 'pending'): ?>
-                        <form method="post" action="cancel_appointment.php" style="display: inline;">
-                            <input type="hidden" name="appointment_id" value="<?php echo $apt['id']; ?>">
-                            <button type="submit" class="btn-cancel" onclick="return confirm('Cancel this appointment?')">Cancel</button>
-                        </form>
-                        <?php elseif ($apt['status'] === 'rejected'): ?>
-                        <a href="professionals.php?id=<?php echo $apt['professional_id']; ?>" class="btn-rebook">Book Again</a>
-                        <?php elseif ($apt['status'] === 'cancelled'): ?>
-                        <a href="professionals.php?id=<?php echo $apt['professional_id']; ?>" class="btn-rebook">Rebook</a>
-                        <?php endif; ?>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); padding-top: 12px; flex-wrap: wrap; gap: 10px;">
+                        <!-- Review & Rating Display or Trigger -->
+                        <div>
+                            <?php if ($apt['status'] === 'confirmed'): ?>
+                                <?php if (!empty($apt['user_rating'])): ?>
+                                    <div style="font-size: 14px; color: #f39c12;">
+                                        <?php echo str_repeat('★', (int)$apt['user_rating']) . str_repeat('☆', 5 - (int)$apt['user_rating']); ?>
+                                        <span style="color: #444; font-size: 13px; margin-left: 6px;">Your Rating (<?php echo (int)$apt['user_rating']; ?>/5)</span>
+                                        <?php if (!empty($apt['user_review'])): ?>
+                                            <div style="font-size: 12px; color: #666; font-style: italic; margin-top: 3px;">
+                                                "<?php echo htmlspecialchars($apt['user_review']); ?>"
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-accent btn-sm"
+                                        onclick="openReviewModal(<?php echo (int)$apt['id']; ?>, <?php echo (int)$apt['professional_id']; ?>, '<?php echo addslashes($apt['professional_name']); ?>')">
+                                        ★ Rate & Review Consultation
+                                    </button>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Cancel Action -->
+                        <div>
+                            <?php if (!in_array($apt['status'], ['cancelled', 'rejected'])): ?>
+                                <form method="POST" action="cancel_appointment.php" onsubmit="return confirm('Are you sure you want to cancel this appointment?');" style="display: inline;">
+                                    <input type="hidden" name="appointment_id" value="<?php echo (int)$apt['id']; ?>">
+                                    <button type="submit" class="btn btn-danger btn-sm">Cancel Appointment</button>
+                                </form>
+                            <?php else: ?>
+                                <a href="booking.php?professional_id=<?php echo (int)$apt['professional_id']; ?>" class="btn btn-secondary btn-sm">Book Again</a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
-            </div>
             <?php endwhile; ?>
         </div>
     <?php else: ?>
-        <div class="empty-state">
-            <h3>No Appointments Yet</h3>
-            <p>You haven't booked any appointments yet. Browse our professionals and book your first consultation!</p>
-            <a href="professionals.php" class="btn btn-primary">Browse Professionals</a>
+        <div class="card" style="text-align: center; padding: 60px 20px;">
+            <h3 style="font-size: 20px; margin-bottom: 10px;">No Appointments Booked Yet</h3>
+            <p style="color: #888; margin-bottom: 20px;">Book a consultation with verified Chartered Accountants and certified financial planners.</p>
+            <a href="professionals.php" class="btn btn-primary">Browse Verified Experts &rarr;</a>
         </div>
     <?php endif; ?>
 </div>
 
-</body>
-</html>
+<!-- Review & Rating Modal -->
+<div id="reviewModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="font-size: 20px;">Rate Consultation</h2>
+            <button type="button" onclick="closeReviewModal()" style="background: none; border: none; font-size: 22px; cursor: pointer;">&times;</button>
+        </div>
+        <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+            Leave feedback for <strong id="modal_prof_name"></strong>. Your review helps other users make informed decisions.
+        </p>
+
+        <form method="POST">
+            <input type="hidden" name="action" value="submit_rating">
+            <input type="hidden" name="appointment_id" id="modal_apt_id">
+            <input type="hidden" name="professional_id" id="modal_prof_id">
+
+            <div class="form-group">
+                <label>Overall Rating</label>
+                <select name="rating" class="form-control" required style="font-size: 16px;">
+                    <option value="5">★★★★★ - Excellent (5 stars)</option>
+                    <option value="4">★★★★☆ - Very Good (4 stars)</option>
+                    <option value="3">★★★☆☆ - Average (3 stars)</option>
+                    <option value="2">★★☆☆☆ - Below Average (2 stars)</option>
+                    <option value="1">★☆☆☆☆ - Poor (1 star)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Review / Feedback (Optional)</label>
+                <textarea name="review_text" class="form-control" rows="3" placeholder="Describe your consultation experience, advisory quality, and communication..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Submit Rating</button>
+                <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openReviewModal(aptId, profId, profName) {
+    document.getElementById('modal_apt_id').value = aptId;
+    document.getElementById('modal_prof_id').value = profId;
+    document.getElementById('modal_prof_name').textContent = profName;
+    document.getElementById('reviewModal').style.display = 'flex';
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').style.display = 'none';
+}
+
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('reviewModal');
+    if (e.target === modal) {
+        closeReviewModal();
+    }
+});
+</script>
+
+<?php include "includes/footer.php"; ?>

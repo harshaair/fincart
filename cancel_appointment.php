@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once('db.php');
+require_once('includes/mailer.php');
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -116,7 +117,7 @@ try {
     $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
     $headers .= "From: noreply@fincart.local" . "\r\n";
 
-    @mail($to, $subject, $message, $headers);
+    sendFinCartEmail($to, $subject, $message);
 
     // Commit transaction
     $conn->commit();

@@ -115,10 +115,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <header class="site-header">
-    <div class="logo"><h1>Edit Professional Profile</h1></div>
+    <div class="log⭐><h1>Edit Professional Profile</h1></div>
     <div class="header-actions">
         <span>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-        <a href="dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+        <a href="dashboard.php" class="btn btn-secondary">← Back to Dashboard</a>
     </div>
 </header>
 
@@ -192,8 +192,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="form-group">
-            <label for="bio">Biography</label>
-            <textarea id="bio" name="bio" placeholder="Tell clients about your experience, approach, and expertise..."><?php echo htmlspecialchars($prof['bio'] ?? ''); ?></textarea>
+            <label for="bi⭐>Biography</label>
+            <textarea id="bi⭐ name="bi⭐ placeholder="Tell clients about your experience, approach, and expertise..."><?php echo htmlspecialchars($prof['bio'] ?? ''); ?></textarea>
         </div>
 
         <div class="button-group">

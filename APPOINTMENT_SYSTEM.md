@@ -105,7 +105,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
 
 **Appointment Table:**
 | Column | Shows |
-|--------|-------|
+|————|———-|
 | Client Name | Full name + email |
 | Date & Time | Formatted date and time |
 | Type | Consultation type |
@@ -163,7 +163,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
 
 **Status-Specific Actions:**
 | Status | Actions Available |
-|--------|------------------|
+|————|—————————|
 | Pending | Cancel appointment |
 | Confirmed | Cancel appointment |
 | Rejected | Book Again (same professional) |
@@ -367,7 +367,7 @@ mysql < migration_add_appointment_columns.sql
 
 If these columns don't exist, run the migration file provided.
 
----
+—-
 
 **System Version:** 2.0
 **Last Updated:** January 2026

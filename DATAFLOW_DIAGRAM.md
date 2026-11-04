@@ -50,72 +50,72 @@ flowchart TD
     Notification[Notification]
     
     %% Authentication Flow
-    User -->|Credentials| Login
-    User -->|Register| Signup
-    Login -->|Verify| UsersDB
-    Signup -->|Create| UsersDB
-    UsersDB -->|User Data| Login
-    Login -->|Session| Dashboard
-    User -->|Update| Profile
-    Profile -->|Save| UsersDB
-    UsersDB -->|Read| Profile
-    User -->|Verify| Verify
-    Verify -->|Check| Admin
+    User —>|Credentials| Login
+    User —>|Register| Signup
+    Login —>|Verify| UsersDB
+    Signup —>|Create| UsersDB
+    UsersDB —>|User Data| Login
+    Login —>|Session| Dashboard
+    User —>|Update| Profile
+    Profile —>|Save| UsersDB
+    UsersDB —>|Read| Profile
+    User —>|Verify| Verify
+    Verify —>|Check| Admin
     
     %% Dashboard to Features
-    Dashboard --> Transactions
-    Dashboard --> Budget
-    Dashboard --> Investments
-    Dashboard --> Goals
-    Dashboard --> Analytics
-    Dashboard --> TaxCalculator
-    Dashboard --> Professionals
+    Dashboard —> Transactions
+    Dashboard —> Budget
+    Dashboard —> Investments
+    Dashboard —> Goals
+    Dashboard —> Analytics
+    Dashboard —> TaxCalculator
+    Dashboard —> Professionals
     
     %% Transaction Flow
-    Transactions -->|Save| TransactionsDB
-    TransactionsDB -->|Read| Transactions
-    TransactionsDB -->|Data| Analytics
-    TransactionsDB -->|Compare| Budget
+    Transactions —>|Save| TransactionsDB
+    TransactionsDB —>|Read| Transactions
+    TransactionsDB —>|Data| Analytics
+    TransactionsDB —>|Compare| Budget
     
     %% Budget Flow
-    Budget -->|Save| BudgetDB
-    BudgetDB -->|Read| Budget
-    Budget -->|Status| Notification
+    Budget —>|Save| BudgetDB
+    BudgetDB —>|Read| Budget
+    Budget —>|Status| Notification
     
     %% Investment Flow
-    Investments -->|Save| InvestmentsDB
-    InvestmentsDB -->|Read| Investments
-    InvestmentsDB -->|Data| Analytics
+    Investments —>|Save| InvestmentsDB
+    InvestmentsDB —>|Read| Investments
+    InvestmentsDB —>|Data| Analytics
     
     %% Goals Flow
-    Goals -->|Save| GoalsDB
-    GoalsDB -->|Read| Goals
-    TransactionsDB -->|Update| Goals
-    Goals -->|Progress| Notification
+    Goals —>|Save| GoalsDB
+    GoalsDB —>|Read| Goals
+    TransactionsDB —>|Update| Goals
+    Goals —>|Progress| Notification
     
     %% Tax Flow
-    TaxCalculator -->|Calculate| TaxDB
-    TaxTracker -->|Save| TaxDB
-    TaxDB -->|Read| TaxTracker
-    TaxDB -->|Data| TaxCalculator
-    TaxCalculator -->|Summary| TaxSummary
-    TaxSummary -->|Read| TaxDB
-    TaxDB -->|Data| ITR
-    ITR -->|Save| TaxDB
+    TaxCalculator —>|Calculate| TaxDB
+    TaxTracker —>|Save| TaxDB
+    TaxDB —>|Read| TaxTracker
+    TaxDB —>|Data| TaxCalculator
+    TaxCalculator —>|Summary| TaxSummary
+    TaxSummary —>|Read| TaxDB
+    TaxDB —>|Data| ITR
+    ITR —>|Save| TaxDB
     
     %% Professional Flow
-    Professionals -->|Search| ProfessionalsDB
-    ProfessionalsDB -->|List| Professionals
-    User -->|Book| Booking
-    Booking -->|Save| ProfessionalsDB
-    ProfessionalsDB -->|Notify| Notification
-    Notification -->|Alert| User
+    Professionals —>|Search| ProfessionalsDB
+    ProfessionalsDB —>|List| Professionals
+    User —>|Book| Booking
+    Booking —>|Save| ProfessionalsDB
+    ProfessionalsDB —>|Notify| Notification
+    Notification —>|Alert| User
     
     %% Analytics Flow
-    TransactionsDB -->|All Data| Analytics
-    InvestmentsDB -->|Data| Analytics
-    BudgetDB -->|Data| Analytics
-    Analytics -->|Reports| User
+    TransactionsDB —>|All Data| Analytics
+    InvestmentsDB —>|Data| Analytics
+    BudgetDB —>|Data| Analytics
+    Analytics —>|Reports| User
 ```
 
 ## How to Use

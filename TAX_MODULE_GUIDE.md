@@ -15,7 +15,7 @@ FinCart now includes a comprehensive Tax Planning and Filing module designed to 
 
 FinCart is NOT responsible for any inaccuracies in calculations or missed tax deadlines.
 
----
+—-
 
 ## Tax Module Components
 
@@ -43,7 +43,7 @@ FinCart is NOT responsible for any inaccuracies in calculations or missed tax de
 
 **Tax Slabs (New Regime - FY 2024-25):**
 | Income Range | Tax Rate |
-|---|---|
+|—-|—-|
 | ₹0 - ₹3,00,000 | 0% |
 | ₹3,00,001 - ₹6,00,000 | 5% |
 | ₹6,00,001 - ₹9,00,000 | 10% |
@@ -52,7 +52,7 @@ FinCart is NOT responsible for any inaccuracies in calculations or missed tax de
 | ₹15,00,001 - ₹18,00,000 | 25% |
 | ₹18,00,001+ | 30% |
 
----
+—-
 
 ### 2. **Tax Deductions Tracker** (`tax_tracker.php`)
 **Purpose:** Track and categorize tax-deductible expenses
@@ -96,7 +96,7 @@ proof_of_expense (VARCHAR)
 created_at (TIMESTAMP)
 ```
 
----
+—-
 
 ### 3. **Tax Summary Report** (`tax_summary.php`)
 **Purpose:** Comprehensive overview of tax situation
@@ -121,7 +121,7 @@ created_at (TIMESTAMP)
 - Previous years' filing history
 - Tax-saving recommendations
 
----
+—-
 
 ### 4. **Tax Planning Dashboard** (`tax_planning.php`)
 **Purpose:** Strategic tax planning and optimization
@@ -154,7 +154,7 @@ created_at (TIMESTAMP)
   - Compliance guidance
   - ITR filing assistance
 
----
+—-
 
 ### 5. **ITR Preparation Assistant** (`itr_preparation.php`)
 **Purpose:** Step-by-step guidance for Income Tax Return filing
@@ -208,7 +208,7 @@ status (VARCHAR) - Draft/Filed
 submission_date (TIMESTAMP)
 ```
 
----
+—-
 
 ## Important Tax Information (FY 2024-25)
 
@@ -227,13 +227,13 @@ submission_date (TIMESTAMP)
 
 ### Tax Brackets - Old Regime
 | Income Range | Tax Rate |
-|---|---|
+|—-|—-|
 | ₹0 - ₹2,50,000 | 0% |
 | ₹2,50,001 - ₹5,00,000 | 5% |
 | ₹5,00,001 - ₹10,00,000 | 20% |
 | ₹10,00,001+ | 30% |
 
----
+—-
 
 ## User Flow & Integration
 
@@ -252,7 +252,7 @@ All tax module pages include quick links to other tax tools:
 4. Tax Planning
 5. ITR Preparation
 
----
+—-
 
 ## Database Schema
 
@@ -305,7 +305,7 @@ CREATE TABLE itr_submissions (
 );
 ```
 
----
+—-
 
 ## Security Features
 
@@ -315,7 +315,7 @@ CREATE TABLE itr_submissions (
 4. **Data Validation:** Input validation on forms
 5. **Secure Password:** Password hashing with PASSWORD_DEFAULT
 
----
+—-
 
 ## Professional Disclaimer - Detailed
 
@@ -346,7 +346,7 @@ FinCart and its creators are NOT liable for:
 - Loss from implementing recommendations
 - Changes in tax laws after this documentation
 
----
+—-
 
 ## User Guide
 
@@ -378,7 +378,7 @@ FinCart and its creators are NOT liable for:
 - Plan next year's strategy
 - File ITR on time
 
----
+—-
 
 ## Support & Professional Connection
 
@@ -397,15 +397,15 @@ The module includes multiple "Connect with Professionals" CTAs to help users fin
 - Audit requirements
 - Compliance queries
 
----
+—-
 
 ## FAQs
 
 **Q: Can I use this module to file my ITR directly?**
-A: No. You must file on income-tax.gov.in. This module helps you prepare.
+A: N✓ You must file on income-tax.gov.in. This module helps you prepare.
 
 **Q: Are the calculations 100% accurate?**
-A: No. Always verify with a professional. Tax laws change frequently.
+A: N✓ Always verify with a professional. Tax laws change frequently.
 
 **Q: What if I miss a deadline?**
 A: File a revised return immediately. Consult a professional about penalties.
@@ -416,7 +416,7 @@ A: Keep all documents for at least 7 years as per Income Tax regulations.
 **Q: Is my data secure?**
 A: Yes. We use encrypted connections and prepared statements for database queries.
 
----
+—-
 
 ## Files Included
 
@@ -427,7 +427,7 @@ A: Yes. We use encrypted connections and prepared statements for database querie
 5. **itr_preparation.php** - ITR preparation guide
 6. **tax_setup.sql** - Database schema
 
----
+—-
 
 ## Version Information
 - **FinCart Version:** 2.0 (Tax Module Added)
@@ -435,7 +435,7 @@ A: Yes. We use encrypted connections and prepared statements for database querie
 - **Last Updated:** 2024
 - **Status:** Production Ready with Disclaimer
 
----
+—-
 
 ## Connect With Professionals
 
@@ -449,7 +449,7 @@ FinCart recommends consulting with qualified professionals for:
 
 **Note:** Professional consultation links should be configured with actual tax advisor networks or professional referral services.
 
----
+—-
 
 ## Support
 
@@ -459,6 +459,6 @@ For questions about the tax module:
 3. Connect with a tax professional
 4. Contact FinCart support
 
----
+—-
 
 **Remember:** This tool is a helper, not a replacement for professional tax advice. Always verify and consult experts! 🤝

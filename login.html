@@ -15,21 +15,21 @@
     }
 
     :root {
-      --primary: #1a1a1a;
-      --secondary: #f8f6f3;
-      --accent: #d4af37;
-      --text-dark: #2c2c2c;
-      --text-light: #666;
-      --white: #ffffff;
-      --off-white: #fafaf9;
-      --error: #e74c3c;
-      --success: #27ae60;
+      —primary: #1a1a1a;
+      —secondary: #f8f6f3;
+      —accent: #d4af37;
+      —text-dark: #2c2c2c;
+      —text-light: #666;
+      —white: #ffffff;
+      —off-white: #fafaf9;
+      —error: #e74c3c;
+      —success: #27ae60;
     }
 
     body {
       font-family: 'Inter', sans-serif;
-      color: var(--text-dark);
-      background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+      color: var(—text-dark);
+      background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -96,7 +96,7 @@
     }
 
     .nav-header-links a {
-      color: var(--text-dark);
+      color: var(—text-dark);
       text-decoration: none;
       font-weight: 600;
       transition: all 0.3s ease;
@@ -104,7 +104,7 @@
     }
 
     .nav-header-links a:hover {
-      color: var(--accent);
+      color: var(—accent);
     }
 
     .logo {
@@ -116,7 +116,7 @@
       font-family: 'Playfair Display', serif;
       font-size: 28px;
       font-weight: 700;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -130,7 +130,7 @@
     }
 
     .auth-container {
-      background: var(--white);
+      background: var(—white);
       border-radius: 24px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
       width: 100%;
@@ -160,10 +160,10 @@
     }
 
     .auth-header {
-      background: linear-gradient(135deg, var(--primary) 0%, #2c2c2c 100%);
+      background: linear-gradient(135deg, var(—primary) 0%, #2c2c2c 100%);
       padding: 40px;
       text-align: center;
-      color: var(--white);
+      color: var(—white);
       position: relative;
       overflow: hidden;
     }
@@ -207,7 +207,7 @@
       border: none;
       font-size: 16px;
       font-weight: 600;
-      color: var(--text-light);
+      color: var(—text-light);
       cursor: pointer;
       position: relative;
       transition: all 0.3s ease;
@@ -220,13 +220,13 @@
       left: 0;
       width: 100%;
       height: 3px;
-      background: var(--accent);
+      background: var(—accent);
       transform: scaleX(0);
       transition: transform 0.3s ease;
     }
 
     .tab.active {
-      color: var(--primary);
+      color: var(—primary);
     }
 
     .tab.active::after {
@@ -262,7 +262,7 @@
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
-      color: var(--text-dark);
+      color: var(—text-dark);
       font-size: 14px;
     }
 
@@ -274,26 +274,26 @@
       font-size: 15px;
       font-family: 'Inter', sans-serif;
       transition: all 0.3s ease;
-      background: var(--off-white);
+      background: var(—off-white);
     }
 
     .form-group input:focus {
       outline: none;
-      border-color: var(--accent);
-      background: var(--white);
+      border-color: var(—accent);
+      background: var(—white);
       box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
     }
 
     .form-group input.error {
-      border-color: var(--error);
+      border-color: var(—error);
     }
 
     .form-group input.success {
-      border-color: var(--success);
+      border-color: var(—success);
     }
 
     .error-message {
-      color: var(--error);
+      color: var(—error);
       font-size: 13px;
       margin-top: 6px;
       display: none;
@@ -324,7 +324,7 @@
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
-      color: var(--text-light);
+      color: var(—text-light);
       font-size: 18px;
       user-select: none;
     }
@@ -347,25 +347,25 @@
       width: 18px;
       height: 18px;
       cursor: pointer;
-      accent-color: var(--accent);
+      accent-color: var(—accent);
     }
 
     .forgot-link {
-      color: var(--accent);
+      color: var(—accent);
       text-decoration: none;
       font-weight: 500;
       transition: all 0.3s ease;
     }
 
     .forgot-link:hover {
-      color: var(--primary);
+      color: var(—primary);
     }
 
     .btn-submit {
       width: 100%;
       padding: 18px 32px;
-      background: linear-gradient(135deg, var(--primary) 0%, #0d0d0d 100%);
-      color: var(--white);
+      background: linear-gradient(135deg, var(—primary) 0%, #0d0d0d 100%);
+      color: var(—white);
       border: none;
       border-radius: 14px;
       font-size: 17px;
@@ -386,7 +386,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: var(--accent);
+      background: var(—accent);
       transition: left 0.4s ease;
       z-index: -1;
     }
@@ -398,7 +398,7 @@
     .btn-submit:hover {
       transform: translateY(-3px);
       box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4);
-      color: var(--primary);
+      color: var(—primary);
     }
 
     .btn-submit:active {
@@ -427,9 +427,9 @@
     }
 
     .divider span {
-      background: var(--white);
+      background: var(—white);
       padding: 0 15px;
-      color: var(--text-light);
+      color: var(—text-light);
       font-size: 14px;
       position: relative;
       z-index: 1;
@@ -445,7 +445,7 @@
       padding: 14px;
       border: 2px solid #e8e8e8;
       border-radius: 12px;
-      background: var(--white);
+      background: var(—white);
       cursor: pointer;
       transition: all 0.3s ease;
       font-size: 14px;
@@ -457,7 +457,7 @@
     }
 
     .social-btn:hover {
-      border-color: var(--accent);
+      border-color: var(—accent);
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
@@ -468,14 +468,14 @@
     }
 
     .back-home a {
-      color: var(--text-light);
+      color: var(—text-light);
       text-decoration: none;
       font-size: 14px;
       transition: all 0.3s ease;
     }
 
     .back-home a:hover {
-      color: var(--accent);
+      color: var(—accent);
     }
 
     .mobile-menu-btn {
@@ -485,7 +485,7 @@
       right: 30px;
       width: 60px;
       height: 60px;
-      background: var(--accent);
+      background: var(—accent);
       border: none;
       border-radius: 50%;
       box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
@@ -507,7 +507,7 @@
     .mobile-menu-btn svg {
       width: 28px;
       height: 28px;
-      stroke: var(--white);
+      stroke: var(—white);
       stroke-width: 2;
       fill: none;
     }
@@ -519,7 +519,7 @@
       left: 50%;
       transform: translateX(-50%);
       background: rgba(26, 26, 26, 0.95);
-      color: var(--white);
+      color: var(—white);
       padding: 12px 24px;
       border-radius: 30px;
       font-size: 13px;
@@ -575,9 +575,9 @@
       border-radius: 2px;
     }
 
-    .strength-weak { width: 33%; background: var(--error); }
+    .strength-weak { width: 33%; background: var(—error); }
     .strength-medium { width: 66%; background: #f39c12; }
-    .strength-strong { width: 100%; background: var(--success); }
+    .strength-strong { width: 100%; background: var(—success); }
 
     @media (max-width: 480px) {
       .auth-container {
@@ -614,59 +614,59 @@
     }
  
  { margin: 0; padding: 0; box-sizing: border-box; }
-    :root { --primary: #1a1a1a; --secondary: #f8f6f3; --accent: #d4af37; --text-dark: #2c2c2c; --text-light: #666; --white: #ffffff; --off-white: #fafaf9; --error: #e74c3c; --success: #27ae60; }
-    body { font-family: 'Inter', sans-serif; color: var(--text-dark); background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; overflow: hidden; }
+    :root { —primary: #1a1a1a; —secondary: #f8f6f3; —accent: #d4af37; —text-dark: #2c2c2c; —text-light: #666; —white: #ffffff; —off-white: #fafaf9; —error: #e74c3c; —success: #27ae60; }
+    body { font-family: 'Inter', sans-serif; color: var(—text-dark); background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; overflow: hidden; }
     body::before { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%); top: -200px; right: -200px; animation: float 20s ease-in-out infinite; }
     body::after { content: ''; position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%); bottom: -150px; left: -150px; animation: float 25s ease-in-out infinite reverse; }
     @keyframes float { 0%,100%{transform:translate(0,0) rotate(0deg);}25%{transform:translate(30px,30px) rotate(5deg);}50%{transform:translate(0,60px) rotate(10deg);}75%{transform:translate(-30px,30px) rotate(5deg);} }
     .logo { position:absolute; top:30px; left:50%; transform:translateX(-50%); z-index:100; }
-    .logo h1 { font-family:'Playfair Display', serif; font-size:36px; font-weight:700; background:linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-1px; cursor:pointer; }
-    .auth-container { background:var(--white); border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,0.1); width:100%; max-width:450px; position:relative; z-index:1; overflow:hidden; animation:slideIn 0.6s ease; }
+    .logo h1 { font-family:'Playfair Display', serif; font-size:36px; font-weight:700; background:linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-1px; cursor:pointer; }
+    .auth-container { background:var(—white); border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,0.1); width:100%; max-width:450px; position:relative; z-index:1; overflow:hidden; animation:slideIn 0.6s ease; }
     @keyframes slideIn { from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
-    .auth-header { background:linear-gradient(135deg, var(--primary) 0%, #2c2c2c 100%); padding:50px 40px; text-align:center; color:var(--white); position:relative; overflow:hidden; }
+    .auth-header { background:linear-gradient(135deg, var(—primary) 0%, #2c2c2c 100%); padding:50px 40px; text-align:center; color:var(—white); position:relative; overflow:hidden; }
     .auth-header::before { content:''; position:absolute; width:200px; height:200px; background:radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%); top:-100px; right:-100px; }
     .auth-header h2 { font-family:'Playfair Display', serif; font-size:34px; margin-bottom:10px; position:relative; z-index:1; font-weight: 700; }
     .auth-header p { font-size:16px; opacity:0.95; font-weight:300; position:relative; z-index:1; }
     .auth-tabs { display:flex; border-bottom:2px solid #e8e8e8; }
-    .tab { flex:1; padding:22px; text-align:center; background:none; border:none; font-size:16px; font-weight:600; color:var(--text-light); cursor:pointer; position:relative; transition: all 0.3s ease; }
-    .tab::after { content:''; position:absolute; bottom:-2px; left:0; width:100%; height:4px; background:var(--accent); transform:scaleX(0); transition:transform 0.3s ease; }
-    .tab.active { color:var(--primary); }
+    .tab { flex:1; padding:22px; text-align:center; background:none; border:none; font-size:16px; font-weight:600; color:var(—text-light); cursor:pointer; position:relative; transition: all 0.3s ease; }
+    .tab::after { content:''; position:absolute; bottom:-2px; left:0; width:100%; height:4px; background:var(—accent); transform:scaleX(0); transition:transform 0.3s ease; }
+    .tab.active { color:var(—primary); }
     .tab.active::after { transform:scaleX(1); }
     .auth-form { padding:35px 0; display:none; animation:fadeIn 0.4s ease; }
     .auth-form.active { display:block; }
     @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
     .form-group { margin-bottom:28px; }
-    .form-group label { display:block; margin-bottom:10px; font-weight:600; color:var(--text-dark); font-size:14px; }
-    .form-group input { width:100%; padding:16px 18px; border:2px solid #e8e8e8; border-radius:12px; font-size:15px; font-family:'Inter',sans-serif; transition: all 0.3s ease; background:var(--off-white); }
-    .form-group input:focus { outline:none; border-color:var(--accent); background:var(--white); box-shadow:0 0 0 4px rgba(212,175,55,0.1); }
-    .form-group input.error { border-color: var(--error); }
-    .form-group input.success { border-color: var(--success); }
-    .error-message { color:var(--error); font-size:13px; margin-top:6px; display:none; }
+    .form-group label { display:block; margin-bottom:10px; font-weight:600; color:var(—text-dark); font-size:14px; }
+    .form-group input { width:100%; padding:16px 18px; border:2px solid #e8e8e8; border-radius:12px; font-size:15px; font-family:'Inter',sans-serif; transition: all 0.3s ease; background:var(—off-white); }
+    .form-group input:focus { outline:none; border-color:var(—accent); background:var(—white); box-shadow:0 0 0 4px rgba(212,175,55,0.1); }
+    .form-group input.error { border-color: var(—error); }
+    .form-group input.success { border-color: var(—success); }
+    .error-message { color:var(—error); font-size:13px; margin-top:6px; display:none; }
     .error-message.show { display:block; animation:shake 0.3s ease; }
     @keyframes shake { 0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);} }
     .password-toggle { position:relative; }
     .password-toggle input { padding-right:45px; }
-    .toggle-icon { position:absolute; right:18px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-light); font-size:18px; user-select:none; }
+    .toggle-icon { position:absolute; right:18px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(—text-light); font-size:18px; user-select:none; }
     .remember-forgot { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; font-size:14px; }
     .remember-me { display:flex; align-items:center; gap:8px; }
-    .remember-me input[type="checkbox"] { width:18px; height:18px; cursor:pointer; accent-color:var(--accent); }
-    .forgot-link { color:var(--accent); text-decoration:none; font-weight:500; transition: all 0.3s ease; }
-    .forgot-link:hover { color:var(--primary); }
-    .btn-submit { width:100%; padding:16px; background:var(--primary); color:var(--white); border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; transition: all 0.3s ease; position:relative; overflow:hidden; }
-    .btn-submit::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:var(--accent); transition:left 0.4s ease; z-index:-1; }
+    .remember-me input[type="checkbox"] { width:18px; height:18px; cursor:pointer; accent-color:var(—accent); }
+    .forgot-link { color:var(—accent); text-decoration:none; font-weight:500; transition: all 0.3s ease; }
+    .forgot-link:hover { color:var(—primary); }
+    .btn-submit { width:100%; padding:16px; background:var(—primary); color:var(—white); border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; transition: all 0.3s ease; position:relative; overflow:hidden; }
+    .btn-submit::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:var(—accent); transition:left 0.4s ease; z-index:-1; }
     .btn-submit:hover::before { left:0; }
     .btn-submit:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(212,175,55,0.3); }
     .btn-submit:active { transform:translateY(0); }
     .btn-submit.loading { pointer-events:none; opacity:0.7; }
     .divider { text-align:center; margin:32px 0; position:relative; }
     .divider::before { content:''; position:absolute; top:50%; left:0; width:100%; height:1px; background:#e8e8e8; }
-    .divider span { background:var(--white); padding:0 15px; color:var(--text-light); font-size:14px; position:relative; z-index:1; }
+    .divider span { background:var(—white); padding:0 15px; color:var(—text-light); font-size:14px; position:relative; z-index:1; }
     .social-login { display:flex; gap:14px; }
-    .social-btn { flex:1; padding:16px; border:2px solid #e8e8e8; border-radius:12px; background:var(--white); cursor:pointer; transition: all 0.3s ease; font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; }
-    .social-btn:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+    .social-btn { flex:1; padding:16px; border:2px solid #e8e8e8; border-radius:12px; background:var(—white); cursor:pointer; transition: all 0.3s ease; font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .social-btn:hover { border-color:var(—accent); transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.1); }
     .back-home { text-align:center; margin-top:28px; }
-    .back-home a { color:var(--accent); text-decoration:none; font-size:14px; transition: all 0.3s ease; font-weight:600; }
-    .back-home a:hover { color:var(--primary); }
+    .back-home a { color:var(—accent); text-decoration:none; font-size:14px; transition: all 0.3s ease; font-weight:600; }
+    .back-home a:hover { color:var(—primary); }
 
     /* Navbar */
     .navbar {
@@ -710,7 +710,7 @@
 
     .nav-links a {
       text-decoration: none;
-      color: var(--text-dark);
+      color: var(—text-dark);
       font-weight: 500;
       font-size: 15px;
       letter-spacing: 0.3px;
@@ -719,7 +719,7 @@
     }
 
     .nav-links a:not(.btn-login):hover {
-      color: var(--accent);
+      color: var(—accent);
     }
 
     .nav-links a:not(.btn-login)::after {
@@ -729,7 +729,7 @@
       left: 0;
       width: 0;
       height: 2px;
-      background: var(--accent);
+      background: var(—accent);
       transition: width 0.3s ease;
     }
 
@@ -739,16 +739,16 @@
 
     .btn-login {
       padding: 10px 28px;
-      background: var(--primary);
-      color: var(--white) !important;
+      background: var(—primary);
+      color: var(—white) !important;
       border-radius: 50px;
       transition: all 0.3s ease;
-      border: 2px solid var(--primary);
+      border: 2px solid var(—primary);
     }
 
     .btn-login:hover {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(—accent);
+      border-color: var(—accent);
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
     }
@@ -774,7 +774,7 @@
 <body>
   <header>
     <div class="header-container">
-      <div class="logo">
+      <div class="log⭐>
         <h1 onclick="window.location.href='index.html'">Fincart</h1>
       </div>
       <nav>
@@ -791,7 +791,7 @@
 
   <div class="auth-container">
     <div class="auth-header">
-      <h2>Welcome Back</h2>
+      <h2>Welcome← Back</h2>
       <p>Secure your financial future with us</p>
     </div>
 
@@ -819,7 +819,7 @@
       <input type="checkbox" id="rememberMe">
       <span>Remember me</span>
     </label>
-    <a href="#" class="forgot-link">Forgot Password?</a>
+    <a href="forgot_password.php" class="forgot-link">Forgot Password?</a>
   </div>
 
   <button type="submit" class="btn-submit">Login to Account</button>
@@ -832,12 +832,12 @@
   </div>
 
   <div class="back-home">
-    <a href="index.html">← Back to Home</a>
+    <a href="index.html">←← Back to Home</a>
   </div>
 </form>
 
 
-    <!-- SIGNUP FORM -->
+    <!— SIGNUP FORM —>
     <form class="auth-form" id="signupForm" action="signup.php" method="POST">
   <div class="form-group">
     <label for="signupName">Full Name</label>
@@ -885,19 +885,19 @@
   </div>
 
   <div class="back-home">
-    <a href="index.html">← Back to Home</a>
+    <a href="index.html">←← Back to Home</a>
   </div>
 </form>
 
 
-  <!-- MOBILE BUTTON & HELPER -->
+  <!— MOBILE BUTTON & HELPER —>
   <button class="mobile-menu-btn" id="mobileScrollBtn" onclick="scrollToSubmit()">
     <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
   </button>
   <div class="mobile-keyboard-helper" id="keyboardHelper">Tap here to submit form ↑</div>
 
   <script>
-    // -------- GENERAL FUNCTIONS --------
+    // ———— GENERAL FUNCTIONS ————
     function switchTab(tab) {
       const tabs = document.querySelectorAll('.tab');
       const forms = document.querySelectorAll('.auth-form');
@@ -906,7 +906,7 @@
       forms.forEach(f=>f.classList.remove('active'));
       if(tab==='login'){
         tabs[0].classList.add('active'); forms[0].classList.add('active');
-        header.querySelector('h2').textContent='Welcome Back';
+        header.querySelector('h2').textContent='Welcome← Back';
         header.querySelector('p').textContent='Secure your financial future with us';
       } else {
         tabs[1].classList.add('active'); forms[1].classList.add('active');
@@ -925,7 +925,7 @@
 
     function socialLogin(provider){ alert(`Redirecting to ${provider} authentication...`); }
 
-    // -------- MOBILE SCROLL HELPER --------
+    // ———— MOBILE SCROLL HELPER ————
     function scrollToSubmit() {
       const activeForm = document.querySelector('.auth-form.active');
       const submitBtn = activeForm.querySelector('.btn-submit');
@@ -945,7 +945,7 @@
       });
     });
 
-    // -------- PASSWORD STRENGTH --------
+    // ———— PASSWORD STRENGTH ————
     function checkPasswordStrength(password){
       const strengthMeter=document.getElementById('strengthMeter');
       const strengthBar=document.getElementById('strengthBar');

@@ -17,7 +17,7 @@ Once logged in, you can access each tool directly:
 - **Tax Planning Dashboard:** `http://localhost/fincart/tax_planning.php`
 - **ITR Preparation:** `http://localhost/fincart/itr_preparation.php`
 
----
+—-
 
 ## 📋 Tax Module Tools Overview
 
@@ -47,7 +47,7 @@ Once logged in, you can access each tool directly:
 
 **⚠️ Important:** This is for estimation only. Verify with a professional before filing.
 
----
+—-
 
 ### 2️⃣ Deductions Tracker
 **Purpose:** Record and track your tax-deductible expenses
@@ -76,7 +76,7 @@ Once logged in, you can access each tool directly:
 
 **Tip:** Keep receipts and proofs for all deductions. You'll need them to support your ITR.
 
----
+—-
 
 ### 3️⃣ Tax Summary Report
 **Purpose:** Get an overview of your tax situation
@@ -101,7 +101,7 @@ Once logged in, you can access each tool directly:
 - Reviewing tax position
 - Before consulting a professional
 
----
+—-
 
 ### 4️⃣ Tax Planning Dashboard
 **Purpose:** Strategic tax planning and optimization
@@ -132,7 +132,7 @@ Once logged in, you can access each tool directly:
 - Reviewing current strategy
 - Making major financial decisions
 
----
+—-
 
 ### 5️⃣ ITR Preparation Assistant
 **Purpose:** Step-by-step guidance for Income Tax Return filing
@@ -174,13 +174,13 @@ Once logged in, you can access each tool directly:
 
 **⚠️ Critical:** Always file on the official Income Tax portal. This tool is for preparation only.
 
----
+—-
 
 ## 🔢 Tax Slabs for FY 2024-25
 
 ### New Regime (Recommended for most)
 | Income Range | Tax Rate |
-|---|---|
+|—-|—-|
 | Up to ₹3,00,000 | 0% |
 | ₹3,00,001 - ₹6,00,000 | 5% |
 | ₹6,00,001 - ₹9,00,000 | 10% |
@@ -194,13 +194,13 @@ Once logged in, you can access each tool directly:
 
 ### Old Regime
 | Income Range | Tax Rate |
-|---|---|
+|—-|—-|
 | Up to ₹2,50,000 | 0% |
 | ₹2,50,001 - ₹5,00,000 | 5% |
 | ₹5,00,001 - ₹10,00,000 | 20% |
 | Above ₹10,00,000 | 30% |
 
----
+—-
 
 ## 💡 Tax Planning Tips
 
@@ -222,7 +222,7 @@ Once logged in, you can access each tool directly:
 ✅ Get ITR prepared
 ✅ File before July 31 deadline
 
----
+—-
 
 ## ⚠️ Important Disclaimers
 
@@ -262,7 +262,7 @@ Once logged in, you can access each tool directly:
    - NOT responsible for penalties
    - NOT responsible for tax compliance issues
 
----
+—-
 
 ## 🤝 When to Consult a Professional
 
@@ -292,7 +292,7 @@ You SHOULD consult a CA for:
   - Income tax notice
   - Assessment matters
 
----
+—-
 
 ## 📞 Finding a Tax Professional
 
@@ -308,15 +308,15 @@ FinCart includes links to connect with:
 - Client reviews
 - Experience with your income type
 
----
+—-
 
 ## ❓ Frequently Asked Questions
 
 **Q: Can I file my ITR using this tool?**
-A: No. You must file on income-tax.gov.in. This tool helps you prepare.
+A: N✓ You must file on income-tax.gov.in. This tool helps you prepare.
 
 **Q: Are these calculations always correct?**
-A: No. Tax laws are complex and individual situations vary. Always verify with a professional.
+A: N✓ Tax laws are complex and individual situations vary. Always verify with a professional.
 
 **Q: What if I miss the filing deadline?**
 A: File a revised return immediately and consult a CA about penalties.
@@ -339,7 +339,7 @@ A: Yes, keep original for your records and upload copy if required.
 **Q: What if my employer hasn't given Form 16?**
 A: Request it from employer. File ITR with available documents and consult CA.
 
----
+—-
 
 ## 🚀 Getting the Most from Tax Module
 
@@ -370,7 +370,7 @@ A: Request it from employer. File ITR with available documents and consult CA.
 6. Keep investment statements
 7. Update portfolio regularly
 
----
+—-
 
 ## ✅ Checklist Before Filing ITR
 
@@ -392,12 +392,12 @@ A: Request it from employer. File ITR with available documents and consult CA.
 - [ ] Filed on income-tax.gov.in
 - [ ] Filing reference number saved
 
----
+—-
 
 ## 📊 Tax Filing Timeline for FY 2024-25
 
 | Date | Task |
-|---|---|
+|—-|—-|
 | By May 31 | Employer issues Form 16 |
 | By June 30 | Tax planning; maximize deductions |
 | By July 31 | **ITR Filing Deadline** |
@@ -405,7 +405,7 @@ A: Request it from employer. File ITR with available documents and consult CA.
 | Oct 31 | Deadline for audited returns |
 | Dec 31 | Revised return deadline |
 
----
+—-
 
 ## 🔒 Data Privacy & Security
 
@@ -417,7 +417,7 @@ A: Request it from employer. File ITR with available documents and consult CA.
 - Don't share your login credentials
 - Log out after using public computers
 
----
+—-
 
 ## 📞 Support Resources
 
@@ -440,7 +440,7 @@ A: Request it from employer. File ITR with available documents and consult CA.
 - Online tax consultation services
 - GST practitioners (for business)
 
----
+—-
 
 ## 🎓 Learning More
 
@@ -456,7 +456,7 @@ A: Request it from employer. File ITR with available documents and consult CA.
 - Check step-by-step guides
 - Connect with professionals
 
----
+—-
 
 ## 🎉 Ready to Start?
 
@@ -473,7 +473,7 @@ A: Request it from employer. File ITR with available documents and consult CA.
 6. **File on income-tax.gov.in**
 7. **Keep records for 7 years**
 
----
+—-
 
 **Remember:** This tool is your helper, not your accountant. Always verify and consult professionals! 🤝
 

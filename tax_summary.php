@@ -88,23 +88,23 @@ if ($latest_tax) {
         }
 
         :root {
-            --primary: #1a1a1a;
-            --secondary: #f8f6f3;
-            --accent: #d4af37;
-            --text-dark: #2c2c2c;
-            --text-light: #666;
-            --white: #ffffff;
-            --off-white: #fafaf9;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
+            —primary: #1a1a1a;
+            —secondary: #f8f6f3;
+            —accent: #d4af37;
+            —text-dark: #2c2c2c;
+            —text-light: #666;
+            —white: #ffffff;
+            —off-white: #fafaf9;
+            —success: #27ae60;
+            —danger: #e74c3c;
+            —warning: #f39c12;
+            —info: #3498db;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
-            color: var(--text-dark);
+            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
+            color: var(—text-dark);
             min-height: 100vh;
         }
 
@@ -131,7 +131,7 @@ if ($latest_tax) {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -144,20 +144,20 @@ if ($latest_tax) {
         }
 
         .nav-link {
-            color: var(--text-dark);
+            color: var(—text-dark);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .nav-link:hover {
-            color: var(--accent);
+            color: var(—accent);
         }
 
         .logout-btn {
             padding: 8px 20px;
-            background: var(--danger);
-            color: var(--white);
+            background: var(—danger);
+            color: var(—white);
             border: none;
             border-radius: 20px;
             cursor: pointer;
@@ -182,23 +182,23 @@ if ($latest_tax) {
         .page-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 42px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 10px;
             letter-spacing: -1px;
         }
 
         .page-header p {
-            color: var(--text-light);
+            color: var(—text-light);
             font-size: 16px;
         }
 
         .disclaimer {
             background: rgba(243, 156, 18, 0.1);
-            border: 2px solid var(--warning);
+            border: 2px solid var(—warning);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 30px;
-            color: var(--text-dark);
+            color: var(—text-dark);
             font-size: 13px;
         }
 
@@ -210,29 +210,29 @@ if ($latest_tax) {
         }
 
         .stat-card {
-            background: var(--white);
+            background: var(—white);
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            border-left: 5px solid var(--accent);
+            border-left: 5px solid var(—accent);
         }
 
         .stat-value {
             font-family: 'Playfair Display', serif;
             font-size: 32px;
             font-weight: 700;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 5px;
         }
 
         .stat-label {
-            color: var(--text-light);
+            color: var(—text-light);
             font-size: 13px;
             font-weight: 600;
         }
 
         .card {
-            background: var(--white);
+            background: var(—white);
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -242,14 +242,14 @@ if ($latest_tax) {
         .card h2 {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 20px;
         }
 
         .card h3 {
             font-family: 'Playfair Display', serif;
             font-size: 20px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 15px;
             margin-top: 20px;
         }
@@ -273,17 +273,17 @@ if ($latest_tax) {
 
         .report-label {
             font-weight: 600;
-            color: var(--text-dark);
+            color: var(—text-dark);
         }
 
         .report-value {
             font-family: 'Playfair Display', serif;
             font-weight: 700;
-            color: var(--accent);
+            color: var(—accent);
         }
 
         .total-row {
-            background: var(--off-white);
+            background: var(—off-white);
             padding: 15px;
             border-radius: 8px;
             margin-top: 10px;
@@ -293,14 +293,14 @@ if ($latest_tax) {
 
         .total-label {
             font-weight: 700;
-            color: var(--primary);
+            color: var(—primary);
         }
 
         .total-value {
             font-family: 'Playfair Display', serif;
             font-size: 18px;
             font-weight: 700;
-            color: var(--primary);
+            color: var(—primary);
         }
 
         .tax-history {
@@ -313,7 +313,7 @@ if ($latest_tax) {
         }
 
         th {
-            background: var(--off-white);
+            background: var(—off-white);
             padding: 12px;
             text-align: left;
             font-weight: 600;
@@ -326,13 +326,13 @@ if ($latest_tax) {
         }
 
         tr:hover {
-            background: var(--off-white);
+            background: var(—off-white);
         }
 
         .btn {
             padding: 10px 20px;
-            background: var(--primary);
-            color: var(--white);
+            background: var(—primary);
+            color: var(—white);
             border: none;
             border-radius: 20px;
             cursor: pointer;
@@ -343,14 +343,14 @@ if ($latest_tax) {
         }
 
         .btn:hover {
-            background: var(--accent);
-            color: var(--primary);
+            background: var(—accent);
+            color: var(—primary);
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: var(--text-light);
+            color: var(—text-light);
         }
 
         .highlight-box {
@@ -358,7 +358,7 @@ if ($latest_tax) {
             padding: 20px;
             border-radius: 12px;
             margin: 15px 0;
-            border-left: 5px solid var(--accent);
+            border-left: 5px solid var(—accent);
         }
 
         @media print {
@@ -394,10 +394,10 @@ if ($latest_tax) {
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!— Header —>
     <header>
         <div class="header-container">
-            <div class="logo">
+            <div class="log⭐>
                 <h1>Fincart</h1>
             </div>
             <div class="nav-links">
@@ -411,7 +411,7 @@ if ($latest_tax) {
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!— Main Content —>
     <div class="container">
         <div class="page-header">
             <h1>📊 Tax Summary Report</h1>
@@ -421,12 +421,12 @@ if ($latest_tax) {
             </button>
         </div>
 
-        <!-- Disclaimer -->
+        <!— Disclaimer —>
         <div class="disclaimer">
             ⚠️ <strong>Report Disclaimer:</strong> This report is generated from your transaction and deduction records. It is for informational purposes only and does not constitute professional tax advice. Please consult with a qualified Chartered Accountant or tax professional before filing your ITR.
         </div>
 
-        <!-- Current Year Overview -->
+        <!— Current Year Overview —>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value">₹<?php echo number_format($current_year_income, 0); ?></div>
@@ -446,7 +446,7 @@ if ($latest_tax) {
             </div>
         </div>
 
-        <!-- Current Year Summary -->
+        <!— Current Year Summary —>
         <div class="card">
             <h2>FY <?php echo $current_year; ?> Income & Deduction Summary</h2>
 
@@ -470,7 +470,7 @@ if ($latest_tax) {
             </div>
         </div>
 
-        <!-- Previous Calculations -->
+        <!— Previous Calculations —>
         <?php if (count($tax_calculations) > 0): ?>
             <div class="card">
                 <h2>Previous Tax Calculations</h2>
@@ -504,7 +504,7 @@ if ($latest_tax) {
             </div>
         <?php endif; ?>
 
-        <!-- Category Analysis -->
+        <!— Category Analysis —>
         <?php if (count($category_analysis) > 0): ?>
             <div class="card">
                 <h2>Income & Expense Category Analysis</h2>
@@ -523,7 +523,7 @@ if ($latest_tax) {
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <p style="color: var(--text-light); margin: 10px 0;">No income entries recorded</p>
+                    <p style="color: var(—text-light); margin: 10px 0;">No income entries recorded</p>
                 <?php endif; ?>
 
                 <h3>💸 Expenses by Category</h3>
@@ -535,15 +535,15 @@ if ($latest_tax) {
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <p style="color: var(--text-light); margin: 10px 0;">No expense entries recorded</p>
+                    <p style="color: var(—text-light); margin: 10px 0;">No expense entries recorded</p>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
 
-        <!-- Action Buttons -->
+        <!— Action Buttons —>
         <div class="card">
             <h2>Next Steps</h2>
-            <p style="color: var(--text-light); margin-bottom: 15px;">
+            <p style="color: var(—text-light); margin-bottom: 15px;">
                 Use these tools to manage your tax planning effectively:
             </p>
             
@@ -555,7 +555,7 @@ if ($latest_tax) {
             <div class="highlight-box" style="margin-top: 20px;">
                 <strong>🤝 Need Professional Help?</strong><br>
                 Our experts can help you optimize your tax strategy, ensure compliance, and maximize deductions. 
-                <a href="javascript:void(0);" style="color: var(--accent); text-decoration: none; font-weight: 600;">Connect with a Tax Professional →</a>
+                <a href="javascript:void(0);" style="color: var(—accent); text-decoration: none; font-weight: 600;">Connect with a Tax Professional →</a>
             </div>
         </div>
     </div>

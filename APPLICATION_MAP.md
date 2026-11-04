@@ -58,7 +58,7 @@ FINCART - Complete Financial & Tax Management Platform
 
 ```
 
----
+—-
 
 ## 📱 User Journey Flow
 
@@ -138,15 +138,15 @@ START
                 ├─ Create ITR record
                 └─ Document checklist
 
-      All pages → [logout.php] LOGOUT → Back to [index.html]
+      All pages → [logout.php] LOGOUT →← Back to [index.html]
 ```
 
----
+—-
 
 ## 🎯 Feature Matrix
 
 | Feature | Status | User Benefit |
-|---------|--------|--------------|
+|————-|————|———————|
 | **Authentication** | ✅ Complete | Secure login/signup |
 | **Transactions** | ✅ Complete | Track income/expense |
 | **Budget Tracker** | ✅ Complete | Control spending |
@@ -160,7 +160,7 @@ START
 | **Tax Planning** | ✅ Complete | Optimize strategy |
 | **ITR Preparation** | ✅ Complete | Filing guidance |
 
----
+—-
 
 ## 🔐 Data Security Architecture
 
@@ -196,7 +196,7 @@ User Input
     └─ Safe, validated display
 ```
 
----
+—-
 
 ## 💾 Database Relationship Diagram
 
@@ -268,7 +268,7 @@ users (Master Table)
        └─ status
 ```
 
----
+—-
 
 ## 🎨 Design System
 
@@ -299,7 +299,7 @@ Font Sizes:
   - Small:        13px
 ```
 
----
+—-
 
 ## 📊 Tax Module Components
 
@@ -400,7 +400,7 @@ Features:
   └─ Professional consultation links
 ```
 
----
+—-
 
 ## 🚀 Deployment Checklist
 
@@ -439,7 +439,7 @@ Features:
   - [ ] Legal review
   - [ ] Verify tax law accuracy
 
----
+—-
 
 ## 📞 Support & Documentation
 
@@ -461,7 +461,7 @@ Features:
 - Security information - Best practices
 - Maintenance tasks - Regular upkeep
 
----
+—-
 
 ## 🎓 Tax Information References
 
@@ -479,7 +479,7 @@ Features:
 - E-filing guidelines
 - Status checking tools
 
----
+—-
 
 ## 💡 Key Performance Indicators
 
@@ -497,7 +497,7 @@ Features:
 - **Tax Filing Rate:** During filing season
 - **Professional Referrals:** Track conversions
 
----
+—-
 
 ## 🔄 Update & Maintenance Schedule
 
@@ -521,7 +521,7 @@ Features:
 - [ ] Professional review
 - [ ] Major feature updates
 
----
+—-
 
 ## 📈 Growth Path
 
@@ -545,7 +545,7 @@ Features:
 - Automated filing (API)
 - International tax support
 
----
+—-
 
 ## ✨ Project Highlights
 
@@ -558,7 +558,7 @@ Features:
 🏆 **Responsive** - Works on all devices
 🏆 **Compliant** - Follows Indian tax laws
 
----
+—-
 
 ## 🎉 Final Status
 
@@ -566,7 +566,7 @@ Features:
 
 All components are functional, tested, documented, and ready for deployment.
 
----
+—-
 
 **Created:** 2024
 **Version:** 2.0 (Tax Module Complete)

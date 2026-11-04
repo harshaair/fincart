@@ -6,7 +6,7 @@
 3. [Frequently Asked Questions](#faqs)
 4. [Troubleshooting](#troubleshooting)
 
----
+—-
 
 ## For Users
 
@@ -127,7 +127,7 @@ Access your appointment history anytime:
 6. Fill out new booking details
 7. Submit the new appointment request
 
----
+—-
 
 ## For Professionals
 
@@ -227,7 +227,7 @@ In urgent situations, you can cancel confirmed appointments:
 - Respond within 24 hours
 - Set clear expectations about consultation duration
 
----
+—-
 
 ## FAQs
 
@@ -300,7 +300,7 @@ A: No direct reschedule feature yet. Cancel the current booking and create a new
 **Q: Can I book on behalf of someone else?**
 A: No, each account must book their own appointments. You cannot book for another person.
 
----
+—-
 
 ## Troubleshooting
 
@@ -372,7 +372,7 @@ A: No, each account must book their own appointments. You cannot book for anothe
 - **Cause:** Email client configuration
 - **Solution:** Email client should render HTML automatically. If not, contact email provider support.
 
----
+—-
 
 ## Tips for Best Results
 
@@ -390,7 +390,7 @@ A: No, each account must book their own appointments. You cannot book for anothe
 4. **Be professional** - Responses and meeting conduct matter
 5. **Request feedback** - Build your reputation with ratings
 
----
+—-
 
 ## Need Help?
 
@@ -403,7 +403,7 @@ A: No, each account must book their own appointments. You cannot book for anothe
 - Check our status page for system availability
 - Maintenance windows announced in advance
 
----
+—-
 
 **Last Updated:** January 2026
 **Version:** 2.0

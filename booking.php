@@ -1,6 +1,7 @@
 <?php
 session_start();
 include "db.php";
+require_once "includes/mailer.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -117,21 +118,21 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         }
 
         :root {
-            --primary: #1a1a1a;
-            --secondary: #f8f6f3;
-            --accent: #d4af37;
-            --text-dark: #2c2c2c;
-            --text-light: #666;
-            --white: #ffffff;
-            --off-white: #fafaf9;
-            --success: #27ae60;
-            --danger: #e74c3c;
+            —primary: #1a1a1a;
+            —secondary: #f8f6f3;
+            —accent: #d4af37;
+            —text-dark: #2c2c2c;
+            —text-light: #666;
+            —white: #ffffff;
+            —off-white: #fafaf9;
+            —success: #27ae60;
+            —danger: #e74c3c;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
-            color: var(--text-dark);
+            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
+            color: var(—text-dark);
             min-height: 100vh;
         }
 
@@ -139,7 +140,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
             position: sticky;
             top: 0;
             background: rgba(255, 255, 255, 0.95);
-            border-bottom: 2px solid var(--accent);
+            border-bottom: 2px solid var(—accent);
             padding: 15px 0;
             z-index: 1000;
         }
@@ -155,7 +156,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
 
         header h1 {
             font-family: 'Playfair Display', serif;
-            color: var(--primary);
+            color: var(—primary);
             font-size: 24px;
         }
 
@@ -165,17 +166,17 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         }
 
         .nav-links a {
-            color: var(--text-dark);
+            color: var(—text-dark);
             text-decoration: none;
             font-weight: 500;
         }
 
         .nav-links a:hover {
-            color: var(--accent);
+            color: var(—accent);
         }
 
         .logout-btn {
-            background: var(--danger);
+            background: var(—danger);
             color: white;
             border: none;
             padding: 8px 15px;
@@ -210,7 +211,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            background: var(--accent);
+            background: var(—accent);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -228,7 +229,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
 
         .professional-type {
             text-align: center;
-            color: var(--accent);
+            color: var(—accent);
             font-size: 13px;
             text-transform: uppercase;
             font-weight: 600;
@@ -241,14 +242,14 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         }
 
         .info-label {
-            color: var(--text-light);
+            color: var(—text-light);
             font-weight: 600;
             display: block;
             margin-bottom: 3px;
         }
 
         .info-value {
-            color: var(--text-dark);
+            color: var(—text-dark);
         }
 
         .fee {
@@ -260,14 +261,14 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         }
 
         .fee-label {
-            color: var(--text-light);
+            color: var(—text-light);
             font-size: 12px;
         }
 
         .fee-value {
             font-size: 24px;
             font-weight: 700;
-            color: var(--accent);
+            color: var(—accent);
         }
 
         .booking-form {
@@ -280,7 +281,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         .booking-form h2 {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 25px;
         }
 
@@ -291,7 +292,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: var(--text-dark);
+            color: var(—text-dark);
             font-weight: 600;
         }
 
@@ -310,7 +311,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: var(—accent);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
@@ -345,18 +346,18 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
             transition: all 0.3s;
             font-size: 13px;
             font-weight: 600;
-            background: var(--off-white);
+            background: var(—off-white);
         }
 
         .time-slot input:checked + label {
-            border-color: var(--accent);
-            background: var(--accent);
-            color: var(--primary);
+            border-color: var(—accent);
+            background: var(—accent);
+            color: var(—primary);
         }
 
         .btn {
-            background: var(--accent);
-            color: var(--primary);
+            background: var(—accent);
+            color: var(—primary);
             border: none;
             padding: 14px 30px;
             border-radius: 8px;
@@ -384,14 +385,14 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
 
         .alert-success {
             background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
+            border: 1px solid var(—success);
+            color: var(—success);
         }
 
         .alert-danger {
             background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
+            border: 1px solid var(—danger);
+            color: var(—danger);
         }
 
         @media (max-width: 768px) {
@@ -414,7 +415,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
         <nav>
             <h1>📅 Book Consultation</h1>
             <div class="nav-links">
-                <a href="professionals.php">Back to Directory</a>
+                <a href="professionals.php">← Back to Directory</a>
                 <form method="POST" action="logout.php" style="display: inline;">
                     <button type="submit" class="logout-btn">Logout</button>
                 </form>
@@ -424,7 +425,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
 
     <div class="container">
         <div class="content-grid">
-            <!-- Professional Info Sidebar -->
+            <!— Professional Info Sidebar —>
             <div class="professional-info-card">
                 <div class="professional-avatar">
                     <?php echo strtoupper(substr($professional['name'], 0, 1)); ?>
@@ -458,7 +459,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                 </div>
             </div>
 
-            <!-- Booking Form -->
+            <!— Booking Form —>
             <div class="booking-form">
                 <h2>Schedule Your Consultation</h2>
 
@@ -486,7 +487,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                         <div class="time-slots">
                             <?php foreach ($time_slots as $index => $slot): ?>
                                 <div class="time-slot">
-                                    <input type="radio" id="slot_<?php echo $index; ?>" name="appointment_time" value="<?php echo $slot; ?>">
+                                    <input type="radi⭐ id="slot_<?php echo $index; ?>" name="appointment_time" value="<?php echo $slot; ?>">
                                     <label for="slot_<?php echo $index; ?>"><?php echo date('h:i A', strtotime($slot)); ?></label>
                                 </div>
                             <?php endforeach; ?>
@@ -513,7 +514,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                     <button type="submit" class="btn">Confirm Booking</button>
                 </form>
 
-                <div style="margin-top: 20px; padding: 15px; background: var(--off-white); border-radius: 8px; font-size: 13px; color: var(--text-light);">
+                <div style="margin-top: 20px; padding: 15px; background: var(—off-white); border-radius: 8px; font-size: 13px; color: var(—text-light);">
                     <strong>📌 What happens next:</strong><br>
                     1. Your booking will be confirmed instantly<br>
                     2. You'll receive a confirmation email with meeting details<br>

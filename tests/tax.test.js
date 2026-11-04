@@ -1,0 +1,160 @@
+import { describe, it, expect } from 'vitest';
+
+// Pure JS implementation matching includes/tax_helper.php
+const STANDARD_DEDUCTION = 50000;
+const LIMIT_80C = 150000;
+
+function computeTaxNewRegime(grossIncome, isSalaried = true) {
+    const stdDeduction = isSalaried ? STANDARD_DEDUCTION : 0;
+    const taxableIncome = Math.max(0, grossIncome - stdDeduction);
+
+    const slabs = [
+        { min: 0, max: 300000, rate: 0 },
+        { min: 300000, max: 600000, rate: 0.05 },
+        { min: 600000, max: 900000, rate: 0.10 },
+        { min: 900000, max: 1200000, rate: 0.15 },
+        { min: 1200000, max: 1500000, rate: 0.20 },
+        { min: 1500000, max: Infinity, rate: 0.30 }
+    ];
+
+    let baseTax = 0;
+    for (const slab of slabs) {
+        if (taxableIncome > slab.min) {
+            const inSlab = Math.min(taxableIncome, slab.max) - slab.min;
+            baseTax += inSlab * slab.rate;
+        }
+    }
+
+    // Section 87A rebate: taxable income <= 7,00,000 gets 100% rebate (max 25,000)
+    let rebate87A = 0;
+    if (taxableIncome <= 700000) {
+        rebate87A = Math.min(baseTax, 25000);
+    }
+    const taxAfterRebate = Math.max(0, baseTax - rebate87A);
+
+    const cess = taxAfterRebate * 0.04;
+    const totalTax = taxAfterRebate + cess;
+
+    return {
+        grossIncome,
+        taxableIncome,
+        baseTax,
+        rebate87A,
+        taxAfterRebate,
+        cess,
+        totalTax
+    };
+}
+
+function computeTaxOldRegime(grossIncome, deductions = 0, isSalaried = true) {
+    const stdDeduction = isSalaried ? STANDARD_DEDUCTION : 0;
+    const taxableIncome = Math.max(0, grossIncome - stdDeduction - deductions);
+
+    const slabs = [
+        { min: 0, max: 250000, rate: 0 },
+        { min: 250000, max: 500000, rate: 0.05 },
+        { min: 500000, max: 1000000, rate: 0.20 },
+        { min: 1000000, max: Infinity, rate: 0.30 }
+    ];
+
+    let baseTax = 0;
+    for (const slab of slabs) {
+        if (taxableIncome > slab.min) {
+            const inSlab = Math.min(taxableIncome, slab.max) - slab.min;
+            baseTax += inSlab * slab.rate;
+        }
+    }
+
+    // Section 87A rebate for Old Regime: taxable income <= 5,00,000 gets max 12,500 rebate
+    let rebate87A = 0;
+    if (taxableIncome <= 500000) {
+        rebate87A = Math.min(baseTax, 12500);
+    }
+    const taxAfterRebate = Math.max(0, baseTax - rebate87A);
+
+    const cess = taxAfterRebate * 0.04;
+    const totalTax = taxAfterRebate + cess;
+
+    return {
+        grossIncome,
+        taxableIncome,
+        baseTax,
+        rebate87A,
+        taxAfterRebate,
+        cess,
+        totalTax
+    };
+}
+
+describe('Indian Income Tax Engine - FY 2024-25', () => {
+    describe('New Tax Regime', () => {
+        it('applies standard deduction of ₹50,000 for salaried employees', () => {
+            const res = computeTaxNewRegime(800000, true);
+            expect(res.taxableIncome).toBe(750000);
+        });
+
+        it('gives ZERO tax under Section 87A rebate when taxable income <= ₹7,00,000', () => {
+            // Gross ₹7,50,000 - ₹50,000 std deduction = ₹7,00,000 taxable income
+            const res = computeTaxNewRegime(750000, true);
+            expect(res.taxableIncome).toBe(700000);
+            expect(res.baseTax).toBe(25000); // 3L-6L @ 5% (15k) + 6L-7L @ 10% (10k) = 25k
+            expect(res.rebate87A).toBe(25000);
+            expect(res.totalTax).toBe(0);
+        });
+
+        it('calculates correct slab tax and 4% cess above ₹7,00,000 threshold', () => {
+            // Gross ₹10,50,000 - ₹50k std deduction = ₹10,00,000 taxable
+            // 0 - 3L: 0
+            // 3L - 6L: 15,000 (5%)
+            // 6L - 9L: 30,000 (10%)
+            // 9L - 10L: 15,000 (15%)
+            // Base tax = 60,000
+            // Cess 4% = 2,400
+            // Total = 62,400
+            const res = computeTaxNewRegime(1050000, true);
+            expect(res.taxableIncome).toBe(1000000);
+            expect(res.baseTax).toBe(60000);
+            expect(res.rebate87A).toBe(0);
+            expect(res.cess).toBe(2400);
+            expect(res.totalTax).toBe(62400);
+        });
+    });
+
+    describe('Old Tax Regime', () => {
+        it('gives ZERO tax under Section 87A rebate when taxable income <= ₹5,00,000', () => {
+            // Gross ₹5,50,000 - ₹50,000 std deduction = ₹5,00,000 taxable
+            const res = computeTaxOldRegime(550000, 0, true);
+            expect(res.taxableIncome).toBe(500000);
+            expect(res.baseTax).toBe(12500);
+            expect(res.rebate87A).toBe(12500);
+            expect(res.totalTax).toBe(0);
+        });
+
+        it('reduces taxable income by eligible section deductions', () => {
+            // Gross ₹10,00,000 - ₹50k std - ₹1.5L 80C = ₹8,00,000 taxable
+            const res = computeTaxOldRegime(1000000, 150000, true);
+            expect(res.taxableIncome).toBe(800000);
+            // 0 - 2.5L: 0
+            // 2.5L - 5L: 12,500 (5%)
+            // 5L - 8L: 60,000 (20%)
+            // Base: 72,500
+            // Cess 4%: 2,900
+            // Total: 75,400
+            expect(res.baseTax).toBe(72500);
+            expect(res.cess).toBe(2900);
+            expect(res.totalTax).toBe(75400);
+        });
+    });
+
+    describe('Regime Comparison', () => {
+        it('accurately identifies the regime that minimizes tax liability', () => {
+            // At ₹12,00,000 with ₹1,50,000 deduction:
+            // New Regime: 12L - 50k = 11.5L taxable -> Tax: 85,800
+            // Old Regime: 12L - 50k - 1.5L = 10L taxable -> Base 1,12,500 + Cess = 1,17,000
+            const newRes = computeTaxNewRegime(1200000, true);
+            const oldRes = computeTaxOldRegime(1200000, 150000, true);
+            expect(newRes.totalTax).toBeLessThan(oldRes.totalTax);
+        });
+    });
+});
+

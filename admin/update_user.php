@@ -8,12 +8,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $id = intval($_POST['id']);
-$full_name = $_POST['full_name'] ?? '';
-$email = $_POST['email'] ?? '';
+$full_name = trim($_POST['full_name'] ?? '');
+$email = trim($_POST['email'] ?? '');
 $role = $_POST['role'] ?? 'user';
+$verified = isset($_POST['verified']) ? 1 : 0;
 
-$stmt = $conn->prepare("UPDATE users SET full_name = ?, email = ?, role = ? WHERE id = ?");
-$stmt->bind_param('sssi', $full_name, $email, $role, $id);
+$stmt = $conn->prepare("UPDATE users SET full_name = ?, email = ?, role = ?, verified = ? WHERE id = ?");
+$stmt->bind_param('sssii', $full_name, $email, $role, $verified, $id);
 $stmt->execute();
 
 // If role was changed to professional, ensure there's a professionals record or update its status
@@ -34,5 +35,5 @@ if ($role === 'professional') {
     }
 }
 
-header('Location: users.php');
+header('Location: users.php?msg=updated');
 exit();

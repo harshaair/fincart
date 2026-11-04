@@ -3,7 +3,7 @@
 ## Project Overview
 FinCart is a comprehensive financial management and tax planning web application built with HTML5, CSS3, PHP, and MySQL. It provides users with tools for expense tracking, budget management, investments, financial goals, analytics, and complete tax planning.
 
----
+—-
 
 ## ✅ COMPLETE FEATURE LIST
 
@@ -37,7 +37,7 @@ FinCart is a comprehensive financial management and tax planning web application
 - ✅ **Services** (Detailed service descriptions)
 - ✅ **Login/Signup** (Secure authentication)
 
----
+—-
 
 ## 📁 FILE STRUCTURE
 
@@ -86,7 +86,7 @@ fincart/
     └── itr_submissions table (NEW)
 ```
 
----
+—-
 
 ## 🎨 DESIGN SYSTEM
 
@@ -109,7 +109,7 @@ fincart/
 - **Body:** Inter (300, 400, 500, 600, 700 weight)
 - **System:** Responsive font sizing
 
----
+—-
 
 ## 🔐 SECURITY FEATURES
 
@@ -134,7 +134,7 @@ fincart/
    - Secure cookie settings
    - User isolation (only own data)
 
----
+—-
 
 ## 💾 DATABASE SCHEMA
 
@@ -229,7 +229,7 @@ status (VARCHAR)
 submission_date (TIMESTAMP)
 ```
 
----
+—-
 
 ## 🧮 TAX CALCULATION LOGIC
 
@@ -260,7 +260,7 @@ Income Slabs:
 Plus: Deductions, Cess, Surcharge
 ```
 
----
+—-
 
 ## 🎯 KEY FEATURES BY MODULE
 
@@ -307,7 +307,7 @@ Plus: Deductions, Cess, Surcharge
 - Professional consultant links
 - **Critical Disclaimer**
 
----
+—-
 
 ## 🚀 DEPLOYMENT INSTRUCTIONS
 
@@ -321,10 +321,10 @@ Plus: Deductions, Cess, Surcharge
 
 1. **Database Setup**
    ```sql
-   -- Create database
+   — Create database
    CREATE DATABASE fincart_db;
    
-   -- Import schema
+   — Import schema
    mysql -u root -p fincart_db < path/to/setup.sql
    mysql -u root -p fincart_db < path/to/tax_setup.sql
    ```
@@ -349,7 +349,7 @@ Plus: Deductions, Cess, Surcharge
    - Visit: http://localhost/fincart/
    - Create account and test features
 
----
+—-
 
 ## ⚠️ DISCLAIMERS IMPLEMENTED
 
@@ -394,7 +394,7 @@ Present on all tax pages:
 - Must consult qualified professional
 - File on official portal only
 
----
+—-
 
 ## 📊 ANALYTICS & CHARTS
 
@@ -413,7 +413,7 @@ Present on all tax pages:
 - Income vs Expense trends
 - Goal progress indicators
 
----
+—-
 
 ## 🔄 USER JOURNEY
 
@@ -444,7 +444,7 @@ Present on all tax pages:
 3. Review disclaimers
 4. Connect with professionals if needed
 
----
+—-
 
 ## 🆘 TROUBLESHOOTING
 
@@ -472,7 +472,7 @@ Present on all tax pages:
 - Ensure proper data types
 - Verify tax bracket logic
 
----
+—-
 
 ## 📝 MAINTENANCE
 
@@ -481,7 +481,7 @@ Present on all tax pages:
 - Check server logs
 - Verify SSL certificates
 - Update tax laws annually
-- Backup user data
+-← Backup user data
 
 ### Annual Updates Needed
 - Update tax slabs (April)
@@ -490,7 +490,7 @@ Present on all tax pages:
 - Update filing deadlines
 - Review and update documentation
 
----
+—-
 
 ## 🎓 EDUCATIONAL CONTENT
 
@@ -509,7 +509,7 @@ Present on all tax pages:
 - FAQ sections
 - Professional links
 
----
+—-
 
 ## 📱 MOBILE RESPONSIVENESS
 
@@ -525,7 +525,7 @@ Present on all tax pages:
 - Readable font sizes
 - Optimized form inputs
 
----
+—-
 
 ## 🔄 API INTEGRATION READY
 
@@ -537,7 +537,7 @@ The application is structured to easily integrate:
 - SMS alerts
 - Document upload services
 
----
+—-
 
 ## 📈 FUTURE ENHANCEMENT IDEAS
 
@@ -563,7 +563,7 @@ The application is structured to easily integrate:
    - Mobile app version
    - Advanced analytics
 
----
+—-
 
 ## ✨ UNIQUE SELLING POINTS
 
@@ -574,7 +574,7 @@ The application is structured to easily integrate:
 5. **Compliant:** Emphasizes official filing requirements
 6. **Professional:** Links to qualified tax consultants
 
----
+—-
 
 ## 🎖️ QUALITY ASSURANCE
 
@@ -602,7 +602,7 @@ The application is structured to easily integrate:
 - ✅ Input validation
 - ✅ Error message security
 
----
+—-
 
 ## 📞 SUPPORT & CONTACT
 
@@ -620,7 +620,7 @@ The application is structured to easily integrate:
 - Use in-app professional links
 - Check FAQs
 
----
+—-
 
 ## 📄 VERSION HISTORY
 
@@ -644,7 +644,7 @@ The application is structured to easily integrate:
 - Analytics
 - Profile Management
 
----
+—-
 
 ## 🏆 CONCLUSION
 
@@ -660,7 +660,7 @@ FinCart is a complete, production-ready financial management and tax planning ap
 
 **Status:** Ready for Deployment ✨
 
----
+—-
 
 **Last Updated:** 2024
 **Tax Laws Based On:** FY 2024-25

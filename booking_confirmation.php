@@ -47,7 +47,7 @@ if (!$appt) {
 </head>
 <body>
 <header class="site-header">
-    <div class="logo"><h1>Booking Confirmation</h1></div>
+    <div class="log⭐><h1>Booking Confirmation</h1></div>
     <div class="header-actions">
         <a href="dashboard.php" class="btn btn-secondary">Dashboard</a>
     </div>

@@ -13,12 +13,12 @@ $message = '';
 $error = '';
 
 // Handle add/update budget
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $category = $_POST['category'];
-    $limit = floatval($_POST['limit']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_budget') {
+    $category = trim($_POST['category'] ?? '');
+    $limit = floatval($_POST['limit'] ?? 0);
 
     if (empty($category) || $limit <= 0) {
-        $error = 'Please fill all fields with valid values';
+        $error = 'Please fill all fields with valid positive values.';
     } else {
         // Check if budget exists for this category
         $check_sql = "SELECT id FROM budgets WHERE user_id = ? AND category = ?";
@@ -28,12 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $check_result = $check_stmt->get_result();
 
         if ($check_result->num_rows > 0) {
-            // Update existing budget
             $sql = "UPDATE budgets SET limit_amount = ? WHERE user_id = ? AND category = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("dis", $limit, $user_id, $category);
         } else {
-            // Insert new budget
             $sql = "INSERT INTO budgets (user_id, category, limit_amount, month_year) VALUES (?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $month_year = date('Y-m');
@@ -41,9 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($stmt->execute()) {
-            $message = 'Budget saved successfully!';
+            $message = 'Budget limit saved successfully!';
         } else {
-            $error = 'Failed to save budget. Please try again.';
+            $error = 'Failed to save budget limit. Please try again.';
         }
     }
 }
@@ -55,551 +53,216 @@ if (isset($_POST['delete_id'])) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $delete_id, $user_id);
     if ($stmt->execute()) {
-        $message = 'Budget deleted successfully!';
+        $message = 'Budget limit deleted successfully!';
     }
 }
 
-// Fetch all budgets for the user
+// Fetch all budgets for user
 $budgets_sql = "SELECT * FROM budgets WHERE user_id = ? ORDER BY category";
 $budgets_stmt = $conn->prepare($budgets_sql);
 $budgets_stmt->bind_param("i", $user_id);
 $budgets_stmt->execute();
 $budgets_result = $budgets_stmt->get_result();
-$budgets = [];
 
+// OPTIMIZATION: Single aggregate query for category spent amounts (eliminates N+1 loop)
+$current_month = date('Y-m');
+$spent_map = [];
+$spent_sql = "SELECT category, SUM(amount) as spent 
+              FROM transactions 
+              WHERE user_id = ? AND type = 'expense' AND DATE_FORMAT(date, '%Y-%m') = ? 
+              GROUP BY category";
+$spent_stmt = $conn->prepare($spent_sql);
+$spent_stmt->bind_param("is", $user_id, $current_month);
+$spent_stmt->execute();
+$spent_res = $spent_stmt->get_result();
+while ($srow = $spent_res->fetch_assoc()) {
+    $spent_map[$srow['category']] = (float)$srow['spent'];
+}
+
+$budgets = [];
 while ($row = $budgets_result->fetch_assoc()) {
-    // Calculate spent amount for this category from current month
-    $current_month = date('Y-m');
-    $spent_sql = "SELECT SUM(amount) as spent FROM transactions WHERE user_id = ? AND category = ? AND type = 'expense' AND DATE_FORMAT(date, '%Y-%m') = ?";
-    $spent_stmt = $conn->prepare($spent_sql);
-    $spent_stmt->bind_param("iss", $user_id, $row['category'], $current_month);
-    $spent_stmt->execute();
-    $spent_result = $spent_stmt->get_result();
-    $spent_data = $spent_result->fetch_assoc();
-    $row['spent'] = $spent_data['spent'] ?? 0;
-    $row['percentage'] = min(($row['spent'] / $row['limit_amount']) * 100, 100);
+    $cat = $row['category'];
+    $spent = $spent_map[$cat] ?? 0.0;
+    $row['spent'] = $spent;
+    $row['percentage'] = $row['limit_amount'] > 0 ? min(($spent / (float)$row['limit_amount']) * 100, 100) : 0;
     $budgets[] = $row;
 }
 
-// Calculate total budget and spending
+// Summary metrics
 $total_budget = array_sum(array_column($budgets, 'limit_amount'));
 $total_spent = array_sum(array_column($budgets, 'spent'));
-$total_percentage = $total_budget > 0 ? ($total_spent / $total_budget) * 100 : 0;
+$total_percentage = $total_budget > 0 ? min(($total_spent / $total_budget) * 100, 100) : 0;
 
-// Predefined expense categories
 $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other Expense'];
+
+$page_title = 'Budget Management - FinCart';
+$extra_css = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
+
+include "includes/header.php";
+include "includes/navbar.php";
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget Tracker - FinCart</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<div class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h1 style="font-size: 28px; margin-bottom: 6px;">Budget Tracking & Limits</h1>
+            <p style="color: var(--text-muted);">Set monthly category ceilings and monitor your real-time expenses for <?php echo date('F Y'); ?>.</p>
+        </div>
+        <div>
+            <a href="transactions.php" class="btn btn-secondary">Transactions &rarr;</a>
+            <a href="analytics.php" class="btn btn-primary">Spending Analytics &rarr;</a>
+        </div>
+    </div>
 
-        :root {
-            --primary: #1a1a1a;
-            --secondary: #f8f6f3;
-            --accent: #d4af37;
-            --text-dark: #2c2c2c;
-            --text-light: #666;
-            --white: #ffffff;
-            --off-white: #fafaf9;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-        }
+    <?php if (!empty($message)): ?>
+        <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
+    <?php endif; ?>
+    <?php if (!empty($error)): ?>
+        <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
-            color: var(--text-dark);
-            min-height: 100vh;
-        }
-
-        header {
-            position: sticky;
-            top: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
-            padding: 20px 0;
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .nav-link {
-            color: var(--text-dark);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--accent);
-        }
-
-        .logout-btn {
-            padding: 8px 20px;
-            background: var(--danger);
-            color: var(--white);
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            opacity: 0.9;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .page-header {
-            margin-bottom: 40px;
-        }
-
-        .page-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 42px;
-            color: var(--primary);
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-
-        .page-header p {
-            color: var(--text-light);
-            font-size: 16px;
-        }
-
-        .alert {
-            padding: 16px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .alert-success {
-            background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-
-        .alert-danger {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: var(--white);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .card h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        input[type="number"]:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent);
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .summary-section {
-            margin-bottom: 30px;
-        }
-
-        .overall-progress {
-            margin-bottom: 30px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .progress-header span {
-            font-weight: 600;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 12px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--success) 0%, var(--accent) 50%, var(--danger) 100%);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .budgets-list {
-            margin-top: 30px;
-        }
-
-        .budget-item {
-            background: var(--off-white);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .budget-info h3 {
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        .budget-stats {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-        }
-
-        .stat {
-            font-size: 14px;
-            color: var(--text-light);
-        }
-
-        .stat-value {
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .budget-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-delete {
-            padding: 8px 16px;
-            background: var(--danger);
-            color: var(--white);
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-delete:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-light);
-        }
-
-        .empty-state p {
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-top: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .budget-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .budget-actions {
-                width: 100%;
-                margin-top: 15px;
-            }
-
-            .btn-delete {
-                flex: 1;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <h1>Fincart</h1>
+    <!-- Summary Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Monthly Budget</div>
+            <div class="stat-value">₹<?php echo number_format($total_budget, 2); ?></div>
+            <div class="stat-description">Allocated across <?php echo count($budgets); ?> categories</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Actual Spent This Month</div>
+            <div class="stat-value" style="color: <?php echo $total_spent > $total_budget && $total_budget > 0 ? '#e74c3c' : 'inherit'; ?>;">
+                ₹<?php echo number_format($total_spent, 2); ?>
             </div>
-            <div class="nav-links">
-                <a href="dashboard.php" class="nav-link">Dashboard</a>
-                <a href="transactions.php" class="nav-link">Transactions</a>
-                <a href="profile.php" class="nav-link">Settings</a>
-                <form method="POST" action="logout.php" style="display: inline;">
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
+            <div class="stat-description">Total tracked expenses in <?php echo date('M Y'); ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Remaining Budget</div>
+            <div class="stat-value" style="color: <?php echo ($total_budget - $total_spent) < 0 ? '#e74c3c' : '#27ae60'; ?>;">
+                ₹<?php echo number_format(max(0, $total_budget - $total_spent), 2); ?>
+            </div>
+            <div class="stat-description"><?php echo ($total_budget - $total_spent) < 0 ? 'Over budget!' : 'Available to spend'; ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Overall Consumption</div>
+            <div class="stat-value"><?php echo number_format($total_percentage, 1); ?>%</div>
+            <div class="stat-description">
+                <div style="width: 100%; height: 6px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 6px;">
+                    <div style="height: 100%; width: <?php echo $total_percentage; ?>%; background: <?php echo $total_percentage > 90 ? '#e74c3c' : ($total_percentage > 70 ? '#f39c12' : '#27ae60'); ?>;"></div>
+                </div>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content -->
-    <div class="container">
-        <div class="page-header">
-            <h1>Budget Tracker</h1>
-            <p>Set and monitor your spending limits by category</p>
-        </div>
-
-        <?php if ($message): ?>
-            <div class="alert alert-success">
-                <span>✓</span>
-                <span><?php echo htmlspecialchars($message); ?></span>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error): ?>
-            <div class="alert alert-danger">
-                <span>✕</span>
-                <span><?php echo htmlspecialchars($error); ?></span>
-            </div>
-        <?php endif; ?>
-
-        <div class="content-grid">
-            <!-- Add Budget Form -->
-            <div class="card">
-                <h2>Set Budget</h2>
-                <form method="POST">
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select id="category" name="category" required>
-                            <option value="">Select a category</option>
-                            <?php foreach ($expense_categories as $cat): ?>
-                                <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="limit">Monthly Limit (₹)</label>
-                        <input type="number" id="limit" name="limit" step="0.01" min="0" placeholder="0.00" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Save Budget</button>
-                </form>
-            </div>
-
-            <!-- Budget Summary -->
-            <div class="card">
-                <h2>Budget Overview</h2>
-                <div class="summary-section">
-                    <div class="overall-progress">
-                        <div class="progress-header">
-                            <span>Overall Budget</span>
-                            <span><?php echo round($total_percentage, 1); ?>%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: <?php echo min($total_percentage, 100); ?>%;"></div>
-                        </div>
-                        <div class="progress-header" style="margin-top: 10px;">
-                            <span>₹<?php echo number_format($total_spent, 2); ?> / ₹<?php echo number_format($total_budget, 2); ?></span>
-                        </div>
-                    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-bottom: 30px;">
+        <!-- Add/Update Budget Card -->
+        <div class="card">
+            <h2 style="font-size: 20px; margin-bottom: 20px;">Set Monthly Budget Limit</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="save_budget">
+                
+                <div class="form-group">
+                    <label>Expense Category</label>
+                    <select name="category" class="form-control" required>
+                        <option value="">Select Category</option>
+                        <?php foreach ($expense_categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
-                <?php if (count($budgets) > 0): ?>
-                    <div class="chart-container">
-                        <canvas id="budgetChart"></canvas>
-                    </div>
-                <?php else: ?>
-                    <div class="empty-state">
-                        <p>No budgets set yet. Create your first budget to get started!</p>
-                    </div>
-                <?php endif; ?>
-            </div>
+                <div class="form-group">
+                    <label>Monthly Limit Amount (₹)</label>
+                    <input type="number" step="100" min="1" name="limit" class="form-control" placeholder="e.g. 5000" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Budget Ceiling</button>
+            </form>
         </div>
 
-        <!-- Budget List -->
-        <?php if (count($budgets) > 0): ?>
-            <div class="card">
-                <h2>Category Budgets</h2>
-                <div class="budgets-list">
-                    <?php foreach ($budgets as $budget): ?>
-                        <div class="budget-item">
-                            <div class="budget-info" style="flex: 1;">
-                                <h3><?php echo htmlspecialchars($budget['category']); ?></h3>
-                                <div style="margin-bottom: 10px;">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: <?php echo $budget['percentage']; ?>%;"></div>
-                                    </div>
-                                </div>
-                                <div class="budget-stats">
-                                    <div class="stat">
-                                        Spent: <span class="stat-value">₹<?php echo number_format($budget['spent'], 2); ?></span>
-                                    </div>
-                                    <div class="stat">
-                                        Limit: <span class="stat-value">₹<?php echo number_format($budget['limit_amount'], 2); ?></span>
-                                    </div>
-                                    <div class="stat">
-                                        Remaining: <span class="stat-value" style="color: <?php echo ($budget['limit_amount'] - $budget['spent']) >= 0 ? 'var(--success)' : 'var(--danger)'; ?>;">₹<?php echo number_format($budget['limit_amount'] - $budget['spent'], 2); ?></span>
-                                    </div>
-                                </div>
+        <!-- Budget Visual Pie Chart -->
+        <div class="card">
+            <h2 style="font-size: 20px; margin-bottom: 20px;">Category Allocation Chart</h2>
+            <?php if (!empty($budgets)): ?>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+            <?php else: ?>
+                <div style="text-align: center; padding: 60px 20px; color: #888;">
+                    No category budgets defined yet. Create your first budget limit above.
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Category Progress Cards -->
+    <div class="card">
+        <h2 style="font-size: 20px; margin-bottom: 20px;">Category Limits Status</h2>
+        <?php if (!empty($budgets)): ?>
+            <div style="display: grid; gap: 16px;">
+                <?php foreach ($budgets as $b): ?>
+                    <div style="background: var(--off-white); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; border-left: 5px solid <?php echo $b['percentage'] >= 100 ? '#e74c3c' : ($b['percentage'] >= 80 ? '#f39c12' : '#27ae60'); ?>;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h3 style="font-size: 17px; margin-bottom: 4px;"><?php echo htmlspecialchars($b['category']); ?></h3>
+                                <span style="font-size: 13px; color: var(--text-muted);">
+                                    Spent: <strong>₹<?php echo number_format($b['spent'], 2); ?></strong> of ₹<?php echo number_format((float)$b['limit_amount'], 2); ?>
+                                </span>
                             </div>
-                            <div class="budget-actions">
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this budget?');">
-                                    <input type="hidden" name="delete_id" value="<?php echo $budget['id']; ?>">
-                                    <button type="submit" class="btn-delete">Delete</button>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-weight: 700; font-size: 15px; color: <?php echo $b['percentage'] >= 100 ? '#e74c3c' : 'inherit'; ?>;">
+                                    <?php echo number_format($b['percentage'], 1); ?>%
+                                </span>
+                                <form method="POST" style="display:inline;" onsubmit="return confirm('Remove budget for <?php echo htmlspecialchars($b['category']); ?>?');">
+                                    <input type="hidden" name="delete_id" value="<?php echo (int)$b['id']; ?>">
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                 </form>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                </div>
+                        <div style="width: 100%; height: 8px; background: #e0e0e0; border-radius: 6px; overflow: hidden;">
+                            <div style="height: 100%; width: <?php echo $b['percentage']; ?>%; background: <?php echo $b['percentage'] >= 100 ? '#e74c3c' : ($b['percentage'] >= 80 ? '#f39c12' : '#27ae60'); ?>;"></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
+        <?php else: ?>
+            <p style="color: #888; text-align: center; padding: 30px;">No category budgets configured yet.</p>
         <?php endif; ?>
     </div>
+</div>
 
-    <script>
-        // Chart.js pie chart for budget distribution
-        const budgetData = <?php echo json_encode(array_map(function($b) { return ['category' => $b['category'], 'amount' => (float)$b['limit_amount']]; }, $budgets)); ?>;
-        
-        if (budgetData.length > 0) {
-            const ctx = document.getElementById('budgetChart');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: budgetData.map(b => b.category),
-                    datasets: [{
-                        data: budgetData.map(b => b.amount),
-                        backgroundColor: [
-                            '#d4af37', '#27ae60', '#e74c3c', '#3498db', 
-                            '#f39c12', '#9b59b6', '#1abc9c', '#34495e'
-                        ],
-                        borderColor: '#ffffff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: { family: "'Inter', sans-serif", size: 14 },
-                                padding: 15
-                            }
-                        }
-                    }
+<?php if (!empty($budgets)): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    const categories = <?php echo json_encode(array_column($budgets, 'category')); ?>;
+    const limits = <?php echo json_encode(array_column($budgets, 'limit_amount')); ?>;
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: categories,
+            datasets: [{
+                data: limits,
+                backgroundColor: [
+                    '#d4af37', '#1a1a1a', '#27ae60', '#3498db',
+                    '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 12, font: { size: 11 } }
                 }
-            });
+            }
         }
-    </script>
-</body>
-</html>
+    });
+});
+</script>
+<?php endif; ?>
+
+<?php include "includes/footer.php"; ?>

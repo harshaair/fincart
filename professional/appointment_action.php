@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once('../db.php');
+require_once('../includes/mailer.php');
 
 // Check if professional is logged in
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'professional') {
@@ -144,7 +145,7 @@ try {
         $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
         $headers .= "From: noreply@fincart.local" . "\r\n";
 
-        @mail($to, $subject, $message, $headers);
+        sendFinCartEmail($to, $subject, $message);
 
         $status_message = 'Appointment accepted! Confirmation email sent to client.';
 
@@ -202,7 +203,7 @@ try {
         $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
         $headers .= "From: noreply@fincart.local" . "\r\n";
 
-        @mail($to, $subject, $message, $headers);
+        sendFinCartEmail($to, $subject, $message);
 
         $status_message = 'Appointment rejected. Notification email sent to client.';
 
@@ -257,7 +258,7 @@ try {
             $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
             $headers .= "From: noreply@fincart.local" . "\r\n";
 
-            @mail($to, $subject, $message, $headers);
+            sendFinCartEmail($to, $subject, $message);
 
             $status_message = 'Appointment cancelled. Notification email sent to client.';
         }

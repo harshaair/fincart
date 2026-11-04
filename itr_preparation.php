@@ -106,23 +106,23 @@ $filing_deadlines = [
         }
 
         :root {
-            --primary: #1a1a1a;
-            --secondary: #f8f6f3;
-            --accent: #d4af37;
-            --text-dark: #2c2c2c;
-            --text-light: #666;
-            --white: #ffffff;
-            --off-white: #fafaf9;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
+            —primary: #1a1a1a;
+            —secondary: #f8f6f3;
+            —accent: #d4af37;
+            —text-dark: #2c2c2c;
+            —text-light: #666;
+            —white: #ffffff;
+            —off-white: #fafaf9;
+            —success: #27ae60;
+            —danger: #e74c3c;
+            —warning: #f39c12;
+            —info: #3498db;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
-            color: var(--text-dark);
+            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
+            color: var(—text-dark);
             min-height: 100vh;
         }
 
@@ -149,7 +149,7 @@ $filing_deadlines = [
             font-family: 'Playfair Display', serif;
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -162,20 +162,20 @@ $filing_deadlines = [
         }
 
         .nav-link {
-            color: var(--text-dark);
+            color: var(—text-dark);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .nav-link:hover {
-            color: var(--accent);
+            color: var(—accent);
         }
 
         .logout-btn {
             padding: 8px 20px;
-            background: var(--danger);
-            color: var(--white);
+            background: var(—danger);
+            color: var(—white);
             border: none;
             border-radius: 20px;
             cursor: pointer;
@@ -200,23 +200,23 @@ $filing_deadlines = [
         .page-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 42px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 10px;
             letter-spacing: -1px;
         }
 
         .page-header p {
-            color: var(--text-light);
+            color: var(—text-light);
             font-size: 16px;
         }
 
         .disclaimer {
             background: rgba(231, 76, 60, 0.1);
-            border: 2px solid var(--danger);
+            border: 2px solid var(—danger);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 30px;
-            color: var(--text-dark);
+            color: var(—text-dark);
             font-size: 13px;
         }
 
@@ -231,18 +231,18 @@ $filing_deadlines = [
 
         .alert-success {
             background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
+            border: 1px solid var(—success);
+            color: var(—success);
         }
 
         .alert-danger {
             background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
+            border: 1px solid var(—danger);
+            color: var(—danger);
         }
 
         .card {
-            background: var(--white);
+            background: var(—white);
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -252,14 +252,14 @@ $filing_deadlines = [
         .card h2 {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 20px;
         }
 
         .card h3 {
             font-family: 'Playfair Display', serif;
             font-size: 20px;
-            color: var(--primary);
+            color: var(—primary);
             margin: 20px 0 15px 0;
         }
 
@@ -270,7 +270,7 @@ $filing_deadlines = [
         label {
             display: block;
             font-weight: 600;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 8px;
             font-size: 14px;
         }
@@ -293,7 +293,7 @@ $filing_deadlines = [
         select:focus,
         textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: var(—accent);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
@@ -310,25 +310,25 @@ $filing_deadlines = [
         }
 
         .btn-primary {
-            background: var(--primary);
-            color: var(--white);
+            background: var(—primary);
+            color: var(—white);
         }
 
         .btn-primary:hover {
-            background: var(--accent);
-            color: var(--primary);
+            background: var(—accent);
+            color: var(—primary);
             transform: translateY(-2px);
         }
 
         .btn-secondary {
-            background: var(--off-white);
-            color: var(--primary);
+            background: var(—off-white);
+            color: var(—primary);
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .btn-secondary:hover {
-            background: var(--accent);
-            border-color: var(--accent);
+            background: var(—accent);
+            border-color: var(—accent);
         }
 
         .form-row {
@@ -338,29 +338,29 @@ $filing_deadlines = [
         }
 
         .itr-form-card {
-            background: var(--off-white);
+            background: var(—off-white);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 15px;
-            border-left: 4px solid var(--accent);
+            border-left: 4px solid var(—accent);
         }
 
         .itr-form-title {
             font-weight: 700;
-            color: var(--primary);
+            color: var(—primary);
             margin-bottom: 5px;
         }
 
         .itr-form-desc {
-            color: var(--text-light);
+            color: var(—text-light);
             font-size: 13px;
             margin-bottom: 8px;
         }
 
         .itr-form-limit {
             display: inline-block;
-            background: var(--info);
-            color: var(--white);
+            background: var(—info);
+            color: var(—white);
             padding: 4px 8px;
             border-radius: 5px;
             font-size: 12px;
@@ -373,7 +373,7 @@ $filing_deadlines = [
         }
 
         .deadline-table th {
-            background: var(--off-white);
+            background: var(—off-white);
             padding: 12px;
             text-align: left;
             font-weight: 600;
@@ -386,7 +386,7 @@ $filing_deadlines = [
         }
 
         .deadline-table tr:hover {
-            background: var(--off-white);
+            background: var(—off-white);
         }
 
         .itr-records {
@@ -396,14 +396,14 @@ $filing_deadlines = [
         }
 
         .itr-record {
-            background: var(--off-white);
+            background: var(—off-white);
             padding: 20px;
             border-radius: 12px;
-            border-left: 5px solid var(--success);
+            border-left: 5px solid var(—success);
         }
 
         .itr-record.draft {
-            border-left-color: var(--warning);
+            border-left-color: var(—warning);
         }
 
         .record-header {
@@ -415,7 +415,7 @@ $filing_deadlines = [
 
         .record-year {
             font-weight: 700;
-            color: var(--primary);
+            color: var(—primary);
         }
 
         .record-status {
@@ -427,13 +427,13 @@ $filing_deadlines = [
         }
 
         .status-draft {
-            background: var(--warning);
-            color: var(--white);
+            background: var(—warning);
+            color: var(—white);
         }
 
         .status-filed {
-            background: var(--success);
-            color: var(--white);
+            background: var(—success);
+            color: var(—white);
         }
 
         .record-details {
@@ -448,12 +448,12 @@ $filing_deadlines = [
         }
 
         .detail-label {
-            color: var(--text-light);
+            color: var(—text-light);
         }
 
         .detail-value {
             font-weight: 700;
-            color: var(--primary);
+            color: var(—primary);
         }
 
         .highlight-box {
@@ -461,7 +461,7 @@ $filing_deadlines = [
             padding: 20px;
             border-radius: 12px;
             margin: 15px 0;
-            border-left: 5px solid var(--accent);
+            border-left: 5px solid var(—accent);
         }
 
         @media (max-width: 768px) {
@@ -480,10 +480,10 @@ $filing_deadlines = [
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!— Header —>
     <header>
         <div class="header-container">
-            <div class="logo">
+            <div class="log⭐>
                 <h1>Fincart</h1>
             </div>
             <div class="nav-links">
@@ -497,14 +497,14 @@ $filing_deadlines = [
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!— Main Content —>
     <div class="container">
         <div class="page-header">
             <h1>📄 ITR Preparation Assistant</h1>
             <p>Step-by-step guidance for Income Tax Return filing</p>
         </div>
 
-        <!-- Disclaimer -->
+        <!— Disclaimer —>
         <div class="disclaimer">
             ⚠️ <strong>Important Disclaimer:</strong> This ITR Preparation Assistant is for informational purposes only and provides general guidance. It does NOT constitute professional tax or legal advice. The accuracy of ITR forms depends on accurate input and interpretation of your financial data. You MUST:
             <ul style="margin: 10px 0 0 20px;">
@@ -529,10 +529,10 @@ $filing_deadlines = [
             </div>
         <?php endif; ?>
 
-        <!-- ITR Form Selection -->
+        <!— ITR Form Selection —>
         <div class="card">
             <h2>Step 1: Select Appropriate ITR Form</h2>
-            <p style="color: var(--text-light); margin-bottom: 20px;">
+            <p style="color: var(—text-light); margin-bottom: 20px;">
                 Choose the correct ITR form based on your income type and amount:
             </p>
 
@@ -553,10 +553,10 @@ $filing_deadlines = [
             </div>
         </div>
 
-        <!-- Filing Deadlines -->
+        <!— Filing Deadlines —>
         <div class="card">
             <h2>Step 2: Check Filing Deadlines</h2>
-            <p style="color: var(--text-light); margin-bottom: 20px;">
+            <p style="color: var(—text-light); margin-bottom: 20px;">
                 Filing your ITR on time is important to avoid penalties:
             </p>
 
@@ -580,21 +580,21 @@ $filing_deadlines = [
             </table>
         </div>
 
-        <!-- Current Year Data for Reference -->
+        <!— Current Year Data for Reference —>
         <div class="card">
             <h2>Step 3: Verify Your Financial Data</h2>
-            <p style="color: var(--text-light); margin-bottom: 20px;">
+            <p style="color: var(—text-light); margin-bottom: 20px;">
                 Here's a summary of your current financial year data from FinCart:
             </p>
 
             <div class="form-row">
                 <div class="form-group">
                     <label>Total Income (Current FY)</label>
-                    <input type="text" value="₹<?php echo number_format($current_income, 0); ?>" readonly style="background: var(--off-white);">
+                    <input type="text" value="₹<?php echo number_format($current_income, 0); ?>" readonly style="background: var(—off-white);">
                 </div>
                 <div class="form-group">
                     <label>Total Deductions (Current FY)</label>
-                    <input type="text" value="₹<?php echo number_format($current_deductions, 0); ?>" readonly style="background: var(--off-white);">
+                    <input type="text" value="₹<?php echo number_format($current_deductions, 0); ?>" readonly style="background: var(—off-white);">
                 </div>
             </div>
 
@@ -603,10 +603,10 @@ $filing_deadlines = [
             </div>
         </div>
 
-        <!-- Create ITR Record -->
+        <!— Create ITR Record —>
         <div class="card">
             <h2>Step 4: Create ITR Record</h2>
-            <p style="color: var(--text-light); margin-bottom: 20px;">
+            <p style="color: var(—text-light); margin-bottom: 20px;">
                 Save your ITR details as a draft before final submission:
             </p>
 
@@ -644,11 +644,11 @@ $filing_deadlines = [
             </form>
         </div>
 
-        <!-- Saved ITR Records -->
+        <!— Saved ITR Records —>
         <?php if (count($itr_records) > 0): ?>
             <div class="card">
                 <h2>Step 5: Your ITR Records</h2>
-                <p style="color: var(--text-light); margin-bottom: 20px;">
+                <p style="color: var(—text-light); margin-bottom: 20px;">
                     Previous ITR filings and drafts:
                 </p>
 
@@ -675,7 +675,7 @@ $filing_deadlines = [
                                     <div class="detail-value">₹<?php echo number_format($record['tax_paid'], 0); ?></div>
                                 </div>
                             </div>
-                            <div style="margin-top: 10px; color: var(--text-light); font-size: 12px;">
+                            <div style="margin-top: 10px; color: var(—text-light); font-size: 12px;">
                                 Saved: <?php echo date('M d, Y', strtotime($record['submission_date'])); ?>
                                 <?php if (!empty($record['submission_notes'])): ?>
                                     • <?php echo htmlspecialchars($record['submission_notes']); ?>
@@ -687,15 +687,15 @@ $filing_deadlines = [
             </div>
         <?php endif; ?>
 
-        <!-- Required Documents Checklist -->
+        <!— Required Documents Checklist —>
         <div class="card">
             <h2>Required Documents Checklist</h2>
-            <p style="color: var(--text-light); margin-bottom: 20px;">
+            <p style="color: var(—text-light); margin-bottom: 20px;">
                 Ensure you have all necessary documents before filing:
             </p>
 
             <h3>Income Proof:</h3>
-            <ul style="margin: 15px 0; margin-left: 20px; color: var(--text-light);">
+            <ul style="margin: 15px 0; margin-left: 20px; color: var(—text-light);">
                 <li>Form 16 (if salaried)</li>
                 <li>Form 16A (if freelance/contractual)</li>
                 <li>Business statements/invoices (if self-employed)</li>
@@ -703,7 +703,7 @@ $filing_deadlines = [
             </ul>
 
             <h3>Deduction Proof:</h3>
-            <ul style="margin: 15px 0; margin-left: 20px; color: var(--text-light);">
+            <ul style="margin: 15px 0; margin-left: 20px; color: var(—text-light);">
                 <li>Insurance premium receipts (80C)</li>
                 <li>Health insurance policy documents (80D)</li>
                 <li>PPF/NPS/ELSS contribution statements</li>
@@ -712,7 +712,7 @@ $filing_deadlines = [
             </ul>
 
             <h3>Other Documents:</h3>
-            <ul style="margin: 15px 0; margin-left: 20px; color: var(--text-light);">
+            <ul style="margin: 15px 0; margin-left: 20px; color: var(—text-light);">
                 <li>PAN card and Aadhaar</li>
                 <li>Bank account details for refund</li>
                 <li>Capital gains documentation (if applicable)</li>
@@ -720,11 +720,11 @@ $filing_deadlines = [
             </ul>
         </div>
 
-        <!-- Final Steps -->
+        <!— Final Steps —>
         <div class="card" style="background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, rgba(212, 175, 55, 0.1) 100%);">
             <h2>🎯 Final Steps Before Filing</h2>
             
-            <ol style="margin: 20px 0; margin-left: 20px; color: var(--text-dark);">
+            <ol style="margin: 20px 0; margin-left: 20px; color: var(—text-dark);">
                 <li><strong>Verify All Information:</strong> Double-check income, deductions, and personal details</li>
                 <li><strong>Consult a Professional:</strong> Show your draft ITR to a CA for review</li>
                 <li><strong>Calculate Tax Liability:</strong> Use our tax calculator tool to verify amounts</li>
@@ -737,11 +737,11 @@ $filing_deadlines = [
             <div class="highlight-box">
                 <strong>🤝 Professional Assistance Available:</strong><br>
                 Our team of qualified Chartered Accountants can guide you through the ITR filing process, ensure compliance with all regulations, and help you file with confidence.
-                <a href="#" style="color: var(--accent); text-decoration: none; font-weight: 600; display: inline-block; margin-top: 10px;">Connect with a Professional CA →</a>
+                <a href="#" style="color: var(—accent); text-decoration: none; font-weight: 600; display: inline-block; margin-top: 10px;">Connect with a Professional CA →</a>
             </div>
         </div>
 
-        <!-- Quick Links -->
+        <!— Quick Links —>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 30px;">
             <a href="tax_calculator.php" class="btn btn-primary">📋 Tax Calculator</a>
             <a href="tax_tracker.php" class="btn btn-primary">📝 Deductions Tracker</a>

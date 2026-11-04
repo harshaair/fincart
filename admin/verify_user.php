@@ -2,82 +2,94 @@
 include '../auth_admin.php';
 include '../db.php';
 
-// Add 'verified' column if missing when an action is performed
-function ensure_verified_column($conn) {
-    $check = $conn->query("SHOW COLUMNS FROM users LIKE 'verified'");
-    if ($check->num_rows == 0) {
-        $conn->query("ALTER TABLE users ADD COLUMN verified TINYINT(1) NOT NULL DEFAULT 0");
-    }
-}
+$page_title = 'Verify Users - FinCart Admin';
 
-if (isset($_GET['action']) && $_GET['action'] === 'verify' && isset($_GET['id'])) {
-    $id = (int)$_GET['id'];
-    ensure_verified_column($conn);
-    $stmt = $conn->prepare("UPDATE users SET verified = 1 WHERE id = ?");
-    $stmt->bind_param('i', $id);
+// Handle POST verification actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['action'])) {
+    $id = (int)$_POST['id'];
+    $val = ($_POST['action'] === 'verify') ? 1 : 0;
+    $stmt = $conn->prepare("UPDATE users SET verified = ? WHERE id = ?");
+    $stmt->bind_param('ii', $val, $id);
     $stmt->execute();
-    header('Location: verify_user.php');
+    header('Location: verify_user.php?msg=success');
     exit();
 }
 
-// Fetch users and their verified status if column exists
-$hasVerified = false;
-$colCheck = $conn->query("SHOW COLUMNS FROM users LIKE 'verified'");
-if ($colCheck && $colCheck->num_rows > 0) {
-    $hasVerified = true;
-}
+$result = $conn->query("SELECT id, full_name, email, role, verified, created_at FROM users WHERE role != 'admin' ORDER BY verified ASC, created_at DESC");
 
-$result = $conn->query("SELECT id, full_name, email" . ($hasVerified ? ", verified" : "") . " FROM users ORDER BY created_at DESC");
+include '../includes/admin_header.php';
+include '../includes/admin_navbar.php';
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Verify Users - Admin</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-</head>
-<body>
-    <header class="site-header">
-        <div class="logo"><h1>Fincart — Verify Users</h1></div>
-        <div class="header-actions">
-            <a href="dashboard.php" class="btn btn-secondary">Back to dashboard</a>
-            <a href="../logout.php" class="btn btn-primary">Logout</a>
+
+<div class="admin-container">
+    <div class="admin-header-row">
+        <div>
+            <h1 class="admin-title">User Account Verification</h1>
+            <p class="admin-subtitle">Verify user identity documents and mark accounts as trusted.</p>
         </div>
-    </header>
-    <div class="container">
-        <div class="card">
-            <h2>Users</h2>
+        <div>
+            <a href="dashboard.php" class="btn btn-secondary btn-sm">← Back← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <div class="table-responsive">
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
+                        <th style="width: 60px;">ID</th>
+                        <th>User Name</th>
                         <th>Email</th>
-                        <?php if ($hasVerified) echo '<th>Verified</th>'; ?>
-                        <th>Actions</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Registered Date</th>
+                        <th style="text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-<?php while ($row = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td><?php echo $row['id']; ?></td>
-                        <td><?php echo htmlspecialchars($row['full_name']); ?></td>
-                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                        <?php if ($hasVerified): ?>
-                        <td><?php echo $row['verified'] ? 'Yes' : 'No'; ?></td>
-                        <?php endif; ?>
-                        <td>
-                            <?php if (!$hasVerified || !$row['verified']): ?>
-                                <a class="btn btn-primary" href="verify_user.php?action=verify&id=<?php echo $row['id']; ?>">Verify</a>
-                            <?php else: ?>
-                                —
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-<?php endwhile; ?>
+                    <?php if ($result && $result->num_rows > 0): ?>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <tr>
+                                <td>#<?php echo (int)$row['id']; ?></td>
+                                <td><strong><?php echo htmlspecialchars($row['full_name'] ?? 'N/A'); ?></strong></td>
+                                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                <td><span class="badge badge-inf⭐><?php echo htmlspecialchars($row['role']); ?></span></td>
+                                <td>
+                                    <?php if (!empty($row['verified'])): ?>
+                                        <span class="badge badge-success">&#10003; Verified</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-warning">Unverified</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo date('d-M-Y', strtotime($row['created_at'])); ?></td>
+                                <td style="text-align: right;">
+                                    <?php if (empty($row['verified'])): ?>
+                                        <form method="POST" action="verify_user.php" style="display:inline;">
+                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
+                                            <input type="hidden" name="action" value="verify">
+                                            <button type="submit" class="btn btn-accent btn-sm">Mark Verified</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="POST" action="verify_user.php" style="display:inline;">
+                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
+                                            <input type="hidden" name="action" value="unverify">
+                                            <button type="submit" class="btn btn-secondary btn-sm">Revoke</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px; color: #888;">
+                                No users currently require verification.
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+<?php include '../includes/admin_footer.php'; ?>
