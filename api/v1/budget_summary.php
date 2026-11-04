@@ -41,3 +41,4 @@ try {
         'error'   => 'Failed to retrieve budget summary: ' . $e->getMessage()
     ]);
 }
+

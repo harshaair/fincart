@@ -111,3 +111,4 @@ if ($pending_count === 0) {
 } else {
     echo "\nSuccessfully applied $pending_count migration(s).\n";
 }
+

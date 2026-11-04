@@ -47,3 +47,4 @@ try {
         'error'   => 'Calculation error: ' . $e->getMessage()
     ]);
 }
+

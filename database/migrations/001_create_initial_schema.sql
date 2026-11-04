@@ -99,3 +99,4 @@ CREATE TABLE IF NOT EXISTS investments (
   PRIMARY KEY (id),
   KEY idx_user_type (user_id, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

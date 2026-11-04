@@ -13,3 +13,4 @@ echo json_encode([
     'success'    => true,
     'csrf_token' => get_csrf_token()
 ]);
+

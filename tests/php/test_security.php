@@ -53,3 +53,4 @@ echo "Security Suite completed: $tests_passed passed, $tests_failed failed.\n\n"
 if ($tests_failed > 0) {
     exit(1);
 }
+

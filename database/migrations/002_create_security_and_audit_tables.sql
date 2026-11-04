@@ -57,3 +57,4 @@ CREATE TABLE IF NOT EXISTS system_logs (
   PRIMARY KEY (id),
   KEY idx_admin_action (admin_id, action_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

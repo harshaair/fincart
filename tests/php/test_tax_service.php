@@ -63,3 +63,4 @@ echo "Tax Service Suite completed: $tests_passed passed, $tests_failed failed.\n
 if ($tests_failed > 0) {
     exit(1);
 }
+
