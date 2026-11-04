@@ -86,3 +86,4 @@ $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 
 // Execute the PHP application script
 require $realTarget;
+

@@ -6,7 +6,8 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "bcryptjs": "^3.0.3",
+    "mysql2": "^3.24.6",
     "vitest": "^1.6.0"
   }
 }
-
