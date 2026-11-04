@@ -131,91 +131,116 @@ $categories_stmt->bind_param("i", $user_id);
 $categories_stmt->execute();
 $categories = $categories_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-$page_title = 'Transaction Management - FinCart';
+require_once "includes/components/stat_card.php";
+require_once "includes/components/page_header.php";
+require_once "includes/components/alert.php";
+
+$page_title = 'Transaction Ledger - FinCart';
 include "includes/header.php";
 include "includes/navbar.php";
 ?>
 
-<div class="main-content">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
-        <div>
-            <h1 style="font-size: 28px; margin-bottom: 6px;">Financial Transactions</h1>
-            <p style="color: var(--text-muted);">View, search, edit, and organize all your income and expense transactions.</p>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <a href="add_transaction.php" class="btn btn-primary">+ Add Transaction</a>
-            <a href="analytics.php" class="btn btn-secondary">Analytics & Trends &rarr;</a>
-        </div>
-    </div>
+<main class="page-container" style="max-width: 1240px; margin: 0 auto; padding: 20px 24px;">
+    <?php
+    render_page_header([
+        'title'    => 'Financial Ledger',
+        'subtitle' => 'Track, filter, audit, and analyze all income and expenditure records',
+        'badge'    => number_format($total_rows) . ' Entries',
+        'actions'  => [
+            ['label' => '+ Add Transaction', 'href' => 'add_transaction.php', 'class' => 'btn-gold'],
+            ['label' => 'Analytics & Trends →', 'href' => 'analytics.php', 'class' => 'btn-outline']
+        ]
+    ]);
 
-    <?php if (!empty($message)): ?>
-        <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
-    <?php endif; ?>
-    <?php if (!empty($error)): ?>
-        <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
+    if (!empty($message)) {
+        render_alert($message, 'success');
+    }
+    if (!empty($error)) {
+        render_alert($error, 'danger');
+    }
+    ?>
 
-    <!-- Summary Stats -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Filtered Income</div>
-            <div class="stat-value" style="color: var(--success);">₹<?php echo number_format((float)$summary['total_income'], 2); ?></div>
-            <div class="stat-description">Inflow during selected period</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Filtered Expense</div>
-            <div class="stat-value" style="color: var(--danger);">₹<?php echo number_format((float)$summary['total_expense'], 2); ?></div>
-            <div class="stat-description">Outflow during selected period</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Net Balance</div>
-            <div class="stat-value">₹<?php echo number_format((float)($summary['total_income'] - $summary['total_expense']), 2); ?></div>
-            <div class="stat-description">Difference (Income &minus; Expense)</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Total Records</div>
-            <div class="stat-value"><?php echo number_format($total_rows); ?></div>
-            <div class="stat-description">Transactions matching filter</div>
-        </div>
+    <!-- Summary Stats (Standardized Reusable Components) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 24px;">
+        <?php
+        $net_balance = (float)($summary['total_income'] - $summary['total_expense']);
+        render_stat_card([
+            'title'      => 'Period Inflow',
+            'value'      => '₹' . number_format((float)$summary['total_income'], 2),
+            'icon'       => '↗️',
+            'trend'      => 'Credits',
+            'trend_type' => 'positive',
+            'subtitle'   => 'Selected timeframe'
+        ]);
+
+        render_stat_card([
+            'title'      => 'Period Outflow',
+            'value'      => '₹' . number_format((float)$summary['total_expense'], 2),
+            'icon'       => '↘️',
+            'trend'      => 'Debits',
+            'trend_type' => 'negative',
+            'subtitle'   => 'Selected timeframe'
+        ]);
+
+        render_stat_card([
+            'title'      => 'Net Variance',
+            'value'      => '₹' . number_format($net_balance, 2),
+            'icon'       => '⚖️',
+            'trend'      => $net_balance >= 0 ? '+ Surplus' : '- Deficit',
+            'trend_type' => $net_balance >= 0 ? 'positive' : 'negative',
+            'subtitle'   => 'Inflow minus outflow'
+        ]);
+
+        render_stat_card([
+            'title'      => 'Audited Records',
+            'value'      => number_format($total_rows),
+            'icon'       => '📑',
+            'trend'      => 'Page ' . $page . ' of ' . max(1, $total_pages),
+            'trend_type' => 'neutral',
+            'subtitle'   => 'Database items'
+        ]);
+        ?>
     </div>
 
     <!-- Filters Bar -->
-    <div class="card" style="padding: 20px;">
-        <form method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-            <div style="flex: 1; min-width: 140px;">
-                <label style="font-size: 13px; font-weight: 500; display: block; margin-bottom: 6px;">Type</label>
-                <select name="type" class="form-control">
-                    <option value="all" <?php echo $filter_type === 'all' ? 'selected' : ''; ?>>All Types</option>
-                    <option value="income" <?php echo $filter_type === 'income' ? 'selected' : ''; ?>>Income</option>
-                    <option value="expense" <?php echo $filter_type === 'expense' ? 'selected' : ''; ?>>Expense</option>
-                </select>
-            </div>
-            <div style="flex: 1; min-width: 160px;">
-                <label style="font-size: 13px; font-weight: 500; display: block; margin-bottom: 6px;">Category</label>
-                <select name="category" class="form-control">
-                    <option value="all">All Categories</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo htmlspecialchars($cat['category']); ?>" <?php echo $filter_category === $cat['category'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($cat['category']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div style="flex: 1; min-width: 160px;">
-                <label style="font-size: 13px; font-weight: 500; display: block; margin-bottom: 6px;">Month</label>
-                <input type="month" name="month" class="form-control" value="<?php echo htmlspecialchars($filter_month); ?>">
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-                <a href="transactions.php" class="btn btn-secondary btn-sm">Reset</a>
-            </div>
-        </form>
+    <div class="card-luxury" style="margin-bottom: 24px;">
+        <div class="card-luxury-body" style="padding: 16px 20px;">
+            <form method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                <div style="flex: 1; min-width: 140px;">
+                    <label style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 6px;">Type</label>
+                    <select name="type" class="form-control" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <option value="all" <?php echo $filter_type === 'all' ? 'selected' : ''; ?>>All Transactions</option>
+                        <option value="income" <?php echo $filter_type === 'income' ? 'selected' : ''; ?>>Income Only</option>
+                        <option value="expense" <?php echo $filter_type === 'expense' ? 'selected' : ''; ?>>Expense Only</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 160px;">
+                    <label style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 6px;">Category</label>
+                    <select name="category" class="form-control" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <option value="all">All Categories</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat['category']); ?>" <?php echo $filter_category === $cat['category'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($cat['category']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 160px;">
+                    <label style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 6px;">Month</label>
+                    <input type="month" name="month" class="form-control" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);" value="<?php echo htmlspecialchars($filter_month); ?>">
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="submit" class="btn-luxury btn-gold" style="padding: 8px 18px;">Filter</button>
+                    <a href="transactions.php" class="btn-luxury btn-outline" style="padding: 8px 16px;">Reset</a>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Transactions Table -->
-    <div class="card">
-        <div class="table-responsive">
-            <table class="custom-table">
+    <div class="card-luxury">
+        <div class="table-luxury-wrap">
+            <table class="table-luxury">
                 <thead>
                     <tr>
                         <th style="width: 50px;">#</th>
@@ -231,26 +256,27 @@ include "includes/navbar.php";
                     <?php if (!empty($transactions)): ?>
                         <?php foreach ($transactions as $t): ?>
                             <tr>
-                                <td><?php echo (int)$t['id']; ?></td>
+                                <td style="color: var(--text-muted);"><?php echo (int)$t['id']; ?></td>
                                 <td>
                                     <?php if ($t['type'] === 'income'): ?>
-                                        <span class="badge badge-success">&#8593; Income</span>
+                                        <span class="badge-luxury badge-luxury-success" style="background: var(--success-bg); color: var(--success);">↑ Income</span>
                                     <?php else: ?>
-                                        <span class="badge badge-danger">&#8595; Expense</span>
+                                        <span class="badge-luxury badge-luxury-danger" style="background: var(--danger-bg); color: var(--danger);">↓ Expense</span>
                                     <?php endif; ?>
                                 </td>
                                 <td><strong><?php echo htmlspecialchars($t['category'] ?? 'General'); ?></strong></td>
-                                <td><?php echo htmlspecialchars($t['description'] ?? ''); ?></td>
+                                <td style="color: var(--text-muted);"><?php echo htmlspecialchars($t['description'] ?? '—'); ?></td>
                                 <td><?php echo date('d-M-Y', strtotime($t['date'])); ?></td>
                                 <td>
-                                    <strong style="color: <?php echo $t['type'] === 'income' ? '#27ae60' : '#e74c3c'; ?>;">
+                                    <strong style="color: <?php echo $t['type'] === 'income' ? 'var(--success)' : 'var(--danger)'; ?>; font-size: 14.5px;">
                                         <?php echo $t['type'] === 'income' ? '+' : '-'; ?>₹<?php echo number_format((float)$t['amount'], 2); ?>
                                     </strong>
                                 </td>
                                 <td style="text-align: right;">
                                     <button 
                                         type="button" 
-                                        class="btn btn-secondary btn-sm"
+                                        class="btn-luxury btn-outline"
+                                        style="padding: 5px 12px; font-size: 12px;"
                                         onclick="openEditModal(<?php echo htmlspecialchars(json_encode($t)); ?>)">
                                         Edit
                                     </button>
@@ -258,15 +284,15 @@ include "includes/navbar.php";
                                         <?php echo csrf_field(); ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="transaction_id" value="<?php echo (int)$t['id']; ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        <button type="submit" class="btn-luxury" style="padding: 5px 12px; font-size: 12px; background: #fee2e2; color: #dc2626;">Delete</button>
                                     </form>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px; color: #888;">
-                                No transactions found matching your criteria.
+                            <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                                No transactions found matching your criteria. Click <strong>+ Add Transaction</strong> above to record your first entry.
                             </td>
                         </tr>
                     <?php endif; ?>
@@ -303,7 +329,7 @@ include "includes/navbar.php";
             </div>
         <?php endif; ?>
     </div>
-</div>
+</main>
 
 <!-- Edit Transaction Modal -->
 <div id="editModal" class="modal-overlay">
@@ -351,7 +377,7 @@ include "includes/navbar.php";
             </div>
         </form>
     </div>
-</div>
+</main>
 
 <script>
 function openEditModal(tx) {
