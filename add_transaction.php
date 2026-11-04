@@ -59,21 +59,21 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
         }
 
         :root {
-            —primary: #1a1a1a;
-            —secondary: #f8f6f3;
-            —accent: #d4af37;
-            —text-dark: #2c2c2c;
-            —text-light: #666;
-            —white: #ffffff;
-            —off-white: #fafaf9;
-            —success: #27ae60;
-            —danger: #e74c3c;
+            --primary: #1a1a1a;
+            --secondary: #f8f6f3;
+            --accent: #d4af37;
+            --text-dark: #2c2c2c;
+            --text-light: #666;
+            --white: #ffffff;
+            --off-white: #fafaf9;
+            --success: #27ae60;
+            --danger: #e74c3c;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
-            color: var(—text-dark);
+            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+            color: var(--text-dark);
             min-height: 100vh;
         }
 
@@ -100,7 +100,7 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
             font-family: 'Playfair Display', serif;
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -108,14 +108,14 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
         }
 
         .back-link {
-            color: var(—accent);
+            color: var(--accent);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .back-link:hover {
-            color: var(—primary);
+            color: var(--primary);
         }
 
         .container {
@@ -131,13 +131,13 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
         .page-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 42px;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 10px;
             letter-spacing: -1px;
         }
 
         .page-header p {
-            color: var(—text-light);
+            color: var(--text-light);
             font-size: 16px;
         }
 
@@ -152,18 +152,18 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
 
         .alert-success {
             background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(—success);
-            color: var(—success);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
         .alert-danger {
             background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(—danger);
-            color: var(—danger);
+            border: 1px solid var(--danger);
+            color: var(--danger);
         }
 
         .form-card {
-            background: var(—white);
+            background: var(--white);
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -176,7 +176,7 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
         label {
             display: block;
             font-weight: 600;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 8px;
             font-size: 14px;
         }
@@ -201,7 +201,7 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
         select:focus,
         textarea:focus {
             outline: none;
-            border-color: var(—accent);
+            border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
@@ -226,33 +226,33 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
         .type-btn {
             padding: 16px;
             border: 2px solid rgba(0, 0, 0, 0.1);
-            background: var(—white);
+            background: var(--white);
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
             font-size: 14px;
-            color: var(—text-dark);
+            color: var(--text-dark);
         }
 
         .type-btn:hover {
-            border-color: var(—accent);
+            border-color: var(--accent);
         }
 
         .type-btn.active {
-            background: var(—primary);
-            color: var(—white);
-            border-color: var(—primary);
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
         }
 
         .type-btn.income.active {
-            background: var(—success);
-            border-color: var(—success);
+            background: var(--success);
+            border-color: var(--success);
         }
 
         .type-btn.expense.active {
-            background: var(—danger);
-            border-color: var(—danger);
+            background: var(--danger);
+            border-color: var(--danger);
         }
 
         .button-group {
@@ -276,26 +276,26 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
         }
 
         .btn-primary {
-            background: var(—primary);
-            color: var(—white);
+            background: var(--primary);
+            color: var(--white);
         }
 
         .btn-primary:hover {
-            background: var(—accent);
-            color: var(—primary);
+            background: var(--accent);
+            color: var(--primary);
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
         }
 
         .btn-secondary {
-            background: var(—off-white);
-            color: var(—primary);
-            border: 2px solid var(—primary);
+            background: var(--off-white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
         }
 
         .btn-secondary:hover {
-            background: var(—primary);
-            color: var(—white);
+            background: var(--primary);
+            color: var(--white);
             transform: translateY(-2px);
         }
 
@@ -316,17 +316,17 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
     </style>
 </head>
 <body>
-    <!— Header —>
+    <!-- Header -->
     <header>
         <div class="header-container">
-            <div class="log⭐>
+            <div class="logo">
                 <h1>Fincart</h1>
             </div>
             <a href="transactions.php" class="back-link">←← Back to Transactions</a>
         </div>
     </header>
 
-    <!— Main Content —>
+    <!-- Main Content -->
     <div class="container">
         <div class="page-header">
             <h1>Add Transaction</h1>
@@ -349,7 +349,7 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
 
         <div class="form-card">
             <form method="POST">
-                <!— Type Selector —>
+                <!-- Type Selector -->
                 <label style="margin-bottom: 12px;">Transaction Type</label>
                 <div class="type-selector">
                     <button type="button" class="type-btn income active" onclick="selectType('income')">
@@ -361,7 +361,7 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
                 </div>
                 <input type="hidden" id="type" name="type" value="income" required>
 
-                <!— Category —>
+                <!-- Category -->
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select id="category" name="category" required onchange="updateCategories()">
@@ -375,25 +375,25 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
                     </select>
                 </div>
 
-                <!— Amount —>
+                <!-- Amount -->
                 <div class="form-group">
                     <label for="amount">Amount (₹)</label>
                     <input type="number" id="amount" name="amount" step="0.01" min="0" placeholder="0.00" required>
                 </div>
 
-                <!— Date —>
+                <!-- Date -->
                 <div class="form-group">
                     <label for="date">Date</label>
                     <input type="date" id="date" name="date" value="<?php echo date('Y-m-d'); ?>" required>
                 </div>
 
-                <!— Description —>
+                <!-- Description -->
                 <div class="form-group">
                     <label for="description">Description (Optional)</label>
                     <textarea id="description" name="description" placeholder="Add notes about this transaction..."></textarea>
                 </div>
 
-                <!— Buttons —>
+                <!-- Buttons -->
                 <div class="button-group">
                     <button type="submit" class="btn btn-primary">Add Transaction</button>
                     <a href="transactions.php" class="btn btn-secondary">Cancel</a>

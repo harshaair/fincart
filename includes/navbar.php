@@ -6,7 +6,7 @@ $user_role = $_SESSION['role'] ?? 'user';
 ?>
 <header class="site-header">
     <div class="nav-container">
-        <a href="dashboard.php" class="site-log⭐>
+        <a href="dashboard.php" class="site-logo">
             Fin<span>Cart</span>
         </a>
         <nav>

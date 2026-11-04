@@ -107,21 +107,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         :root {
-            —primary: #1a1a1a;
-            —secondary: #f8f6f3;
-            —accent: #d4af37;
-            —text-dark: #2c2c2c;
-            —text-light: #666;
-            —white: #ffffff;
-            —off-white: #fafaf9;
-            —success: #27ae60;
-            —danger: #e74c3c;
+            --primary: #1a1a1a;
+            --secondary: #f8f6f3;
+            --accent: #d4af37;
+            --text-dark: #2c2c2c;
+            --text-light: #666;
+            --white: #ffffff;
+            --off-white: #fafaf9;
+            --success: #27ae60;
+            --danger: #e74c3c;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
-            color: var(—text-dark);
+            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+            color: var(--text-dark);
             min-height: 100vh;
         }
 
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -156,14 +156,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .back-link {
-            color: var(—accent);
+            color: var(--accent);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .back-link:hover {
-            color: var(—primary);
+            color: var(--primary);
         }
 
         .container {
@@ -175,13 +175,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .page-title {
             font-family: 'Playfair Display', serif;
             font-size: 42px;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 10px;
             letter-spacing: -1px;
         }
 
         .page-subtitle {
-            color: var(—text-light);
+            color: var(--text-light);
             font-size: 16px;
             margin-bottom: 40px;
         }
@@ -197,14 +197,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .alert-success {
             background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(—success);
-            color: var(—success);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
         .alert-danger {
             background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(—danger);
-            color: var(—danger);
+            border: 1px solid var(--danger);
+            color: var(--danger);
         }
 
         .alert-icon {
@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .form-card {
-            background: var(—white);
+            background: var(--white);
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -222,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-card h2 {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 30px;
             letter-spacing: -1px;
         }
@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         label {
             display: block;
             font-weight: 600;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 8px;
             font-size: 14px;
         }
@@ -255,7 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         input[type="email"]:focus,
         input[type="password"]:focus {
             outline: none;
-            border-color: var(—accent);
+            border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
@@ -278,27 +278,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .btn-primary {
-            background: var(—primary);
-            color: var(—white);
+            background: var(--primary);
+            color: var(--white);
         }
 
         .btn-primary:hover {
-            background: var(—accent);
-            color: var(—primary);
+            background: var(--accent);
+            color: var(--primary);
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
         }
 
         .btn-secondary {
-            background: var(—off-white);
-            color: var(—primary);
-            border: 2px solid var(—primary);
+            background: var(--off-white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
             margin-left: 10px;
         }
 
         .btn-secondary:hover {
-            background: var(—primary);
-            color: var(—white);
+            background: var(--primary);
+            color: var(--white);
             transform: translateY(-2px);
         }
 
@@ -310,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .help-text {
             font-size: 13px;
-            color: var(—text-light);
+            color: var(--text-light);
             margin-top: 6px;
         }
 
@@ -342,22 +342,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <!— Header —>
+    <!-- Header -->
     <header>
         <div class="header-container">
-            <div class="log⭐>
+            <div class="logo">
                 <h1>Fincart</h1>
             </div>
             <a href="dashboard.php" class="back-link">←← Back to Dashboard</a>
         </div>
     </header>
 
-    <!— Main Content —>
+    <!-- Main Content -->
     <div class="container">
         <h1 class="page-title">Account Settings</h1>
         <p class="page-subtitle">Manage your profile information and security settings</p>
 
-        <!— Messages —>
+        <!-- Messages -->
         <?php if ($message): ?>
             <div class="alert alert-success">
                 <span class="alert-icon">✓</span>
@@ -372,7 +372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <!— Profile Information Form —>
+        <!-- Profile Information Form -->
         <div class="form-card">
             <h2>Profile Information</h2>
             <form method="POST">
@@ -391,7 +391,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-group">
                     <label for="user_id">Account ID</label>
-                    <input type="text" id="user_id" value="<?php echo htmlspecialchars($user['id']); ?>" disabled style="background: var(—off-white); cursor: not-allowed;">
+                    <input type="text" id="user_id" value="<?php echo htmlspecialchars($user['id']); ?>" disabled style="background: var(--off-white); cursor: not-allowed;">
                     <p class="help-text">Your unique account identifier</p>
                 </div>
 
@@ -404,7 +404,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="divider"></div>
 
-        <!— Change Password Form —>
+        <!-- Change Password Form -->
         <div class="form-card">
             <h2>Change Password</h2>
             <form method="POST">
@@ -437,13 +437,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="divider"></div>
 
-        <!— Account Information —>
+        <!-- Account Information -->
         <div class="form-card">
             <h2>Account Information</h2>
             <div style="display: grid; gap: 16px;">
                 <div>
-                    <p style="color: var(—text-light); font-size: 14px; margin-bottom: 4px;">Member Since</p>
-                    <p style="font-weight: 600; color: var(—primary);">
+                    <p style="color: var(--text-light); font-size: 14px; margin-bottom: 4px;">Member Since</p>
+                    <p style="font-weight: 600; color: var(--primary);">
                         <?php 
                         if (isset($user['created_at']) && !empty($user['created_at'])) {
                             echo date('F j, Y', strtotime($user['created_at']));
@@ -454,12 +454,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </p>
                 </div>
                 <div>
-                    <p style="color: var(—text-light); font-size: 14px; margin-bottom: 4px;">Account Status</p>
-                    <p style="font-weight: 600; color: var(—success);">Active ✓</p>
+                    <p style="color: var(--text-light); font-size: 14px; margin-bottom: 4px;">Account Status</p>
+                    <p style="font-weight: 600; color: var(--success);">Active ✓</p>
                 </div>
                 <div>
-                    <p style="color: var(—text-light); font-size: 14px; margin-bottom: 4px;">Account Type</p>
-                    <p style="font-weight: 600; color: var(—primary);">Personal</p>
+                    <p style="color: var(--text-light); font-size: 14px; margin-bottom: 4px;">Account Type</p>
+                    <p style="font-weight: 600; color: var(--primary);">Personal</p>
                 </div>
             </div>
         </div>

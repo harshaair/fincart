@@ -1,16 +1,16 @@
 <?php
 // Usage:
-//  php map_professionals.php —dry-run   (shows proposed mappings)
+//  php map_professionals.php --dry-run   (shows proposed mappings)
 //  php map_professionals.php              (executes mappings after confirmation)
 
 if (PHP_SAPI !== 'cli') {
-    echo "Run from CLI: php map_professionals.php [—dry-run]\n";
+    echo "Run from CLI: php map_professionals.php [--dry-run]\n";
     exit(1);
 }
 
 require __DIR__ . '/../db.php';
 
-$dry = in_array('—dry-run', $argv, true);
+$dry = in_array('--dry-run', $argv, true);
 
 $res = $conn->query("SELECT id, name, email, status FROM professionals WHERE user_id IS NULL OR user_id = 0");
 $toUpdate = [];

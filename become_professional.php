@@ -11,7 +11,7 @@ include "db.php";
 </head>
 <body>
 <header class="site-header">
-    <div class="log⭐><h1>Become a Professional</h1></div>
+    <div class="logo"><h1>Become a Professional</h1></div>
     <div class="header-actions">
         <a href="index.html" class="btn btn-secondary">Home</a>
         <?php if (isset($_SESSION['user_id'])): ?>
@@ -60,7 +60,7 @@ include "db.php";
         ?>
         <form class="auth-form" method="post" action="professional/become_handler.php" autocomplete="off">
 
-            <!— Always ask user details —>
+            <!-- Always ask user details -->
             <div class="form-group">
                 <label>Full name</label>
                 <input class="form-control" type="text" name="full_name" required autocomplete="off">

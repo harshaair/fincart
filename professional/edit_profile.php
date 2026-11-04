@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <header class="site-header">
-    <div class="log⭐><h1>Edit Professional Profile</h1></div>
+    <div class="logo"><h1>Edit Professional Profile</h1></div>
     <div class="header-actions">
         <span>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
         <a href="dashboard.php" class="btn btn-secondary">← Back to Dashboard</a>

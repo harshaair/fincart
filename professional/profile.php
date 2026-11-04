@@ -26,7 +26,7 @@ if (!$prof) {
 </head>
 <body>
 <header class="site-header">
-    <div class="log⭐><h1><?php echo htmlspecialchars($prof['name']); ?></h1></div>
+    <div class="logo"><h1><?php echo htmlspecialchars($prof['name']); ?></h1></div>
     <div class="header-actions">
         <a href="/professionals.php" class="btn btn-secondary">Directory</a>
         <a href="/dashboard.php" class="btn btn-secondary">Dashboard</a>

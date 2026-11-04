@@ -115,23 +115,23 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         :root {
-            —primary: #1a1a1a;
-            —secondary: #f8f6f3;
-            —accent: #d4af37;
-            —text-dark: #2c2c2c;
-            —text-light: #666;
-            —white: #ffffff;
-            —off-white: #fafaf9;
-            —success: #27ae60;
-            —danger: #e74c3c;
-            —warning: #f39c12;
-            —info: #3498db;
+            --primary: #1a1a1a;
+            --secondary: #f8f6f3;
+            --accent: #d4af37;
+            --text-dark: #2c2c2c;
+            --text-light: #666;
+            --white: #ffffff;
+            --off-white: #fafaf9;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
-            color: var(—text-dark);
+            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+            color: var(--text-dark);
             min-height: 100vh;
         }
 
@@ -158,7 +158,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
             font-family: 'Playfair Display', serif;
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -171,20 +171,20 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .nav-link {
-            color: var(—text-dark);
+            color: var(--text-dark);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .nav-link:hover {
-            color: var(—accent);
+            color: var(--accent);
         }
 
         .logout-btn {
             padding: 8px 20px;
-            background: var(—danger);
-            color: var(—white);
+            background: var(--danger);
+            color: var(--white);
             border: none;
             border-radius: 20px;
             cursor: pointer;
@@ -209,13 +209,13 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         .page-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 42px;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 10px;
             letter-spacing: -1px;
         }
 
         .page-header p {
-            color: var(—text-light);
+            color: var(--text-light);
             font-size: 16px;
         }
 
@@ -230,14 +230,14 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
 
         .alert-success {
             background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(—success);
-            color: var(—success);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
 
         .alert-danger {
             background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(—danger);
-            color: var(—danger);
+            border: 1px solid var(--danger);
+            color: var(--danger);
         }
 
         .content-grid {
@@ -248,7 +248,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .card {
-            background: var(—white);
+            background: var(--white);
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -257,7 +257,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         .card h2 {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 20px;
         }
 
@@ -268,7 +268,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         label {
             display: block;
             font-weight: 600;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 8px;
             font-size: 14px;
         }
@@ -289,7 +289,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         input:focus,
         select:focus {
             outline: none;
-            border-color: var(—accent);
+            border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
@@ -305,13 +305,13 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .btn-primary {
-            background: var(—primary);
-            color: var(—white);
+            background: var(--primary);
+            color: var(--white);
         }
 
         .btn-primary:hover {
-            background: var(—accent);
-            color: var(—primary);
+            background: var(--accent);
+            color: var(--primary);
             transform: translateY(-2px);
         }
 
@@ -329,7 +329,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .summary-stat {
-            background: var(—off-white);
+            background: var(--off-white);
             padding: 15px;
             border-radius: 10px;
             text-align: center;
@@ -339,12 +339,12 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
             font-family: 'Playfair Display', serif;
             font-size: 24px;
             font-weight: 700;
-            color: var(—primary);
+            color: var(--primary);
         }
 
         .summary-stat-label {
             font-size: 13px;
-            color: var(—text-light);
+            color: var(--text-light);
             margin-top: 5px;
         }
 
@@ -354,19 +354,19 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .goal-item {
-            background: var(—off-white);
+            background: var(--off-white);
             padding: 25px;
             border-radius: 15px;
-            border-left: 5px solid var(—accent);
+            border-left: 5px solid var(--accent);
         }
 
         .goal-item.achieved {
-            border-left-color: var(—success);
+            border-left-color: var(--success);
             background: rgba(39, 174, 96, 0.05);
         }
 
         .goal-item.overdue {
-            border-left-color: var(—danger);
+            border-left-color: var(--danger);
             background: rgba(231, 76, 60, 0.05);
         }
 
@@ -378,7 +378,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .goal-title h3 {
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 5px;
         }
 
@@ -392,17 +392,17 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
 
         .goal-status.in-progress {
             background: rgba(52, 152, 219, 0.1);
-            color: var(—info);
+            color: var(--info);
         }
 
         .goal-status.achieved {
             background: rgba(39, 174, 96, 0.1);
-            color: var(—success);
+            color: var(--success);
         }
 
         .goal-status.overdue {
             background: rgba(231, 76, 60, 0.1);
-            color: var(—danger);
+            color: var(--danger);
         }
 
         .progress-bar {
@@ -416,7 +416,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(—info) 0%, var(—accent) 50%, var(—success) 100%);
+            background: linear-gradient(90deg, var(--info) 0%, var(--accent) 50%, var(--success) 100%);
             width: 0%;
             transition: width 0.3s ease;
         }
@@ -430,12 +430,12 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .detail-item {
-            color: var(—text-light);
+            color: var(--text-light);
         }
 
         .detail-value {
             font-weight: 700;
-            color: var(—primary);
+            color: var(--primary);
             display: block;
         }
 
@@ -449,8 +449,8 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
             flex: 1;
             min-width: 120px;
             padding: 8px 16px;
-            background: var(—info);
-            color: var(—white);
+            background: var(--info);
+            color: var(--white);
             border: none;
             border-radius: 20px;
             cursor: pointer;
@@ -466,8 +466,8 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
 
         .btn-delete {
             padding: 8px 16px;
-            background: var(—danger);
-            color: var(—white);
+            background: var(--danger);
+            color: var(--white);
             border: none;
             border-radius: 20px;
             cursor: pointer;
@@ -499,7 +499,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         }
 
         .modal-content {
-            background: var(—white);
+            background: var(--white);
             padding: 30px;
             border-radius: 20px;
             max-width: 400px;
@@ -516,7 +516,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
 
         .modal-header h2 {
             font-family: 'Playfair Display', serif;
-            color: var(—primary);
+            color: var(--primary);
         }
 
         .close-btn {
@@ -524,13 +524,13 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
             border: none;
             font-size: 28px;
             cursor: pointer;
-            color: var(—text-light);
+            color: var(--text-light);
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: var(—text-light);
+            color: var(--text-light);
         }
 
         .empty-state p {
@@ -559,10 +559,10 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
     </style>
 </head>
 <body>
-    <!— Header —>
+    <!-- Header -->
     <header>
         <div class="header-container">
-            <div class="log⭐>
+            <div class="logo">
                 <h1>Fincart</h1>
             </div>
             <div class="nav-links">
@@ -576,7 +576,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         </div>
     </header>
 
-    <!— Main Content —>
+    <!-- Main Content -->
     <div class="container">
         <div class="page-header">
             <h1>Savings Goals</h1>
@@ -598,7 +598,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         <?php endif; ?>
 
         <div class="content-grid">
-            <!— Create Goal Form —>
+            <!-- Create Goal Form -->
             <div class="card">
                 <h2>Create New Goal</h2>
                 <form method="POST">
@@ -628,7 +628,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
                 </form>
             </div>
 
-            <!— Goals Summary —>
+            <!-- Goals Summary -->
             <div class="card">
                 <h2>Progress Summary</h2>
                 <div class="summary-grid">
@@ -645,15 +645,15 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
                         <div class="summary-stat-label">Overall Progress</div>
                     </div>
                 </div>
-                <div style="background: var(—off-white); padding: 15px; border-radius: 10px; text-align: center;">
-                    <p style="color: var(—text-light); font-size: 14px; margin-bottom: 5px;">Total Saved</p>
-                    <p style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(—primary);">₹<?php echo number_format($total_saved, 2); ?></p>
-                    <p style="color: var(—text-light); font-size: 13px; margin-top: 5px;">of ₹<?php echo number_format($total_target, 2); ?></p>
+                <div style="background: var(--off-white); padding: 15px; border-radius: 10px; text-align: center;">
+                    <p style="color: var(--text-light); font-size: 14px; margin-bottom: 5px;">Total Saved</p>
+                    <p style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--primary);">₹<?php echo number_format($total_saved, 2); ?></p>
+                    <p style="color: var(--text-light); font-size: 13px; margin-top: 5px;">of ₹<?php echo number_format($total_target, 2); ?></p>
                 </div>
             </div>
         </div>
 
-        <!— Goals List —>
+        <!-- Goals List -->
         <?php if (count($goals) > 0): ?>
             <div class="card">
                 <h2>Your Goals</h2>
@@ -719,7 +719,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
         <?php endif; ?>
     </div>
 
-    <!— Deposit Modal —>
+    <!-- Deposit Modal -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">

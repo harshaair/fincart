@@ -5,7 +5,7 @@ $admin_name = $_SESSION['user_name'] ?? 'Admin';
 ?>
 <header class="site-header" style="background: #1a1a1a; border-bottom: 2px solid #d4af37;">
     <div class="nav-container">
-        <a href="dashboard.php" class="site-log⭐ style="color: #ffffff;">
+        <a href="dashboard.php" class="site-logo" style="color: #ffffff;">
             Fin<span style="color: #d4af37;">Cart</span> <span style="font-size: 13px; font-weight: 500; background: #333; padding: 3px 8px; border-radius: 4px; color: #d4af37; margin-left: 8px;">ADMIN</span>
         </a>
         <nav>

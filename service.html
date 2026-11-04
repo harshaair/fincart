@@ -15,19 +15,19 @@
         }
 
         :root {
-            —primary: #1a1a1a;
-            —secondary: #f8f6f3;
-            —accent: #d4af37;
-            —text-dark: #2c2c2c;
-            —text-light: #666;
-            —white: #ffffff;
-            —off-white: #fafaf9;
+            --primary: #1a1a1a;
+            --secondary: #f8f6f3;
+            --accent: #d4af37;
+            --text-dark: #2c2c2c;
+            --text-light: #666;
+            --white: #ffffff;
+            --off-white: #fafaf9;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            color: var(—text-dark);
-            background: var(—white);
+            color: var(--text-dark);
+            background: var(--white);
             overflow-x: hidden;
         }
 
@@ -64,7 +64,7 @@
             font-family: 'Playfair Display', serif;
             font-size: 32px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -80,7 +80,7 @@
 
         .nav-links a {
             text-decoration: none;
-            color: var(—text-dark);
+            color: var(--text-dark);
             font-weight: 500;
             font-size: 15px;
             letter-spacing: 0.3px;
@@ -89,7 +89,7 @@
         }
 
         .nav-links a:not(.btn-login):hover {
-            color: var(—accent);
+            color: var(--accent);
         }
 
         .nav-links a:not(.btn-login)::after {
@@ -99,7 +99,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(—accent);
+            background: var(--accent);
             transition: width 0.3s ease;
         }
 
@@ -109,16 +109,16 @@
 
         .btn-login {
             padding: 10px 28px;
-            background: var(—primary);
-            color: var(—white) !important;
+            background: var(--primary);
+            color: var(--white) !important;
             border-radius: 50px;
             transition: all 0.3s ease;
-            border: 2px solid var(—primary);
+            border: 2px solid var(--primary);
         }
 
         .btn-login:hover {
-            background: var(—accent);
-            border-color: var(—accent);
+            background: var(--accent);
+            border-color: var(--accent);
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
         }
@@ -127,7 +127,7 @@
         .services-section {
             margin-top: 100px;
             padding: 80px 0;
-            background: var(—white);
+            background: var(--white);
         }
 
         .services-section h2 {
@@ -135,7 +135,7 @@
             font-size: 48px;
             text-align: center;
             margin-bottom: 70px;
-            color: var(—primary);
+            color: var(--primary);
             letter-spacing: -1px;
         }
         
@@ -147,7 +147,7 @@
         }
         
         .service-card {
-            background: var(—off-white);
+            background: var(--off-white);
             border: 1px solid rgba(212, 175, 55, 0.1);
             border-radius: 20px;
             padding: 40px 30px;
@@ -165,7 +165,7 @@
             left: 0;
             width: 100%;
             height: 4px;
-            background: linear-gradient(90deg, var(—accent) 0%, transparent 100%);
+            background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
             transform: scaleX(0);
             transition: transform 0.4s ease;
             transform-origin: left;
@@ -178,7 +178,7 @@
         .service-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-            background: var(—white);
+            background: var(--white);
         }
         
         .service-icon {
@@ -187,19 +187,19 @@
         }
         
         .service-card h3 {
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 15px;
             font-size: 1.5em;
             font-weight: 600;
         }
         
         .service-card p {
-            color: var(—text-light);
+            color: var(--text-light);
             line-height: 1.8;
         }
         
         footer {
-            background-color: var(—text-dark);
+            background-color: var(--text-dark);
             color: white;
             text-align: center;
             padding: 40px 20px;
@@ -211,7 +211,7 @@
 <body>
     <header class="navbar" id="navbar">
         <div class="container">
-            <div class="log⭐>
+            <div class="logo">
                 <h1>Fincart</h1>
             </div>
             <nav>
@@ -231,42 +231,42 @@
             <h2>Our Services</h2>
             
             <div class="services-grid">
-            <!— Service 1 —>
+            <!-- Service 1 -->
             <div class="service-card">
                 <div class="service-icon">💳</div>
                 <h3>Transaction Management</h3>
                 <p>Track your income and expenses efficiently. Add, view, filter, and manage all your financial transactions in one place. Get detailed insights into your spending patterns and maintain complete control over your finances.</p>
             </div>
             
-            <!— Service 2 —>
+            <!-- Service 2 -->
             <div class="service-card">
                 <div class="service-icon">📊</div>
                 <h3>Budget Tracking</h3>
                 <p>Set spending limits by category and monitor your monthly budget versus actual spending. Visualize your budget progress with interactive charts and stay on track with your financial goals.</p>
             </div>
             
-            <!— Service 3 —>
+            <!-- Service 3 -->
             <div class="service-card">
                 <div class="service-icon">📈</div>
                 <h3>Investment Management</h3>
                 <p>Monitor your investment portfolio and track returns on your investments. Calculate profit and loss, categorize investments, and analyze performance with comprehensive portfolio management tools.</p>
             </div>
             
-            <!— Service 4 —>
+            <!-- Service 4 -->
             <div class="service-card">
                 <div class="service-icon">📑</div>
                 <h3>Financial Analytics</h3>
                 <p>Generate detailed financial reports with 12-month trends and category breakdowns. Analyze your spending patterns, compare year-over-year data, and make informed financial decisions.</p>
             </div>
             
-            <!— Service 5 —>
+            <!-- Service 5 -->
             <div class="service-card">
                 <div class="service-icon">🎯</div>
                 <h3>Savings Goals</h3>
                 <p>Set and track financial goals with our smart savings tools. Create multiple goals, monitor your progress in real-time, and receive personalized recommendations to achieve your targets faster.</p>
             </div>
             
-            <!— Service 6 —>
+            <!-- Service 6 -->
             <div class="service-card">
                 <div class="service-icon">⚖️</div>
                 <h3>Tax Planning</h3>

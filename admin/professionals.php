@@ -54,7 +54,7 @@ include '../includes/admin_navbar.php';
                                 </td>
                                 <td>
                                     <?php if ($row['user_id']): ?>
-                                        <a href="edit_user.php?id=<?php echo (int)$row['user_id']; ?>" style="color: var(—accent); text-decoration: none;">
+                                        <a href="edit_user.php?id=<?php echo (int)$row['user_id']; ?>" style="color: var(--accent); text-decoration: none;">
                                             <?php echo htmlspecialchars($row['user_name'] ?? $row['user_email']); ?>
                                         </a>
                                     <?php else: ?>

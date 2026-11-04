@@ -40,24 +40,24 @@ include '../includes/admin_navbar.php';
         </div>
     </div>
 
-    <!— Quick Metrics Grid —>
+    <!-- Quick Metrics Grid -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Registered Users</div>
             <div class="stat-value"><?php echo number_format($user_count); ?></div>
-            <div class="stat-description"><a href="users.php" style="color: var(—accent); text-decoration: none;">Manage users &rarr;</a></div>
+            <div class="stat-description"><a href="users.php" style="color: var(--accent); text-decoration: none;">Manage users &rarr;</a></div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Active Professionals</div>
             <div class="stat-value"><?php echo number_format($pro_count); ?></div>
-            <div class="stat-description"><a href="professionals.php" style="color: var(—accent); text-decoration: none;">View directory &rarr;</a></div>
+            <div class="stat-description"><a href="professionals.php" style="color: var(--accent); text-decoration: none;">View directory &rarr;</a></div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Pending Applications</div>
             <div class="stat-value" style="color: <?php echo $pending_apps > 0 ? '#e74c3c' : '#27ae60'; ?>;">
                 <?php echo number_format($pending_apps); ?>
             </div>
-            <div class="stat-description"><a href="requests.php" style="color: var(—accent); text-decoration: none;">Review queue &rarr;</a></div>
+            <div class="stat-description"><a href="requests.php" style="color: var(--accent); text-decoration: none;">Review queue &rarr;</a></div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total Transactions</div>
@@ -66,7 +66,7 @@ include '../includes/admin_navbar.php';
         </div>
     </div>
 
-    <!— Action Modules —>
+    <!-- Action Modules -->
     <div class="admin-card">
         <h2 style="font-size: 20px; margin-bottom: 20px;">Platform Management Modules</h2>
         <div class="admin-grid-cards">

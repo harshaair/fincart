@@ -159,23 +159,23 @@ while ($row = $budget_result->fetch_assoc()) {
         }
 
         :root {
-            —primary: #1a1a1a;
-            —secondary: #f8f6f3;
-            —accent: #d4af37;
-            —text-dark: #2c2c2c;
-            —text-light: #666;
-            —white: #ffffff;
-            —off-white: #fafaf9;
-            —success: #27ae60;
-            —danger: #e74c3c;
-            —warning: #f39c12;
-            —info: #3498db;
+            --primary: #1a1a1a;
+            --secondary: #f8f6f3;
+            --accent: #d4af37;
+            --text-dark: #2c2c2c;
+            --text-light: #666;
+            --white: #ffffff;
+            --off-white: #fafaf9;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(—off-white) 0%, var(—secondary) 100%);
-            color: var(—text-dark);
+            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
+            color: var(--text-dark);
             min-height: 100vh;
         }
 
@@ -202,7 +202,7 @@ while ($row = $budget_result->fetch_assoc()) {
             font-family: 'Playfair Display', serif;
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(—primary) 0%, var(—accent) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -215,20 +215,20 @@ while ($row = $budget_result->fetch_assoc()) {
         }
 
         .nav-link {
-            color: var(—text-dark);
+            color: var(--text-dark);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .nav-link:hover {
-            color: var(—accent);
+            color: var(--accent);
         }
 
         .logout-btn {
             padding: 8px 20px;
-            background: var(—danger);
-            color: var(—white);
+            background: var(--danger);
+            color: var(--white);
             border: none;
             border-radius: 20px;
             cursor: pointer;
@@ -258,7 +258,7 @@ while ($row = $budget_result->fetch_assoc()) {
         .page-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 42px;
-            color: var(—primary);
+            color: var(--primary);
             letter-spacing: -1px;
         }
 
@@ -280,12 +280,12 @@ while ($row = $budget_result->fetch_assoc()) {
 
         input:focus {
             outline: none;
-            border-color: var(—accent);
+            border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
         .card {
-            background: var(—white);
+            background: var(--white);
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
@@ -295,7 +295,7 @@ while ($row = $budget_result->fetch_assoc()) {
         .card h2 {
             font-family: 'Playfair Display', serif;
             font-size: 24px;
-            color: var(—primary);
+            color: var(--primary);
             margin-bottom: 25px;
             letter-spacing: -0.5px;
         }
@@ -308,22 +308,22 @@ while ($row = $budget_result->fetch_assoc()) {
         }
 
         .stat-card {
-            background: var(—off-white);
+            background: var(--off-white);
             padding: 25px;
             border-radius: 15px;
-            border-left: 5px solid var(—accent);
+            border-left: 5px solid var(--accent);
         }
 
         .stat-card.positive {
-            border-left-color: var(—success);
+            border-left-color: var(--success);
         }
 
         .stat-card.negative {
-            border-left-color: var(—danger);
+            border-left-color: var(--danger);
         }
 
         .stat-label {
-            color: var(—text-light);
+            color: var(--text-light);
             font-size: 14px;
             margin-bottom: 10px;
             font-weight: 500;
@@ -333,12 +333,12 @@ while ($row = $budget_result->fetch_assoc()) {
             font-family: 'Playfair Display', serif;
             font-size: 32px;
             font-weight: 700;
-            color: var(—primary);
+            color: var(--primary);
         }
 
         .stat-change {
             font-size: 12px;
-            color: var(—text-light);
+            color: var(--text-light);
             margin-top: 8px;
         }
 
@@ -384,7 +384,7 @@ while ($row = $budget_result->fetch_assoc()) {
         }
 
         .breakdown-category-name {
-            color: var(—primary);
+            color: var(--primary);
             font-weight: 600;
         }
 
@@ -392,13 +392,13 @@ while ($row = $budget_result->fetch_assoc()) {
             font-family: 'Playfair Display', serif;
             font-size: 18px;
             font-weight: 700;
-            color: var(—primary);
+            color: var(--primary);
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: var(—text-light);
+            color: var(--text-light);
         }
 
         .comparison-table {
@@ -415,9 +415,9 @@ while ($row = $budget_result->fetch_assoc()) {
         }
 
         .comparison-table th {
-            background: var(—off-white);
+            background: var(--off-white);
             font-weight: 700;
-            color: var(—primary);
+            color: var(--primary);
         }
 
         .comparison-table tr:hover {
@@ -445,10 +445,10 @@ while ($row = $budget_result->fetch_assoc()) {
     </style>
 </head>
 <body>
-    <!— Header —>
+    <!-- Header -->
     <header>
         <div class="header-container">
-            <div class="log⭐>
+            <div class="logo">
                 <h1>Fincart</h1>
             </div>
             <div class="nav-links">
@@ -462,22 +462,22 @@ while ($row = $budget_result->fetch_assoc()) {
         </div>
     </header>
 
-    <!— Main Content —>
+    <!-- Main Content -->
     <div class="container">
         <div class="page-header">
             <div>
                 <h1>Financial Analytics</h1>
-                <p style="color: var(—text-light); margin-top: 5px;">Comprehensive overview of your financial performance</p>
+                <p style="color: var(--text-light); margin-top: 5px;">Comprehensive overview of your financial performance</p>
             </div>
             <div class="filter-controls">
                 <form method="GET" style="display: flex; gap: 15px;">
                     <input type="month" name="month" value="<?php echo $filter_month; ?>" onchange="this.form.submit();">
-                    <button type="submit" style="padding: 10px 20px; background: var(—primary); color: var(—white); border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">Apply</button>
+                    <button type="submit" style="padding: 10px 20px; background: var(--primary); color: var(--white); border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">Apply</button>
                 </form>
             </div>
         </div>
 
-        <!— Key Metrics —>
+        <!-- Key Metrics -->
         <div class="card">
             <h2>Monthly Summary - <?php echo date('F Y', strtotime($filter_month . '-01')); ?></h2>
             <div class="stats-grid">
@@ -500,9 +500,9 @@ while ($row = $budget_result->fetch_assoc()) {
             </div>
         </div>
 
-        <!— Charts Section —>
+        <!-- Charts Section -->
         <div class="charts-grid">
-            <!— Trend Chart —>
+            <!-- Trend Chart -->
             <div class="card full-width-chart">
                 <h2>12-Month Income vs Expense Trend</h2>
                 <div class="chart-container">
@@ -510,7 +510,7 @@ while ($row = $budget_result->fetch_assoc()) {
                 </div>
             </div>
 
-            <!— Expense Breakdown —>
+            <!-- Expense Breakdown -->
             <div class="card">
                 <h2>Expense Distribution</h2>
                 <div class="chart-container">
@@ -518,7 +518,7 @@ while ($row = $budget_result->fetch_assoc()) {
                 </div>
             </div>
 
-            <!— Income Breakdown —>
+            <!-- Income Breakdown -->
             <div class="card">
                 <h2>Income Sources</h2>
                 <div class="chart-container">
@@ -527,9 +527,9 @@ while ($row = $budget_result->fetch_assoc()) {
             </div>
         </div>
 
-        <!— Detailed Breakdown —>
+        <!-- Detailed Breakdown -->
         <div class="breakdown-grid">
-            <!— Expense Breakdown Details —>
+            <!-- Expense Breakdown Details -->
             <div class="card">
                 <h2>Top Expenses</h2>
                 <?php if (count($expense_data) > 0): ?>
@@ -548,7 +548,7 @@ while ($row = $budget_result->fetch_assoc()) {
                 <?php endif; ?>
             </div>
 
-            <!— Income Breakdown Details —>
+            <!-- Income Breakdown Details -->
             <div class="card">
                 <h2>Income Sources</h2>
                 <?php if (count($income_data) > 0): ?>
@@ -568,7 +568,7 @@ while ($row = $budget_result->fetch_assoc()) {
             </div>
         </div>
 
-        <!— Budget vs Spending Comparison —>
+        <!-- Budget vs Spending Comparison -->
         <?php if (count($budget_data) > 0): ?>
             <div class="card">
                 <h2>Budget vs Actual Spending</h2>
@@ -592,9 +592,9 @@ while ($row = $budget_result->fetch_assoc()) {
                                 <td>
                                     <?php 
                                     if ($item['spent'] <= $item['budget']) {
-                                        echo '<span style="color: var(—success); font-weight: 600;">✓ Within Budget</span>';
+                                        echo '<span style="color: var(--success); font-weight: 600;">✓ Within Budget</span>';
                                     } else {
-                                        echo '<span style="color: var(—danger); font-weight: 600;">⚠ Over Budget</span>';
+                                        echo '<span style="color: var(--danger); font-weight: 600;">⚠ Over Budget</span>';
                                     }
                                     ?>
                                 </td>
@@ -605,7 +605,7 @@ while ($row = $budget_result->fetch_assoc()) {
             </div>
         <?php endif; ?>
 
-        <!— Yearly Comparison —>
+        <!-- Yearly Comparison -->
         <?php if (count($yearly_data) > 1): ?>
             <div class="card">
                 <h2>Year-over-Year Comparison</h2>
