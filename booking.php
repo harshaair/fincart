@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 require_once "includes/mailer.php";
 
@@ -30,9 +31,11 @@ $professional = $prof_result->fetch_assoc();
 
 // Handle booking
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $appointment_date = $_POST['appointment_date'];
-    $appointment_time = $_POST['appointment_time'];
-    $consultation_type = $_POST['consultation_type'];
+    enforce_csrf();
+
+    $appointment_date = $_POST['appointment_date'] ?? '';
+    $appointment_time = $_POST['appointment_time'] ?? '';
+    $consultation_type = $_POST['consultation_type'] ?? '';
     $notes = $_POST['notes'] ?? '';
 
     // Validate date is in future
@@ -41,26 +44,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($appointment_time)) {
         $error = 'Please select a time slot';
     } else {
-        // Check if slot is already booked
-        $check_sql = "SELECT id FROM appointments WHERE professional_id = ? AND appointment_date = ? AND appointment_time = ? AND status != 'cancelled'";
-        $check_stmt = $conn->prepare($check_sql);
-        $check_stmt->bind_param("iss", $professional_id, $appointment_date, $appointment_time);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
+        // Atomic transaction with row-level slot locking
+        $conn->begin_transaction();
+        try {
+            $check_sql = "SELECT id FROM appointments WHERE professional_id = ? AND appointment_date = ? AND appointment_time = ? AND status != 'cancelled' FOR UPDATE";
+            $check_stmt = $conn->prepare($check_sql);
+            $check_stmt->bind_param("iss", $professional_id, $appointment_date, $appointment_time);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
 
-        if ($check_result->num_rows > 0) {
-            $error = 'This time slot is already booked. Please select another.';
-        } else {
-            // Book appointment
-            $book_sql = "INSERT INTO appointments (professional_id, user_id, appointment_date, appointment_time, consultation_type, notes, status) VALUES (?, ?, ?, ?, ?, ?, 'confirmed')";
-            $book_stmt = $conn->prepare($book_sql);
-            $book_stmt->bind_param("iissss", $professional_id, $user_id, $appointment_date, $appointment_time, $consultation_type, $notes);
+            if ($check_result->num_rows > 0) {
+                $conn->rollback();
+                $error = 'This time slot is already booked. Please select another.';
+            } else {
+                $book_sql = "INSERT INTO appointments (professional_id, user_id, appointment_date, appointment_time, consultation_type, notes, status) VALUES (?, ?, ?, ?, ?, ?, 'confirmed')";
+                $book_stmt = $conn->prepare($book_sql);
+                $book_stmt->bind_param("iissss", $professional_id, $user_id, $appointment_date, $appointment_time, $consultation_type, $notes);
+                $book_stmt->execute();
 
-            if ($book_stmt->execute()) {
+                $conn->commit();
                 $message = 'Appointment booked successfully! You will receive a confirmation email shortly.';
-                // Send email notifications (if mail is available)
+
+                // Send email notifications
                 $prof_email = $professional['email'] ?? null;
-                // find an admin email
                 $admin_email = null;
                 $a = $conn->query("SELECT email FROM users WHERE role = 'admin' LIMIT 1");
                 if ($a && $a->num_rows) {
@@ -69,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $subject = "New appointment booked with " . $professional['name'];
-                $body = "Hello,\n\nAn appointment has been booked on " . $appointment_date . " at " . $appointment_time . " by " . htmlspecialchars($_SESSION['user_name']) . ".\n\nDetails:\nProfessional: " . $professional['name'] . "\nUser: " . htmlspecialchars($_SESSION['user_name']) . " (" . htmlspecialchars($user_id) . ")\nNotes: " . htmlspecialchars($notes) . "\n\nPlease login to the admin panel to view details.\n";
+                $body = "Hello,\n\nAn appointment has been booked on " . $appointment_date . " at " . $appointment_time . " by " . htmlspecialchars($_SESSION['user_name']) . ".\n\nDetails:\nProfessional: " . $professional['name'] . "\nUser: " . htmlspecialchars($_SESSION['user_name']) . " (" . htmlspecialchars($user_id) . ")\nNotes: " . htmlspecialchars($notes) . "\n\nPlease login to the portal to view details.\n";
                 $headers = 'From: no-reply@fincart.local' . "\r\n" . 'Reply-To: no-reply@fincart.local' . "\r\n";
 
                 if ($prof_email) {
@@ -78,9 +84,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($admin_email) {
                     @mail($admin_email, $subject, $body, $headers);
                 }
-            } else {
-                $error = 'Failed to book appointment. Please try again.';
             }
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error = 'Failed to book appointment: ' . $e->getMessage();
         }
     }
 }
@@ -472,6 +479,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                 <?php endif; ?>
 
                 <form method="POST">
+                    <?php echo csrf_field(); ?>
                     <div class="form-group">
                         <label>Consultation Date</label>
                         <select name="appointment_date" required>

@@ -64,11 +64,13 @@ include '../includes/admin_navbar.php';
                                 <td style="text-align: right;">
                                     <div class="admin-actions-cell" style="justify-content: flex-end;">
                                         <form method="POST" action="verify_professional.php" style="display:inline;">
+                                            <?php echo csrf_field(); ?>
                                             <input type="hidden" name="application_id" value="<?php echo (int)$row['id']; ?>">
                                             <input type="hidden" name="user_id" value="<?php echo (int)$row['user_id']; ?>">
                                             <button type="submit" class="btn btn-primary btn-sm" style="background: #27ae60;">Approve</button>
                                         </form>
                                         <form method="POST" action="reject_professional.php" style="display:inline;" onsubmit="return confirm('Reject this application?');">
+                                            <?php echo csrf_field(); ?>
                                             <input type="hidden" name="application_id" value="<?php echo (int)$row['id']; ?>">
                                             <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                                         </form>

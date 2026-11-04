@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/../includes/security.php';
+init_secure_session();
+enforce_csrf();
 require_once('../db.php');
 require_once('../includes/mailer.php');
 

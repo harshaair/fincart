@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 require_once "includes/tax_helper.php";
 
@@ -12,6 +13,10 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
+}
 
 // Handle add deduction
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
@@ -147,6 +152,7 @@ include "includes/navbar.php";
         <div class="card">
             <h2 style="font-size: 20px; margin-bottom: 20px;">+ Add Tax Deduction Record</h2>
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="add">
                 
                 <div class="form-group">
@@ -217,6 +223,7 @@ include "includes/navbar.php";
                                 <td><strong>₹<?php echo number_format((float)$d['amount'], 2); ?></strong></td>
                                 <td style="text-align: right;">
                                     <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this deduction record?');">
+                                        <?php echo csrf_field(); ?>
                                         <input type="hidden" name="delete_id" value="<?php echo (int)$d['id']; ?>">
                                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>

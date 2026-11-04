@@ -440,6 +440,53 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
   KEY `token` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `rate_limits`
+--
+
+DROP TABLE IF EXISTS `rate_limits`;
+CREATE TABLE IF NOT EXISTS `rate_limits` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `action_key` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL UNIQUE,
+  `attempts` int NOT NULL DEFAULT '1',
+  `first_attempt_at` int unsigned NOT NULL,
+  `last_attempt_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_action_last` (`action_key`, `last_attempt_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `system_sessions`
+--
+
+DROP TABLE IF EXISTS `system_sessions`;
+CREATE TABLE IF NOT EXISTS `system_sessions` (
+  `id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` int DEFAULT NULL,
+  `data` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `last_activity` int unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_last_activity` (`last_activity`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `migrations`
+--
+
+DROP TABLE IF EXISTS `migrations`;
+CREATE TABLE IF NOT EXISTS `migrations` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `migration_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL UNIQUE,
+  `applied_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 --
 -- Re-enable Foreign Key Checks and Commit
 --

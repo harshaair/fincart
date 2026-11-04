@@ -33,6 +33,11 @@ jobs:
       - name: Run PHP Syntax Lint
         run: find . -name "*.php" -not -path "./node_modules/*" -exec php -l {} \;
 
+      - name: Run Native PHP Backend Test Suite
+        run: |
+          php tests/php/test_security.php
+          php tests/php/test_tax_service.php
+
       - name: Run Vitest Test Suite
         run: npm test
 

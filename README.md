@@ -51,9 +51,16 @@ For quick evaluation without having to register new accounts, use these pre-seed
 ### 3. Role-Based Access Control (RBAC)
 * Independent session guards (`auth_admin.php`, `auth_professional.php`) guarding administrative and expert endpoints.
 
-### 4. Automated Testing
-* **Vitest Test Suite**: 20 unit & integration tests covering tax slab logic, rebate edge cases, deduction ceilings, budget calculations, and authentication rules.
-* **Continuous Integration**: GitHub Actions automated pipeline executing syntax linting and test runs on every pull request and commit.
+### 4. Enterprise Security Architecture
+* **CSRF Mitigation**: Cryptographically random 256-bit token generation (`bin2hex(random_bytes(32))`) with timing-attack resistant verification (`hash_equals`) and automatic form protection.
+* **Database Rate Limiting**: Exponential lockout engine guarding `/login.php`, `/signup.php`, and `/forgot_password.php` against credential stuffing and brute-force attacks.
+* **Hardened Session Cookies**: Enforced `HttpOnly`, `SameSite=Lax`, and `Secure` attributes with periodic ID regeneration to eliminate session hijacking/fixation risks.
+* **ACID Transactions**: Critical financial state transitions (appointments, password resets, application approvals) protected by explicit `$conn->begin_transaction()`, `$conn->commit()`, and row-level locks (`SELECT ... FOR UPDATE`).
+
+### 5. Automated CI Testing & Migration Engine
+* **Automated Migration Engine**: Sequential SQL migrations under `database/migrations/` managed by [`tools/migrate.php`](tools/migrate.php).
+* **Dual Test Suites**: Native backend PHP test suites (`tests/php/`) running in tandem with Vitest unit tests (22/22 passed).
+* **Continuous Integration**: GitHub Actions automated pipeline executing PHP syntax linting, native PHP test suites, and Vitest runs on every pull request and commit.
 
 ---
 

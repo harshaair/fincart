@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 // Check if user is logged in
@@ -11,6 +12,10 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
+}
 
 // Handle add goal
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_goal') {
@@ -40,28 +45,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $goal_id = intval($_POST['goal_id']);
     $deposit_amount = floatval($_POST['deposit_amount']);
 
-    // Verify goal belongs to user
-    $verify_sql = "SELECT current_amount, target_amount FROM goals WHERE id = ? AND user_id = ?";
-    $verify_stmt = $conn->prepare($verify_sql);
-    $verify_stmt->bind_param("ii", $goal_id, $user_id);
-    $verify_stmt->execute();
-    $verify_result = $verify_stmt->get_result();
-
-    if ($verify_result->num_rows > 0) {
-        $goal_data = $verify_result->fetch_assoc();
-        $new_amount = min($goal_data['current_amount'] + $deposit_amount, $goal_data['target_amount']);
-
-        $sql = "UPDATE goals SET current_amount = ? WHERE id = ? AND user_id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("dii", $new_amount, $goal_id, $user_id);
-
-        if ($stmt->execute()) {
-            $message = 'Deposit added successfully!';
-        } else {
-            $error = 'Failed to add deposit. Please try again.';
-        }
+    if ($deposit_amount <= 0) {
+        $error = 'Deposit amount must be greater than zero.';
     } else {
-        $error = 'Goal not found.';
+        $conn->begin_transaction();
+        try {
+            // Verify goal belongs to user with row lock
+            $verify_sql = "SELECT current_amount, target_amount FROM goals WHERE id = ? AND user_id = ? FOR UPDATE";
+            $verify_stmt = $conn->prepare($verify_sql);
+            $verify_stmt->bind_param("ii", $goal_id, $user_id);
+            $verify_stmt->execute();
+            $verify_result = $verify_stmt->get_result();
+
+            if ($verify_result->num_rows > 0) {
+                $goal_data = $verify_result->fetch_assoc();
+                $new_amount = min($goal_data['current_amount'] + $deposit_amount, $goal_data['target_amount']);
+
+                $sql = "UPDATE goals SET current_amount = ? WHERE id = ? AND user_id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("dii", $new_amount, $goal_id, $user_id);
+                $stmt->execute();
+
+                $conn->commit();
+                $message = 'Deposit added successfully!';
+            } else {
+                $conn->rollback();
+                $error = 'Goal not found.';
+            }
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error = 'Failed to process deposit: ' . $e->getMessage();
+        }
     }
 }
 
@@ -602,6 +616,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
             <div class="card">
                 <h2>Create New Goal</h2>
                 <form method="POST">
+                    <?php echo csrf_field(); ?>
                     <input type="hidden" name="action" value="add_goal">
                     
                     <div class="form-group">
@@ -702,6 +717,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
                             <div class="goal-actions">
                                 <button class="btn-deposit" onclick="openDepositModal(<?php echo $goal['id']; ?>)">💰 Add Deposit</button>
                                 <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this goal?');">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="delete_id" value="<?php echo $goal['id']; ?>">
                                     <button type="submit" class="btn-delete">Delete</button>
                                 </form>
@@ -727,6 +743,7 @@ $goals_achieved = count(array_filter($goals, fn($g) => $g['status'] === 'Achieve
                 <button class="close-btn" onclick="closeDepositModal()">×</button>
             </div>
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="add_deposit">
                 <input type="hidden" id="modal_goal_id" name="goal_id" value="">
 

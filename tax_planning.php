@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 require_once "includes/tax_helper.php";
 
@@ -11,6 +12,10 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 $current_year = date('Y');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
+}
 
 // Get current year income
 $income_sql = "SELECT SUM(amount) as total_income FROM transactions WHERE user_id = ? AND type = 'income' AND YEAR(date) = ?";
@@ -138,6 +143,7 @@ include "includes/navbar.php";
         </p>
 
         <form method="POST" style="margin-bottom: 25px;">
+            <?php echo csrf_field(); ?>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
                 <div class="form-group">
                     <label>Annual Gross Income (₹)</label>

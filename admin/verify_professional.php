@@ -1,6 +1,7 @@
 <?php
 include '../auth_admin.php';
 include '../db.php';
+enforce_csrf();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['application_id']) || !isset($_POST['user_id'])) {
     header('Location: requests.php');

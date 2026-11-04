@@ -162,11 +162,13 @@ if ($prof) {
                                         <?php if ($apt['status'] === 'pending'): ?>
                                             <div style="display: flex; gap: 6px; justify-content: flex-end;">
                                                 <form method="POST" action="appointment_action.php" style="display:inline;">
+                                                    <?php echo csrf_field(); ?>
                                                     <input type="hidden" name="appointment_id" value="<?php echo (int)$apt['id']; ?>">
                                                     <input type="hidden" name="action" value="accept">
                                                     <button type="submit" class="btn btn-primary btn-sm" style="background: #27ae60;">Accept</button>
                                                 </form>
                                                 <form method="POST" action="appointment_action.php" style="display:inline;" onsubmit="return confirm('Reject this appointment?');">
+                                                    <?php echo csrf_field(); ?>
                                                     <input type="hidden" name="appointment_id" value="<?php echo (int)$apt['id']; ?>">
                                                     <input type="hidden" name="action" value="reject">
                                                     <button type="submit" class="btn btn-danger btn-sm">Decline</button>
@@ -174,6 +176,7 @@ if ($prof) {
                                             </div>
                                         <?php elseif ($apt['status'] === 'confirmed'): ?>
                                             <form method="POST" action="appointment_action.php" style="display:inline;" onsubmit="return confirm('Cancel this confirmed session?');">
+                                                <?php echo csrf_field(); ?>
                                                 <input type="hidden" name="appointment_id" value="<?php echo (int)$apt['id']; ?>">
                                                 <input type="hidden" name="action" value="cancel">
                                                 <button type="submit" class="btn btn-secondary btn-sm">Cancel</button>

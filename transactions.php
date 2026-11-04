@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 // Check if user is logged in
@@ -11,6 +12,10 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
+}
 
 // Handle delete transaction
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
@@ -250,6 +255,7 @@ include "includes/navbar.php";
                                         Edit
                                     </button>
                                     <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this transaction?');">
+                                        <?php echo csrf_field(); ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="transaction_id" value="<?php echo (int)$t['id']; ?>">
                                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
@@ -307,6 +313,7 @@ include "includes/navbar.php";
             <button type="button" onclick="closeEditModal()" style="background: none; border: none; font-size: 22px; cursor: pointer;">&times;</button>
         </div>
         <form method="POST">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="action" value="edit">
             <input type="hidden" name="transaction_id" id="edit_id">
 

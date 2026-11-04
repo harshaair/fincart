@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include 'db.php';
 
 // Check if user is logged in
@@ -14,6 +15,7 @@ $error = $_GET['error'] ?? '';
 
 // Handle rating and review submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_rating') {
+    enforce_csrf();
     $appointment_id = intval($_POST['appointment_id'] ?? 0);
     $professional_id = intval($_POST['professional_id'] ?? 0);
     $rating = intval($_POST['rating'] ?? 0);
@@ -162,6 +164,7 @@ include "includes/navbar.php";
                         <div>
                             <?php if (!in_array($apt['status'], ['cancelled', 'rejected'])): ?>
                                 <form method="POST" action="cancel_appointment.php" onsubmit="return confirm('Are you sure you want to cancel this appointment?');" style="display: inline;">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="appointment_id" value="<?php echo (int)$apt['id']; ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Cancel Appointment</button>
                                 </form>
@@ -194,6 +197,7 @@ include "includes/navbar.php";
         </p>
 
         <form method="POST">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="action" value="submit_rating">
             <input type="hidden" name="appointment_id" id="modal_apt_id">
             <input type="hidden" name="professional_id" id="modal_prof_id">

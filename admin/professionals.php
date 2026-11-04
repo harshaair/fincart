@@ -73,16 +73,19 @@ include '../includes/admin_navbar.php';
                                     <div class="admin-actions-cell" style="justify-content: flex-end;">
                                         <?php if ($row['status'] === 'active'): ?>
                                             <form method="POST" action="revoke_professional.php" style="display:inline;" onsubmit="return confirm('Revoke active status for this professional?');">
+                                            <?php echo csrf_field(); ?>
                                                 <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                                 <button type="submit" class="btn btn-secondary btn-sm">Revoke</button>
                                             </form>
                                         <?php else: ?>
                                             <form method="POST" action="verify_professional.php" style="display:inline;">
+                                            <?php echo csrf_field(); ?>
                                                 <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                                 <button type="submit" class="btn btn-primary btn-sm" style="background: #27ae60;">Activate</button>
                                             </form>
                                         <?php endif; ?>
                                         <form method="POST" action="delete_professional.php" style="display:inline;" onsubmit="return confirm('Delete this professional directory listing?');">
+                                            <?php echo csrf_field(); ?>
                                             <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                         </form>

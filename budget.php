@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 // Check if user is logged in
@@ -11,6 +12,10 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
+}
 
 // Handle add/update budget
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_budget') {
@@ -158,6 +163,7 @@ include "includes/navbar.php";
         <div class="card">
             <h2 style="font-size: 20px; margin-bottom: 20px;">Set Monthly Budget Limit</h2>
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="save_budget">
                 
                 <div class="form-group">
@@ -213,6 +219,7 @@ include "includes/navbar.php";
                                     <?php echo number_format($b['percentage'], 1); ?>%
                                 </span>
                                 <form method="POST" style="display:inline;" onsubmit="return confirm('Remove budget for <?php echo htmlspecialchars($b['category']); ?>?');">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="delete_id" value="<?php echo (int)$b['id']; ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                 </form>

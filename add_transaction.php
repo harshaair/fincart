@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 // Check if user is logged in
@@ -14,7 +15,8 @@ $error = '';
 
 // Handle add transaction
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $type = $_POST['type'];
+    enforce_csrf();
+    $type = $_POST['type'] ?? '';
     $category = $_POST['category'];
     $amount = floatval($_POST['amount']);
     $description = $_POST['description'];
@@ -349,6 +351,7 @@ $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', '
 
         <div class="form-card">
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <!-- Type Selector -->
                 <label style="margin-bottom: 12px;">Transaction Type</label>
                 <div class="type-selector">

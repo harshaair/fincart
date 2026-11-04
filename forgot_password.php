@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 require_once "includes/mailer.php";
 
@@ -8,7 +9,14 @@ $error = '';
 $reset_link_debug = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim(strtolower($_POST['email'] ?? ''));
+    enforce_csrf();
+
+    $rate = check_rate_limit($conn, 'forgot_password', 3, 900);
+    if (!$rate['allowed']) {
+        $minutes = ceil($rate['retry_after'] / 60);
+        $error = "Too many password reset attempts. Please wait {$minutes} minute(s) before trying again.";
+    } else {
+        $email = trim(strtolower($_POST['email'] ?? ''));
 
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid registered email address.';
@@ -112,6 +120,7 @@ $page_title = 'Forgot Password - FinCart';
     <?php endif; ?>
 
     <form method="POST">
+        <?php echo csrf_field(); ?>
         <div class="form-group">
             <label>Registered Email Address</label>
             <input type="email" name="email" class="form-control" placeholder="name@example.com" required autofocus>

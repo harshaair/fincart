@@ -79,6 +79,7 @@ include '../includes/admin_navbar.php';
                                         <a href="edit_user.php?id=<?php echo (int)$row['id']; ?>" class="btn btn-secondary btn-sm">Edit</a>
                                         <?php if ($row['role'] !== 'admin'): ?>
                                             <form method="POST" action="delete_user.php" style="display:inline;" onsubmit="return confirm('Are you sure you want to permanently delete user <?php echo htmlspecialchars($row['full_name'] ?? $row['email']); ?>?');">
+                                                <?php echo csrf_field(); ?>
                                                 <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                             </form>

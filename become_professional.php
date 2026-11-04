@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 ?>
 <!DOCTYPE html>
@@ -59,6 +60,7 @@ include "db.php";
         }
         ?>
         <form class="auth-form" method="post" action="professional/become_handler.php" autocomplete="off">
+            <?php echo csrf_field(); ?>
 
             <!-- Always ask user details -->
             <div class="form-group">

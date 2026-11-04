@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once('includes/security.php');
+init_secure_session();
 require_once('db.php');
 require_once('includes/mailer.php');
 
@@ -7,6 +8,10 @@ require_once('includes/mailer.php');
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.html');
     exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
 }
 
 $user_id = $_SESSION['user_id'];
@@ -112,10 +117,6 @@ try {
     </body>
     </html>
     ";
-
-    $headers = "MIME-Version: 1.0" . "\r\n";
-    $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-    $headers .= "From: noreply@fincart.local" . "\r\n";
 
     sendFinCartEmail($to, $subject, $message);
 

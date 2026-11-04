@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 // Check if user is logged in
@@ -27,6 +28,7 @@ $error = '';
 
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
     if (isset($_POST['action']) && $_POST['action'] === 'update_profile') {
         $name = trim($_POST['full_name']);
         $email = trim(strtolower($_POST['email']));
@@ -376,6 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-card">
             <h2>Profile Information</h2>
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="update_profile">
                 
                 <div class="input-group">
@@ -408,6 +411,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-card">
             <h2>Change Password</h2>
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="change_password">
                 
                 <div class="form-group">

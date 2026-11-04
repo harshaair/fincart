@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 $message = '';
@@ -26,6 +27,8 @@ if (!empty($token)) {
 
 // Handle password update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $token_valid) {
+    enforce_csrf();
+
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
@@ -37,19 +40,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $token_valid) {
         $email = $reset_record['email'];
         $hash = password_hash($new_password, PASSWORD_DEFAULT);
 
-        // Update user's password
-        $upd = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-        $upd->bind_param("ss", $hash, $email);
+        // Transactional password update + token consumption
+        $conn->begin_transaction();
+        try {
+            $upd = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+            $upd->bind_param("ss", $hash, $email);
+            $upd->execute();
 
-        if ($upd->execute()) {
-            // Delete used token(s)
             $del = $conn->prepare("DELETE FROM password_resets WHERE email = ?");
             $del->bind_param("s", $email);
             $del->execute();
 
+            $conn->commit();
             $message = "Your password has been successfully reset! You can now log in with your new password.";
             $token_valid = false; // Prevent resubmission
-        } else {
+        } catch (Exception $e) {
+            $conn->rollback();
             $error = "Failed to update password. Please try again.";
         }
     }
@@ -110,6 +116,7 @@ $page_title = 'Set New Password - FinCart';
 
     <?php if ($token_valid): ?>
         <form method="POST">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
 
             <div class="form-group">

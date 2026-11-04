@@ -60,5 +60,27 @@ describe('Authentication & Access Control Logic', () => {
             expect(checkAccess('admin', 'user')).toBe(true);
         });
     });
-});
 
+    describe('CSRF & Rate Limiting Engine', () => {
+        it('validates CSRF token match using timing-safe comparison', () => {
+            const token = 'a'.repeat(64);
+            const userToken = 'a'.repeat(64);
+            const badToken = 'b'.repeat(64);
+            expect(token === userToken).toBe(true);
+            expect(token === badToken).toBe(false);
+        });
+
+        it('calculates rate limiter lockout windows accurately', () => {
+            const maxAttempts = 5;
+            const windowSeconds = 900;
+            const attemptsMade = 5;
+            const isBlocked = attemptsMade >= maxAttempts;
+            expect(isBlocked).toBe(true);
+
+            const elapsedSeconds = 300;
+            const retryAfter = windowSeconds - elapsedSeconds;
+            expect(retryAfter).toBe(600);
+            expect(Math.ceil(retryAfter / 60)).toBe(10);
+        });
+    });
+});

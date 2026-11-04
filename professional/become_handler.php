@@ -1,11 +1,14 @@
 <?php
-session_start();
+require_once __DIR__ . '/../includes/security.php';
+init_secure_session();
 include '../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../become_professional.php');
     exit();
 }
+
+enforce_csrf();
 
 $conn->begin_transaction();
 
@@ -29,71 +32,85 @@ try {
             throw new Exception('You are logged in with a different email (' . htmlspecialchars($current_email) . '). Please logout first if you want to apply with a different email address.');
         }
         
+        // Check if this user is ALREADY approved
+        $stmt = $conn->prepare("SELECT id FROM professionals WHERE user_id = ?");
+        $stmt->bind_param('i', $_SESSION['user_id']);
+        $stmt->execute();
+        if ($stmt->get_result()->num_rows > 0) {
+            throw new Exception('You are already an approved professional. Please access the professional dashboard.');
+        }
+        
+        // Use current user's ID
         $user_id = $_SESSION['user_id'];
     } else {
-        // Create a new user account
+        // User is NOT logged in - validate registration fields
         $full_name = trim($_POST['full_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        if (!$full_name || !$email || !$password) {
+        
+        if (empty($full_name) || empty($email) || empty($password)) {
             throw new Exception('Missing required account information.');
         }
-
-        // Check for existing user with same email
-        $chk = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
-        $chk->bind_param('s', $email);
-        $chk->execute();
-        $res = $chk->get_result();
-        if ($res && $res->num_rows > 0) {
-            throw new Exception('Email already registered. Please login and apply from your account.');
+        
+        // Check if email already exists
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        if ($stmt->get_result()->num_rows > 0) {
+            throw new Exception('An account with this email already exists. Please login first before applying.');
         }
-
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $ins = $conn->prepare("INSERT INTO users (full_name, email, password, role, created_at) VALUES (?, ?, ?, 'professional_pending', NOW())");
-        $ins->bind_param('sss', $full_name, $email, $hash);
-        if (!$ins->execute()) {
-            throw new Exception('Failed to create user account.');
-        }
+        
+        // Create new user with professional_pending role
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        $role = 'professional_pending';
+        $verified = 0;
+        
+        $stmt = $conn->prepare("INSERT INTO users (full_name, email, password, role, verified) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param('ssssi', $full_name, $email, $password_hash, $role, $verified);
+        $stmt->execute();
+        
         $user_id = $conn->insert_id;
-        // Log the user in
+        
+        // Auto-login the newly created user
         $_SESSION['user_id'] = $user_id;
         $_SESSION['user_name'] = $full_name;
-        $_SESSION['role'] = 'professional_pending';
+        $_SESSION['user_email'] = $email;
+        $_SESSION['role'] = $role;
     }
-
-    // Prepare professional data
-    $professional_type = $_POST['professional_type'] ?? '';
-    $qualification = $_POST['qualification'] ?? '';
-    $experience_years = $_POST['experience_years'] ? intval($_POST['experience_years']) : NULL;
-    $specialization = $_POST['specialization'] ?? '';
-    $bio = $_POST['bio'] ?? '';
-    $phone = $_POST['phone'] ?? '';
-    $city = $_POST['city'] ?? '';
-    $state = $_POST['state'] ?? '';
-    $consultation_fee = isset($_POST['consultation_fee']) && $_POST['consultation_fee'] !== '' ? floatval($_POST['consultation_fee']) : NULL;
-
-    // Insert into professional_applications table for admin review
-    $stmt = $conn->prepare("INSERT INTO professional_applications (user_id, professional_type, qualification, experience_years, specialization, bio, phone, city, state, consultation_fee, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())");
-    $stmt->bind_param('isssissssd', $user_id, $professional_type, $qualification, $experience_years, $specialization, $bio, $phone, $city, $state, $consultation_fee);
-    if (!$stmt->execute()) {
-        throw new Exception('Failed to submit professional application.');
+    
+    // Now create the application record
+    $professional_type = trim($_POST['professional_type'] ?? '');
+    $bio = trim($_POST['bio'] ?? '');
+    $consultation_fee = floatval($_POST['consultation_fee'] ?? 0);
+    
+    if (empty($professional_type)) {
+        throw new Exception('Professional type is required.');
     }
-
-    // Ensure user role is set to professional_pending (if logged in it may be 'user')
-    $upd = $conn->prepare("UPDATE users SET role = 'professional_pending' WHERE id = ?");
-    $upd->bind_param('i', $user_id);
-    $upd->execute();
-
+    
+    // Check if an application already exists for this user
+    $stmt = $conn->prepare("SELECT id, status FROM professional_applications WHERE user_id = ?");
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $existing = $stmt->get_result()->fetch_assoc();
+    
+    if ($existing) {
+        if ($existing['status'] === 'pending') {
+            throw new Exception('You already have a pending application. Please wait for admin approval.');
+        } elseif ($existing['status'] === 'approved') {
+            throw new Exception('Your application has already been approved.');
+        }
+    }
+    
+    $stmt = $conn->prepare("INSERT INTO professional_applications (user_id, professional_type, bio, consultation_fee, status) VALUES (?, ?, ?, ?, 'pending')");
+    $stmt->bind_param('issd', $user_id, $professional_type, $bio, $consultation_fee);
+    $stmt->execute();
+    
     $conn->commit();
-
-    // Redirect to dashboard with success message
-    $_SESSION['message'] = 'Your professional application has been submitted successfully. Please wait for admin approval.';
-    header('Location: ../dashboard.php?status=application_submitted');
+    header('Location: ../become_professional.php?success=' . urlencode('Your application has been submitted and is pending review by an admin.'));
     exit();
-
+    
 } catch (Exception $e) {
     $conn->rollback();
-    $msg = urlencode($e->getMessage());
-    header('Location: ../become_professional.php?error=' . $msg);
+    header('Location: ../become_professional.php?error=' . urlencode($e->getMessage()));
     exit();
 }

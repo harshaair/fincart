@@ -37,6 +37,7 @@ include '../includes/admin_navbar.php';
 
     <div class="admin-card" style="max-width: 640px;">
         <form method="POST" action="update_user.php">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
             
             <div class="form-group">

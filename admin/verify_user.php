@@ -65,12 +65,14 @@ include '../includes/admin_navbar.php';
                                 <td style="text-align: right;">
                                     <?php if (empty($row['verified'])): ?>
                                         <form method="POST" action="verify_user.php" style="display:inline;">
+                                            <?php echo csrf_field(); ?>
                                             <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                             <input type="hidden" name="action" value="verify">
                                             <button type="submit" class="btn btn-accent btn-sm">Mark Verified</button>
                                         </form>
                                     <?php else: ?>
                                         <form method="POST" action="verify_user.php" style="display:inline;">
+                                            <?php echo csrf_field(); ?>
                                             <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                             <input type="hidden" name="action" value="unverify">
                                             <button type="submit" class="btn btn-secondary btn-sm">Revoke</button>

@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 // Check if user is logged in
@@ -11,6 +12,11 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
+}
+
 // Handle add investment
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_investment') {
     $name = $_POST['investment_name'];
@@ -594,6 +600,7 @@ $portfolio_by_type = [];
             <div class="card">
                 <h2>Add Investment</h2>
                 <form method="POST">
+                    <?php echo csrf_field(); ?>
                     <input type="hidden" name="action" value="add_investment">
 
                     <div class="form-group">
@@ -678,6 +685,7 @@ $portfolio_by_type = [];
                             <div class="investment-actions">
                                 <button class="btn-action btn-update" onclick="openUpdateModal(<?php echo $investment['id']; ?>, <?php echo $investment['returns']; ?>)">Update Returns</button>
                                 <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this investment?');">
+                                    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="delete_id" value="<?php echo $investment['id']; ?>">
                                     <button type="submit" class="btn-action btn-delete">Delete</button>
                                 </form>
@@ -703,6 +711,7 @@ $portfolio_by_type = [];
                 <button class="close-btn" onclick="closeUpdateModal()">×</button>
             </div>
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="update_value">
                 <input type="hidden" id="modal_investment_id" name="investment_id" value="">
 

@@ -897,6 +897,26 @@
   <div class="mobile-keyboard-helper" id="keyboardHelper">Tap here to submit form ↑</div>
 
   <script>
+    // -------- CSRF TOKEN INITIALIZATION --------
+    let csrfToken = '';
+    fetch('csrf_token.php')
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.csrf_token) {
+          csrfToken = d.csrf_token;
+          ['loginForm', 'signupForm'].forEach(fId => {
+            const form = document.getElementById(fId);
+            if (form && !form.querySelector('input[name="csrf_token"]')) {
+              const inp = document.createElement('input');
+              inp.type = 'hidden';
+              inp.name = 'csrf_token';
+              inp.value = csrfToken;
+              form.appendChild(inp);
+            }
+          });
+        }
+      }).catch(() => {});
+
     // -------- GENERAL FUNCTIONS --------
     function switchTab(tab) {
       const tabs = document.querySelectorAll('.tab');
@@ -992,10 +1012,11 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
   }
 
   // Send data via POST to signup.php
+  const postBody = `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}` + (csrfToken ? `&csrf_token=${encodeURIComponent(csrfToken)}` : '');
   fetch("signup.php", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+    body: postBody
   })
   .then(res => res.text())
   .then(data => {
