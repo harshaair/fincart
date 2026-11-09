@@ -584,9 +584,8 @@ if ($latest_tax) {
                 Use these tools to manage your tax planning effectively:
             </p>
             
-            <a href="tax_calculator.php" class="btn">📋 Tax Calculator</a>
+            <a href="tax_planning.php" class="btn">📈 Tax Planning & Calculator</a>
             <a href="tax_tracker.php" class="btn">📝 Deductions Tracker</a>
-            <a href="tax_planning.php" class="btn">📈 Tax Planning</a>
             <a href="itr_preparation.php" class="btn">📄 ITR Preparation</a>
             
             <div class="highlight-box" style="margin-top: 20px;">

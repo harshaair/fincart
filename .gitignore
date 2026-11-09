@@ -1,7 +1,11 @@
 node_modules/
 logs/
 *.bak
+*.sql.bak
+*.dump
 .env
 .env.*
+.DS_Store
+Thumbs.db
 
 

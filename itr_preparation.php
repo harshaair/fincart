@@ -790,10 +790,9 @@ $filing_deadlines = [
 
         <!-- Quick Links -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 30px;">
-            <a href="tax_calculator.php" class="btn btn-primary">📋 Tax Calculator</a>
+            <a href="tax_planning.php" class="btn btn-primary">📈 Tax Planning & Calculator</a>
             <a href="tax_tracker.php" class="btn btn-primary">📝 Deductions Tracker</a>
             <a href="tax_summary.php" class="btn btn-primary">📊 Tax Summary</a>
-            <a href="tax_planning.php" class="btn btn-primary">📈 Tax Planning</a>
         </div>
     </div>
 </body>
