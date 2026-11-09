@@ -5,6 +5,7 @@ logs/
 *.dump
 .env
 .env.*
+TESTER_RUNBOOK.md
 .DS_Store
 Thumbs.db
 
