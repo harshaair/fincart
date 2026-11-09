@@ -5,7 +5,7 @@ include 'db.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.html');
+    header('Location: login.php');
     exit;
 }
 
@@ -24,19 +24,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($rating < 1 || $rating > 5 || $professional_id <= 0 || $appointment_id <= 0) {
         $error = 'Please provide a valid rating between 1 and 5 stars.';
     } else {
-        // Verify appointment belongs to user and is confirmed
-        $chk = $conn->prepare("SELECT id FROM appointments WHERE id = ? AND user_id = ? AND professional_id = ?");
+        // Verify appointment belongs to user and is confirmed/completed
+        $chk = $conn->prepare("SELECT id, status FROM appointments WHERE id = ? AND user_id = ? AND professional_id = ?");
         $chk->bind_param("iii", $appointment_id, $user_id, $professional_id);
         $chk->execute();
-        if ($chk->get_result()->num_rows > 0) {
-            $r_stmt = $conn->prepare("INSERT INTO professional_ratings (professional_id, user_id, appointment_id, rating, review_text) 
-                                      VALUES (?, ?, ?, ?, ?) 
-                                      ON DUPLICATE KEY UPDATE rating = VALUES(rating), review_text = VALUES(review_text), updated_at = NOW()");
-            $r_stmt->bind_param("iiiis", $professional_id, $user_id, $appointment_id, $rating, $review_text);
-            if ($r_stmt->execute()) {
-                $message = 'Thank you! Your feedback and star rating have been submitted.';
+        $chk_row = $chk->get_result()->fetch_assoc();
+        if ($chk_row) {
+            if (in_array($chk_row['status'], ['cancelled', 'rejected'])) {
+                $error = 'You cannot rate or review a cancelled or rejected appointment.';
             } else {
-                $error = 'Failed to submit rating. Please try again.';
+                $r_stmt = $conn->prepare("INSERT INTO professional_ratings (professional_id, user_id, appointment_id, rating, review_text) 
+                                          VALUES (?, ?, ?, ?, ?) 
+                                          ON DUPLICATE KEY UPDATE rating = VALUES(rating), review_text = VALUES(review_text), updated_at = NOW()");
+                $r_stmt->bind_param("iiiis", $professional_id, $user_id, $appointment_id, $rating, $review_text);
+                if ($r_stmt->execute()) {
+                    $message = 'Thank you! Your feedback and star rating have been submitted.';
+                } else {
+                    $error = 'Failed to submit rating. Please try again.';
+                }
             }
         } else {
             $error = 'Invalid appointment verification.';

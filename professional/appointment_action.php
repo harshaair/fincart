@@ -6,7 +6,7 @@ require_once('../db.php');
 require_once('../includes/mailer.php');
 
 // Check if professional is logged in
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'professional') {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['professional', 'professional_approved'])) {
     die('Unauthorized access');
 }
 

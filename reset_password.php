@@ -103,7 +103,7 @@ $page_title = 'Set New Password - FinCart';
     <?php if (!empty($message)): ?>
         <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
         <div style="margin-top: 20px;">
-            <a href="login.html" class="btn btn-primary" style="width: 100%;">Proceed to Login</a>
+            <a href="login.php" class="btn btn-primary" style="width: 100%;">Proceed to Login</a>
         </div>
     <?php elseif (!empty($error)): ?>
         <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
@@ -134,7 +134,7 @@ $page_title = 'Set New Password - FinCart';
     <?php endif; ?>
 
     <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px;">
-        <a href="login.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">&larr; Back to Login</a>
+        <a href="login.php" style="color: var(--primary); text-decoration: none; font-weight: 500;">&larr; Back to Login</a>
     </div>
 </div>
 

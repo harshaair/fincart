@@ -130,7 +130,7 @@ $page_title = 'Forgot Password - FinCart';
     </form>
 
     <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px;">
-        <a href="login.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">&larr; Back to Login</a>
+        <a href="login.php" style="color: var(--primary); text-decoration: none; font-weight: 500;">&larr; Back to Login</a>
     </div>
 </div>
 

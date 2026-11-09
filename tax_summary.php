@@ -4,14 +4,14 @@ include "db.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.html');
+    header('Location: login.php');
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
 
 // Get user name
-$user_sql = "SELECT username FROM users WHERE id = ?";
+$user_sql = "SELECT full_name FROM users WHERE id = ?";
 $user_stmt = $conn->prepare($user_sql);
 $user_stmt->bind_param("i", $user_id);
 $user_stmt->execute();

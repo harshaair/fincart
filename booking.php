@@ -6,7 +6,7 @@ require_once "includes/mailer.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.html');
+    header('Location: login.php');
     exit();
 }
 
@@ -38,8 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $consultation_type = $_POST['consultation_type'] ?? '';
     $notes = $_POST['notes'] ?? '';
 
-    // Validate date is in future
-    if (strtotime($appointment_date) < strtotime(date('Y-m-d'))) {
+    // Validate self-booking and date
+    if ($professional['user_id'] == $user_id) {
+        $error = 'You cannot book a consultation appointment with your own professional profile.';
+    } elseif (strtotime($appointment_date) < strtotime(date('Y-m-d'))) {
         $error = 'Please select a future date';
     } elseif (empty($appointment_time)) {
         $error = 'Please select a time slot';

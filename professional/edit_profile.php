@@ -3,8 +3,8 @@ session_start();
 include '../db.php';
 
 // Check if professional is logged in
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'professional') {
-    header('Location: ../login.html');
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['professional', 'professional_approved'])) {
+    header('Location: ../login.php');
     exit;
 }
 
