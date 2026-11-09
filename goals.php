@@ -357,21 +357,28 @@ include "includes/navbar.php";
 </div>
 
 <script>
-function openDepositModal(goalId, goalName) {
-    document.getElementById('modal_goal_id').value = goalId;
-    document.getElementById('modalGoalTitle').textContent = 'Deposit to: ' + goalName;
-    document.getElementById('deposit_amount').value = '';
-    document.getElementById('depositModal').style.display = 'flex';
-    document.getElementById('deposit_amount').focus();
-}
+window.openDepositModal = function(goalId, goalName) {
+    const modalId = document.getElementById('modal_goal_id');
+    const modalTitle = document.getElementById('modalGoalTitle');
+    const amountInput = document.getElementById('deposit_amount');
+    const modal = document.getElementById('depositModal');
+    if (!modalId || !amountInput || !modal) return;
 
-function closeDepositModal() {
-    document.getElementById('depositModal').style.display = 'none';
-}
+    modalId.value = goalId;
+    if (modalTitle) modalTitle.textContent = 'Deposit to: ' + goalName;
+    amountInput.value = '';
+    modal.style.display = 'flex';
+    amountInput.focus();
+};
+
+window.closeDepositModal = function() {
+    const modal = document.getElementById('depositModal');
+    if (modal) modal.style.display = 'none';
+};
 
 window.addEventListener('click', function(e) {
     const modal = document.getElementById('depositModal');
-    if (e.target === modal) closeDepositModal();
+    if (e.target === modal) window.closeDepositModal();
 });
 </script>
 

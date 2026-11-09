@@ -159,7 +159,6 @@ $total_percentage = $total_budget > 0 ? min(($total_spent / $total_budget) * 100
 $expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other Expense'];
 
 $page_title = 'Budget Management - FinCart';
-$extra_css = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
 
 include "includes/header.php";
 include "includes/navbar.php";
@@ -338,36 +337,51 @@ include "includes/navbar.php";
 
 <?php if (!empty($budgets)): ?>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('budgetChart').getContext('2d');
-    const categories = <?php echo json_encode(array_column($budgets, 'category')); ?>;
-    const limits = <?php echo json_encode(array_column($budgets, 'limit_amount')); ?>;
+(function() {
+    function initBudgetChart() {
+        const elem = document.getElementById('budgetChart');
+        if (!elem) return;
+        const categories = <?php echo json_encode(array_column($budgets, 'category')); ?>;
+        const limits = <?php echo json_encode(array_column($budgets, 'limit_amount')); ?>;
 
-    new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: categories,
-            datasets: [{
-                data: limits,
-                backgroundColor: [
-                    '#d4af37', '#1a1a1a', '#27ae60', '#3498db',
-                    '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { boxWidth: 12, font: { size: 11 } }
+        const chartConfig = {
+            type: 'pie',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: limits,
+                    backgroundColor: [
+                        '#d4af37', '#1a1a1a', '#27ae60', '#3498db',
+                        '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
                 }
             }
+        };
+
+        if (window.renderChartSafe) {
+            window.renderChartSafe(elem, chartConfig);
+        } else if (typeof Chart !== 'undefined') {
+            new Chart(elem, chartConfig);
         }
-    });
-});
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initBudgetChart);
+    } else {
+        initBudgetChart();
+    }
+})();
 </script>
 <?php endif; ?>
 

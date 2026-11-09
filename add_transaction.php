@@ -125,51 +125,57 @@ include "includes/navbar.php";
 </div>
 
 <script>
-const incomeCats = <?php echo json_encode($income_categories); ?>;
-const expenseCats = <?php echo json_encode($expense_categories); ?>;
+(function() {
+    const incomeCats = <?php echo json_encode($income_categories); ?>;
+    const expenseCats = <?php echo json_encode($expense_categories); ?>;
 
-function selectType(type) {
-    document.getElementById('type').value = type;
-    const btnExp = document.getElementById('btn-expense');
-    const btnInc = document.getElementById('btn-income');
+    window.populateCategories = function(cats) {
+        const sel = document.getElementById('category');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">Select category</option>';
+        cats.forEach(function(c) {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            sel.appendChild(opt);
+        });
+    };
 
-    if (type === 'expense') {
-        btnExp.style.border = '2px solid #e74c3c';
-        btnExp.style.background = '#fee2e2';
-        btnExp.style.color = '#dc2626';
-        btnExp.style.fontWeight = '700';
+    window.selectType = function(type) {
+        const typeInput = document.getElementById('type');
+        const btnExp = document.getElementById('btn-expense');
+        const btnInc = document.getElementById('btn-income');
+        if (!typeInput || !btnExp || !btnInc) return;
 
-        btnInc.style.border = '2px solid #ddd';
-        btnInc.style.background = '#fafafa';
-        btnInc.style.color = '#666';
-        btnInc.style.fontWeight = '500';
+        typeInput.value = type;
 
-        populateCategories(expenseCats);
-    } else {
-        btnInc.style.border = '2px solid #27ae60';
-        btnInc.style.background = '#dcfce7';
-        btnInc.style.color = '#15803d';
-        btnInc.style.fontWeight = '700';
+        if (type === 'expense') {
+            btnExp.style.border = '2px solid #e74c3c';
+            btnExp.style.background = '#fee2e2';
+            btnExp.style.color = '#dc2626';
+            btnExp.style.fontWeight = '700';
 
-        btnExp.style.border = '2px solid #ddd';
-        btnExp.style.background = '#fafafa';
-        btnExp.style.color = '#666';
-        btnExp.style.fontWeight = '500';
+            btnInc.style.border = '2px solid #ddd';
+            btnInc.style.background = '#fafafa';
+            btnInc.style.color = '#666';
+            btnInc.style.fontWeight = '500';
 
-        populateCategories(incomeCats);
-    }
-}
+            window.populateCategories(expenseCats);
+        } else {
+            btnInc.style.border = '2px solid #27ae60';
+            btnInc.style.background = '#dcfce7';
+            btnInc.style.color = '#15803d';
+            btnInc.style.fontWeight = '700';
 
-function populateCategories(cats) {
-    const sel = document.getElementById('category');
-    sel.innerHTML = '<option value="">Select category</option>';
-    cats.forEach(function(c) {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        sel.appendChild(opt);
-    });
-}
+            btnExp.style.border = '2px solid #ddd';
+            btnExp.style.background = '#fafafa';
+            btnExp.style.color = '#666';
+            btnExp.style.fontWeight = '500';
+
+            window.populateCategories(incomeCats);
+        }
+    };
+})();
 </script>
 
 <?php include "includes/footer.php"; ?>

@@ -35,49 +35,58 @@ $user_role = $_SESSION['role'] ?? 'user';
                     👤 <?php echo htmlspecialchars($user_display_name); ?>
                 </a>
                 <?php if ($user_role === 'admin'): ?>
-                    <a href="admin/dashboard.php" class="btn btn-accent btn-sm">Admin Portal</a>
+                    <a href="admin/dashboard.php" class="btn btn-accent btn-sm" data-turbo="false">Admin Portal</a>
                 <?php elseif ($user_role === 'professional' || $user_role === 'professional_approved' || $user_role === 'professional_pending'): ?>
-                    <a href="professional/dashboard.php" class="btn btn-accent btn-sm">Pro Portal</a>
+                    <a href="professional/dashboard.php" class="btn btn-accent btn-sm" data-turbo="false">Pro Portal</a>
                 <?php endif; ?>
-                <a href="logout.php" class="btn btn-primary btn-sm">Logout</a>
+                <a href="logout.php" class="btn btn-primary btn-sm" data-turbo="false">Logout</a>
             </div>
         </nav>
     </div>
 </header>
 
 <script>
-// Responsive Navigation Toggle Handler
+// Responsive Navigation Toggle Handler with Global Event Delegation (Turbo-Resilient)
 (function() {
-    const toggleBtn = document.getElementById('mobileNavToggle');
-    const navMenu = document.getElementById('navMenu');
-    if (!toggleBtn || !navMenu) return;
+    if (window.__fincartNavDelegated) return;
+    window.__fincartNavDelegated = true;
 
-    toggleBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const isOpen = navMenu.classList.toggle('open');
-        toggleBtn.classList.toggle('active', isOpen);
-        toggleBtn.setAttribute('aria-expanded', isOpen);
-        document.body.classList.toggle('nav-open', isOpen);
-    });
+    document.addEventListener('click', function(e) {
+        const toggleBtn = document.getElementById('mobileNavToggle');
+        const navMenu = document.getElementById('navMenu');
+        if (!toggleBtn || !navMenu) return;
 
-    // Close on navigation link click (mobile)
-    navMenu.querySelectorAll('a').forEach(function(link) {
-        link.addEventListener('click', function() {
+        // Hamburger button clicked
+        if (toggleBtn.contains(e.target)) {
+            e.stopPropagation();
+            const isOpen = navMenu.classList.toggle('open');
+            toggleBtn.classList.toggle('active', isOpen);
+            toggleBtn.setAttribute('aria-expanded', isOpen);
+            document.body.classList.toggle('nav-open', isOpen);
+            return;
+        }
+
+        // Nav link clicked - close mobile drawer smoothly
+        if (navMenu.contains(e.target) && e.target.closest('a')) {
             navMenu.classList.remove('open');
             toggleBtn.classList.remove('active');
             toggleBtn.setAttribute('aria-expanded', 'false');
             document.body.classList.remove('nav-open');
-        });
-    });
+            return;
+        }
 
-    // Close on outside click
-    document.addEventListener('click', function(e) {
-        if (navMenu.classList.contains('open') && !navMenu.contains(e.target) && !toggleBtn.contains(e.target)) {
+        // Click outside open menu
+        if (navMenu.classList.contains('open') && !navMenu.contains(e.target)) {
             navMenu.classList.remove('open');
             toggleBtn.classList.remove('active');
             toggleBtn.setAttribute('aria-expanded', 'false');
             document.body.classList.remove('nav-open');
         }
+    });
+
+    // Reset drawer state on every Turbo navigation render
+    document.addEventListener('turbo:render', function() {
+        document.body.classList.remove('nav-open');
     });
 })();
 </script>

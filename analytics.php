@@ -105,7 +105,6 @@ require_once "includes/components/stat_card.php";
 require_once "includes/components/page_header.php";
 
 $page_title = 'Financial Analytics & Insights - FinCart';
-$extra_css = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
 
 include "includes/header.php";
 include "includes/navbar.php";
@@ -275,7 +274,7 @@ include "includes/navbar.php";
     const income = <?php echo json_encode(array_map('floatval', array_column($trend_data, 'income'))); ?>;
     const expense = <?php echo json_encode(array_map('floatval', array_column($trend_data, 'expense'))); ?>;
 
-    new Chart(ctx, {
+    const chartConfig = {
         type: 'bar',
         data: {
             labels: labels,
@@ -308,7 +307,13 @@ include "includes/navbar.php";
                 y: { grid: { color: 'rgba(0,0,0,0.05)' } }
             }
         }
-    });
+    };
+
+    if (window.renderChartSafe) {
+        window.renderChartSafe(ctx, chartConfig);
+    } else if (typeof Chart !== 'undefined') {
+        new Chart(ctx, chartConfig);
+    }
 })();
 <?php endif; ?>
 
@@ -319,7 +324,7 @@ include "includes/navbar.php";
     const labels = <?php echo json_encode(array_column($expense_data, 'category')); ?>;
     const values = <?php echo json_encode(array_map('floatval', array_column($expense_data, 'total'))); ?>;
 
-    new Chart(ctx, {
+    const chartConfig = {
         type: 'doughnut',
         data: {
             labels: labels,
@@ -343,7 +348,13 @@ include "includes/navbar.php";
                 }
             }
         }
-    });
+    };
+
+    if (window.renderChartSafe) {
+        window.renderChartSafe(ctx, chartConfig);
+    } else if (typeof Chart !== 'undefined') {
+        new Chart(ctx, chartConfig);
+    }
 })();
 <?php endif; ?>
 </script>

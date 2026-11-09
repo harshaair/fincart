@@ -206,7 +206,7 @@ include "includes/navbar.php";
 </main>
 
 <script>
-function togglePasswordVisibility(id, btn) {
+window.togglePasswordVisibility = function(id, btn) {
     const input = document.getElementById(id);
     if (!input) return;
     if (input.type === 'password') {
@@ -216,7 +216,7 @@ function togglePasswordVisibility(id, btn) {
         input.type = 'password';
         btn.textContent = '👁️';
     }
-}
+};
 </script>
 
 <?php include "includes/footer.php"; ?>

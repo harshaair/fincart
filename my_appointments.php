@@ -232,21 +232,28 @@ include "includes/navbar.php";
 </div>
 
 <script>
-function openReviewModal(aptId, profId, profName) {
-    document.getElementById('modal_apt_id').value = aptId;
-    document.getElementById('modal_prof_id').value = profId;
-    document.getElementById('modal_prof_name').textContent = profName;
-    document.getElementById('reviewModal').style.display = 'flex';
-}
+window.openReviewModal = function(aptId, profId, profName) {
+    const modalApt = document.getElementById('modal_apt_id');
+    const modalProf = document.getElementById('modal_prof_id');
+    const modalName = document.getElementById('modal_prof_name');
+    const modal = document.getElementById('reviewModal');
+    if (!modalApt || !modalProf || !modal) return;
 
-function closeReviewModal() {
-    document.getElementById('reviewModal').style.display = 'none';
-}
+    modalApt.value = aptId;
+    modalProf.value = profId;
+    if (modalName) modalName.textContent = profName;
+    modal.style.display = 'flex';
+};
+
+window.closeReviewModal = function() {
+    const modal = document.getElementById('reviewModal');
+    if (modal) modal.style.display = 'none';
+};
 
 window.addEventListener('click', function(e) {
     const modal = document.getElementById('reviewModal');
     if (e.target === modal) {
-        closeReviewModal();
+        window.closeReviewModal();
     }
 });
 </script>

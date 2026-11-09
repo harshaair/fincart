@@ -116,7 +116,6 @@ $deduction_categories = [
 ];
 
 $page_title = 'Tax Deductions Tracker - FinCart';
-$extra_css = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
 
 include "includes/header.php";
 include "includes/navbar.php";
@@ -300,36 +299,51 @@ include "includes/navbar.php";
 
 <?php if (!empty($category_totals)): ?>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('deductionsChart').getContext('2d');
-    const categories = <?php echo json_encode(array_keys($category_totals)); ?>;
-    const amounts = <?php echo json_encode(array_values($category_totals)); ?>;
+(function() {
+    function initDeductionsChart() {
+        const elem = document.getElementById('deductionsChart');
+        if (!elem) return;
+        const categories = <?php echo json_encode(array_keys($category_totals)); ?>;
+        const amounts = <?php echo json_encode(array_values($category_totals)); ?>;
 
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: categories,
-            datasets: [{
-                data: amounts,
-                backgroundColor: [
-                    '#d4af37', '#1a1a1a', '#27ae60', '#3498db',
-                    '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c', '#34495e'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { boxWidth: 12, font: { size: 11 } }
+        const chartConfig = {
+            type: 'doughnut',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: amounts,
+                    backgroundColor: [
+                        '#d4af37', '#1a1a1a', '#27ae60', '#3498db',
+                        '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c', '#34495e'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
                 }
             }
+        };
+
+        if (window.renderChartSafe) {
+            window.renderChartSafe(elem, chartConfig);
+        } else if (typeof Chart !== 'undefined') {
+            new Chart(elem, chartConfig);
         }
-    });
-});
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDeductionsChart);
+    } else {
+        initDeductionsChart();
+    }
+})();
 </script>
 <?php endif; ?>
 

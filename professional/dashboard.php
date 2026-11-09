@@ -62,8 +62,8 @@ if ($prof) {
         </a>
         <div class="nav-actions">
             <span style="color: #666; font-size: 14px;">Welcome, <strong><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Professional'); ?></strong></span>
-            <a href="../dashboard.php" class="btn btn-secondary btn-sm">Client View</a>
-            <a href="../logout.php" class="btn btn-primary btn-sm">Logout</a>
+            <a href="../dashboard.php" class="btn btn-secondary btn-sm" data-turbo="false">Client View</a>
+            <a href="../logout.php" class="btn btn-primary btn-sm" data-turbo="false">Logout</a>
         </div>
     </div>
 </header>

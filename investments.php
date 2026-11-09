@@ -126,7 +126,6 @@ require_once "includes/components/page_header.php";
 require_once "includes/components/alert.php";
 
 $page_title = 'Asset Portfolio & Investments - FinCart';
-$extra_css = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
 
 include "includes/header.php";
 include "includes/navbar.php";
@@ -373,21 +372,28 @@ include "includes/navbar.php";
 </div>
 
 <script>
-function openUpdateModal(id, currentVal, name) {
-    document.getElementById('modal_investment_id').value = id;
-    document.getElementById('modal_new_value').value = currentVal;
-    document.getElementById('modalAssetTitle').textContent = 'Update: ' + name;
-    document.getElementById('updateValuationModal').style.display = 'flex';
-    document.getElementById('modal_new_value').focus();
-}
+window.openUpdateModal = function(id, currentVal, name) {
+    const modalId = document.getElementById('modal_investment_id');
+    const modalVal = document.getElementById('modal_new_value');
+    const modalTitle = document.getElementById('modalAssetTitle');
+    const modal = document.getElementById('updateValuationModal');
+    if (!modalId || !modalVal || !modal) return;
 
-function closeUpdateModal() {
-    document.getElementById('updateValuationModal').style.display = 'none';
-}
+    modalId.value = id;
+    modalVal.value = currentVal;
+    if (modalTitle) modalTitle.textContent = 'Update: ' + name;
+    modal.style.display = 'flex';
+    modalVal.focus();
+};
+
+window.closeUpdateModal = function() {
+    const modal = document.getElementById('updateValuationModal');
+    if (modal) modal.style.display = 'none';
+};
 
 window.addEventListener('click', function(e) {
     const modal = document.getElementById('updateValuationModal');
-    if (e.target === modal) closeUpdateModal();
+    if (e.target === modal) window.closeUpdateModal();
 });
 
 <?php if (!empty($portfolio_by_type)): ?>
@@ -397,7 +403,7 @@ window.addEventListener('click', function(e) {
     const labels = <?php echo json_encode(array_keys($portfolio_by_type)); ?>;
     const values = <?php echo json_encode(array_values($portfolio_by_type)); ?>;
 
-    new Chart(ctx, {
+    const chartConfig = {
         type: 'doughnut',
         data: {
             labels: labels,
@@ -424,7 +430,13 @@ window.addEventListener('click', function(e) {
                 }
             }
         }
-    });
+    };
+
+    if (window.renderChartSafe) {
+        window.renderChartSafe(ctx, chartConfig);
+    } else if (typeof Chart !== 'undefined') {
+        new Chart(ctx, chartConfig);
+    }
 })();
 <?php endif; ?>
 </script>

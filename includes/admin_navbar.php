@@ -28,8 +28,8 @@ $admin_name = $_SESSION['user_name'] ?? 'Admin';
 
             <div class="nav-actions">
                 <span style="color: #aaaaaa; font-size: 13px;">Admin: <strong style="color: #fff;"><?php echo htmlspecialchars($admin_name); ?></strong></span>
-                <a href="../dashboard.php" class="btn btn-secondary btn-sm" style="color: #fff; border-color: #555;">Client View</a>
-                <a href="../logout.php" class="btn btn-accent btn-sm">Logout</a>
+                <a href="../dashboard.php" class="btn btn-secondary btn-sm" style="color: #fff; border-color: #555;" data-turbo="false">Client View</a>
+                <a href="../logout.php" class="btn btn-accent btn-sm" data-turbo="false">Logout</a>
             </div>
         </nav>
     </div>

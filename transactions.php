@@ -380,25 +380,35 @@ include "includes/navbar.php";
 </main>
 
 <script>
-function openEditModal(tx) {
-    document.getElementById('edit_id').value = tx.id;
-    document.getElementById('edit_type').value = tx.type;
-    document.getElementById('edit_category').value = tx.category;
-    document.getElementById('edit_amount').value = tx.amount;
-    document.getElementById('edit_date').value = tx.date;
-    document.getElementById('edit_description').value = tx.description || '';
-    document.getElementById('editModal').style.display = 'flex';
-}
+window.openEditModal = function(tx) {
+    const editId = document.getElementById('edit_id');
+    const editType = document.getElementById('edit_type');
+    const editCat = document.getElementById('edit_category');
+    const editAmt = document.getElementById('edit_amount');
+    const editDate = document.getElementById('edit_date');
+    const editDesc = document.getElementById('edit_description');
+    const modal = document.getElementById('editModal');
+    if (!editId || !editType || !editCat || !editAmt || !editDate || !modal) return;
 
-function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-}
+    editId.value = tx.id;
+    editType.value = tx.type;
+    editCat.value = tx.category;
+    editAmt.value = tx.amount;
+    editDate.value = tx.date;
+    if (editDesc) editDesc.value = tx.description || '';
+    modal.style.display = 'flex';
+};
+
+window.closeEditModal = function() {
+    const modal = document.getElementById('editModal');
+    if (modal) modal.style.display = 'none';
+};
 
 // Close on backdrop click
 window.addEventListener('click', function(e) {
     const modal = document.getElementById('editModal');
     if (e.target === modal) {
-        closeEditModal();
+        window.closeEditModal();
     }
 });
 </script>
