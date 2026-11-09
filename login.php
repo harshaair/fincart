@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // -------------------------------------------------------------
 // GET: Render Unified Master Authentication Portal
 // -------------------------------------------------------------
-$csrf_token = generate_csrf_token();
+$csrf_token = get_csrf_token();
 $initial_role = isset($_GET['role']) && $_GET['role'] === 'professional' ? 'professional' : 'user';
 $initial_tab  = isset($_GET['tab']) && in_array($_GET['tab'], ['signup', 'apply', 'register']) ? 'signup' : 'login';
 $error_param  = isset($_GET['error']) ? trim($_GET['error']) : '';

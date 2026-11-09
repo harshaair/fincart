@@ -58,6 +58,15 @@ if (!function_exists('get_csrf_token')) {
 }
 
 /**
+ * Backward compatibility alias for get_csrf_token
+ */
+if (!function_exists('generate_csrf_token')) {
+    function generate_csrf_token(): string {
+        return get_csrf_token();
+    }
+}
+
+/**
  * Outputs a hidden input field containing the current CSRF token
  */
 if (!function_exists('csrf_field')) {
