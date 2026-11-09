@@ -108,18 +108,12 @@ for ($i = 1; $i <= 30; $i++) {
 
 // Available time slots
 $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
-?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Consultation - FinCart</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <style>
+$page_title = 'Schedule Consultation - FinCart';
+include "includes/header.php";
+include "includes/navbar.php";
+?>
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -418,22 +412,17 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
             }
         }
     </style>
-</head>
-<body>
-    <header>
-        <nav>
-            <h1>📅 Book Consultation</h1>
-            <div class="nav-links">
-                <a href="professionals.php">← Back to Directory</a>
-                <form method="POST" action="logout.php" style="display: inline;">
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
+    <div class="main-content">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h1 style="font-size: 26px; margin-bottom: 4px;">📅 Schedule Consultation</h1>
+                    <p style="color: var(--text-muted); font-size: 14px;">Select your preferred time slot and session details.</p>
+                </div>
+                <a href="professionals.php" class="btn btn-secondary btn-sm" style="width: auto;">&larr; Back to Directory</a>
             </div>
-        </nav>
-    </header>
 
-    <div class="container">
-        <div class="content-grid">
+            <div class="content-grid">
             <!-- Professional Info Sidebar -->
             <div class="professional-info-card">
                 <div class="professional-avatar">
@@ -534,5 +523,5 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+<?php include "includes/footer.php"; ?>

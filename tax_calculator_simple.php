@@ -1,6 +1,7 @@
 <?php
 // Unified tax module: redirect simple calculator to main tax planning page
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');

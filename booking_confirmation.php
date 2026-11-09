@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
 
 if (!isset($_SESSION['user_id'])) {
@@ -23,100 +24,77 @@ if (!$appt) {
     header('Location: dashboard.php');
     exit();
 }
+
+$page_title = 'Booking Confirmation - FinCart';
+include "includes/header.php";
+include "includes/navbar.php";
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Booking Confirmation - FinCart</title>
-    <link rel="stylesheet" href="assets/css/admin.css">
-    <style>
-        .confirmation-container { max-width: 600px; margin: 60px auto; padding: 20px; text-align: center; }
-        .success-icon { font-size: 80px; margin-bottom: 20px; }
-        .success-message { color: #2ecc71; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-        .appointment-details { background: #f9f9f9; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 20px; }
-        .detail-row { padding: 12px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .detail-row:last-child { border-bottom: none; }
-        .detail-label { font-weight: 600; color: #666; }
-        .detail-value { color: #333; }
-        .next-steps { background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
-        .next-steps h3 { margin-bottom: 10px; }
-        .next-steps ol { margin-left: 20px; }
-        .next-steps li { margin-bottom: 8px; }
-    </style>
-</head>
-<body>
-<header class="site-header">
-    <div class="logo"><h1>Booking Confirmation</h1></div>
-    <div class="header-actions">
-        <a href="dashboard.php" class="btn btn-secondary">Dashboard</a>
-    </div>
-</header>
 
-<div class="confirmation-container">
-    <div class="success-icon">✅</div>
-    <div class="success-message">Appointment Booked Successfully!</div>
-    
-    <p style="margin-bottom: 30px; color: #666;">
-        Your appointment request has been submitted. A confirmation email has been sent to your registered email address.
-    </p>
+<div class="main-content">
+    <div style="max-width: 640px; margin: 30px auto; padding: 20px;">
+        <div class="card" style="text-align: center; padding: 36px 28px;">
+            <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
+            <h1 style="color: var(--success, #27ae60); font-size: 26px; font-weight: 700; margin-bottom: 10px;">Appointment Booked Successfully!</h1>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 28px;">
+                Your appointment request has been submitted. A notification has been dispatched to the advisor.
+            </p>
 
-    <div class="appointment-details">
-        <h3 style="margin-bottom: 15px;">Appointment Details</h3>
-        
-        <div class="detail-row">
-            <span class="detail-label">Professional:</span>
-            <span class="detail-value"><strong><?php echo htmlspecialchars($appt['prof_name']); ?></strong> (<?php echo htmlspecialchars($appt['professional_type']); ?>)</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Date:</span>
-            <span class="detail-value"><?php echo date('l, d-M-Y', strtotime($appt['appointment_date'])); ?></span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Time:</span>
-            <span class="detail-value"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Consultation Type:</span>
-            <span class="detail-value"><?php echo htmlspecialchars($appt['consultation_type']); ?></span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Status:</span>
-            <span class="detail-value"><strong style="color: #ff9800;">⏳ Pending</strong></span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Consultation Fee:</span>
-            <span class="detail-value">₹<?php echo number_format($appt['consultation_fee'], 2); ?></span>
-        </div>
-        
-        <?php if (!empty($appt['notes'])): ?>
-        <div class="detail-row">
-            <span class="detail-label">Your Notes:</span>
-            <span class="detail-value"><?php echo nl2br(htmlspecialchars($appt['notes'])); ?></span>
-        </div>
-        <?php endif; ?>
-    </div>
+            <div style="background: var(--off-white, #fafaf9); border: 1px solid var(--border-light, #eee); border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 24px;">
+                <h3 style="font-size: 16px; margin-bottom: 14px; color: var(--primary);">Appointment Summary</h3>
+                
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Advisor:</span>
+                    <span><strong><?php echo htmlspecialchars($appt['prof_name']); ?></strong> (<?php echo htmlspecialchars($appt['professional_type']); ?>)</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Date:</span>
+                    <span><strong><?php echo date('l, d-M-Y', strtotime($appt['appointment_date'])); ?></strong></span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Time Slot:</span>
+                    <span><strong><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></strong></span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Session Type:</span>
+                    <span><?php echo htmlspecialchars($appt['consultation_type']); ?></span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Status:</span>
+                    <span class="badge badge-warning">⏳ Pending Approval</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Consultation Fee:</span>
+                    <span style="font-weight: 700; color: var(--accent, #d4af37);">₹<?php echo number_format($appt['consultation_fee'], 2); ?></span>
+                </div>
+                
+                <?php if (!empty($appt['notes'])): ?>
+                <div style="padding: 10px 0; border-top: 1px solid rgba(0,0,0,0.05); font-size: 13.5px;">
+                    <span style="color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 4px;">Your Notes:</span>
+                    <span style="color: var(--text-dark);"><?php echo nl2br(htmlspecialchars($appt['notes'])); ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
 
-    <div class="next-steps">
-        <h3>What Happens Next?</h3>
-        <ol>
-            <li><strong>Pending Acceptance:</strong> The professional will review your booking and accept or reject it within 24 hours.</li>
-            <li><strong>Confirmation Email:</strong> You'll receive an email when the professional accepts your appointment.</li>
-            <li><strong>Payment:</strong> Once the appointment is confirmed, you can proceed with payment (₹<?php echo number_format($appt['consultation_fee'], 2); ?>).</li>
-            <li><strong>Meeting Details:</strong> Connection details (phone/video link) will be sent before the appointment.</li>
-        </ol>
-    </div>
+            <div style="background: rgba(39, 174, 96, 0.08); border-left: 4px solid var(--success, #27ae60); padding: 16px; border-radius: 6px; margin-bottom: 28px; text-align: left; font-size: 13.5px; line-height: 1.6;">
+                <strong style="color: var(--primary); display: block; margin-bottom: 6px;">Next Steps:</strong>
+                <ul style="margin: 0; padding-left: 18px; color: var(--text-dark);">
+                    <li>The professional will review your consultation request and confirm within 24 hours.</li>
+                    <li>You will receive an email update as soon as the appointment is confirmed.</li>
+                    <li>Meeting access details will be visible in your <a href="my_appointments.php" style="color: var(--accent); font-weight: 600;">Appointments Hub</a>.</li>
+                </ul>
+            </div>
 
-    <div style="margin-top: 30px;">
-        <a href="dashboard.php" class="btn btn-primary">View My Appointments</a>
-        <a href="professionals.php" class="btn btn-secondary" style="margin-left: 10px;">Continue Exploring</a>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="my_appointments.php" class="btn btn-primary">Go to My Appointments &rarr;</a>
+                <a href="professionals.php" class="btn btn-secondary">&larr; Back to Directory</a>
+            </div>
+        </div>
     </div>
 </div>
 
-</body>
-</html>
+<?php include "includes/footer.php"; ?>

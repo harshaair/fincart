@@ -1,6 +1,10 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
+require_once "includes/tax_helper.php";
+
+$active_fy = getIndianFinancialYear();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -213,7 +217,7 @@ include "includes/navbar.php";
                 <a href="tax_planning.php" style="display: flex; gap: 16px; padding: 20px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); text-decoration: none; color: inherit; transition: all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)';">
                     <span style="font-size: 28px;">⚖️</span>
                     <div>
-                        <strong style="display: block; font-size: 15px; color: var(--primary); margin-bottom: 4px;">Tax Optimization (FY 2024-25)</strong>
+                        <strong style="display: block; font-size: 15px; color: var(--primary); margin-bottom: 4px;">Tax Optimization (<?php echo htmlspecialchars($active_fy['fy_label']); ?>)</strong>
                         <span style="font-size: 13px; color: var(--text-muted);">Compare Old vs New Tax Regimes, claim Section 87A rebate and 80C/80D.</span>
                     </div>
                 </a>

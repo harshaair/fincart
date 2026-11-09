@@ -17,22 +17,21 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     enforce_csrf();
     $type = $_POST['type'] ?? '';
-    $category = $_POST['category'];
-    $amount = floatval($_POST['amount']);
-    $description = $_POST['description'];
-    $date = $_POST['date'];
+    $category = $_POST['category'] ?? '';
+    $amount = floatval($_POST['amount'] ?? 0);
+    $description = trim($_POST['description'] ?? '');
+    $date = $_POST['date'] ?? '';
 
     // Validation
     if (empty($type) || empty($category) || $amount <= 0 || empty($date)) {
-        $error = 'Please fill all required fields with valid values';
+        $error = 'Please fill all required fields with valid values.';
     } else {
         $sql = "INSERT INTO transactions (user_id, type, category, amount, description, date) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("issdss", $user_id, $type, $category, $amount, $description, $date);
         
         if ($stmt->execute()) {
-            $message = 'Transaction added successfully!';
-            // Clear form
+            $message = 'Transaction logged successfully to your ledger!';
             $_POST = array();
         } else {
             $error = 'Failed to add transaction. Please try again.';
@@ -41,406 +40,136 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $income_categories = ['Salary', 'Freelance', 'Investment Returns', 'Bonus', 'Gifts', 'Other Income'];
-$expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other Expense'];
+$expense_categories = ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Investment', 'Savings Transfer', 'Other Expense'];
+
+$page_title = 'Record Transaction - FinCart';
+include "includes/header.php";
+include "includes/navbar.php";
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Transaction - FinCart</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #1a1a1a;
-            --secondary: #f8f6f3;
-            --accent: #d4af37;
-            --text-dark: #2c2c2c;
-            --text-light: #666;
-            --white: #ffffff;
-            --off-white: #fafaf9;
-            --success: #27ae60;
-            --danger: #e74c3c;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
-            color: var(--text-dark);
-            min-height: 100vh;
-        }
-
-        header {
-            position: sticky;
-            top: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
-            padding: 20px 0;
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-        }
-
-        .back-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .back-link:hover {
-            color: var(--primary);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .page-header {
-            margin-bottom: 40px;
-        }
-
-        .page-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 42px;
-            color: var(--primary);
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-
-        .page-header p {
-            color: var(--text-light);
-            font-size: 16px;
-        }
-
-        .alert {
-            padding: 16px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .alert-success {
-            background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-
-        .alert-danger {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-        }
-
-        .form-card {
-            background: var(--white);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="date"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .type-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .type-btn {
-            padding: 16px;
-            border: 2px solid rgba(0, 0, 0, 0.1);
-            background: var(--white);
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            color: var(--text-dark);
-        }
-
-        .type-btn:hover {
-            border-color: var(--accent);
-        }
-
-        .type-btn.active {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-        }
-
-        .type-btn.income.active {
-            background: var(--success);
-            border-color: var(--success);
-        }
-
-        .type-btn.expense.active {
-            background: var(--danger);
-            border-color: var(--danger);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 14px 32px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent);
-            color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--off-white);
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary);
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .form-row,
-            .type-selector {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <h1>Fincart</h1>
+<div class="main-content">
+    <div style="max-width: 640px; margin: 24px auto; padding: 0 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h1 style="font-size: 26px; margin-bottom: 4px;">Record Transaction</h1>
+                <p style="color: var(--text-muted); font-size: 14px;">Log a new inflow or expense to your live financial ledger.</p>
             </div>
-            <a href="transactions.php" class="back-link">←← Back to Transactions</a>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <div class="container">
-        <div class="page-header">
-            <h1>Add Transaction</h1>
-            <p>Record a new income or expense</p>
+            <a href="transactions.php" class="btn btn-secondary btn-sm">&larr; Transactions</a>
         </div>
 
         <?php if ($message): ?>
-            <div class="alert alert-success">
-                <span>✓</span>
-                <span><?php echo htmlspecialchars($message); ?></span>
-            </div>
+            <div class="alert alert-success">&#10003; <?php echo htmlspecialchars($message); ?></div>
         <?php endif; ?>
 
         <?php if ($error): ?>
-            <div class="alert alert-danger">
-                <span>✕</span>
-                <span><?php echo htmlspecialchars($error); ?></span>
-            </div>
+            <div class="alert alert-danger">&#9888; <?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
 
-        <div class="form-card">
+        <div class="card" style="padding: 32px 28px;">
             <form method="POST">
                 <?php echo csrf_field(); ?>
+                
                 <!-- Type Selector -->
-                <label style="margin-bottom: 12px;">Transaction Type</label>
-                <div class="type-selector">
-                    <button type="button" class="type-btn income active" onclick="selectType('income')">
-                        📥 Income
-                    </button>
-                    <button type="button" class="type-btn expense" onclick="selectType('expense')">
-                        📤 Expense
-                    </button>
-                </div>
-                <input type="hidden" id="type" name="type" value="income" required>
-
-                <!-- Category -->
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <select id="category" name="category" required onchange="updateCategories()">
-                        <option value="">Select a category</option>
-                        <option value="Salary">Salary</option>
-                        <option value="Freelance">Freelance</option>
-                        <option value="Investment Returns">Investment Returns</option>
-                        <option value="Bonus">Bonus</option>
-                        <option value="Gifts">Gifts</option>
-                        <option value="Other Income">Other Income</option>
-                    </select>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">Transaction Nature</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <button type="button" id="btn-expense" class="btn" style="padding: 12px; font-weight: 700; border: 2px solid var(--danger, #e74c3c); background: #fee2e2; color: #dc2626;" onclick="selectType('expense')">
+                            📤 Outflow (Expense)
+                        </button>
+                        <button type="button" id="btn-income" class="btn" style="padding: 12px; font-weight: 600; border: 2px solid #ddd; background: #fafafa; color: #666;" onclick="selectType('income')">
+                            📥 Inflow (Income)
+                        </button>
+                    </div>
+                    <input type="hidden" id="type" name="type" value="expense" required>
                 </div>
 
                 <!-- Amount -->
-                <div class="form-group">
-                    <label for="amount">Amount (₹)</label>
-                    <input type="number" id="amount" name="amount" step="0.01" min="0" placeholder="0.00" required>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="amount" style="display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">Amount (₹)</label>
+                    <input type="number" id="amount" name="amount" class="form-control" step="0.01" min="0.01" placeholder="e.g. 2500" required autofocus style="font-size: 16px; font-weight: 600;">
                 </div>
 
-                <!-- Date -->
-                <div class="form-group">
-                    <label for="date">Date</label>
-                    <input type="date" id="date" name="date" value="<?php echo date('Y-m-d'); ?>" required>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <!-- Category -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="category" style="display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">Category</label>
+                        <select id="category" name="category" class="form-control" required style="font-size: 14px;">
+                            <option value="">Select category</option>
+                            <?php foreach ($expense_categories as $c): ?>
+                                <option value="<?php echo htmlspecialchars($c); ?>"><?php echo htmlspecialchars($c); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="date" style="display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">Date</label>
+                        <input type="date" id="date" name="date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required style="font-size: 14px;">
+                    </div>
                 </div>
 
                 <!-- Description -->
-                <div class="form-group">
-                    <label for="description">Description (Optional)</label>
-                    <textarea id="description" name="description" placeholder="Add notes about this transaction..."></textarea>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label for="description" style="display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">Description / Merchant (Optional)</label>
+                    <input type="text" id="description" name="description" class="form-control" placeholder="e.g. Grocery Store, Swiggy, Monthly Rent" style="font-size: 14px;">
                 </div>
 
-                <!-- Buttons -->
-                <div class="button-group">
-                    <button type="submit" class="btn btn-primary">Add Transaction</button>
-                    <a href="transactions.php" class="btn btn-secondary">Cancel</a>
+                <!-- Submit / Cancel -->
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 13px; font-size: 14.5px;">Save Transaction &rarr;</button>
+                    <a href="transactions.php" class="btn btn-secondary" style="padding: 13px 20px;">Cancel</a>
                 </div>
             </form>
         </div>
     </div>
+</div>
 
-    <script>
-        function selectType(type) {
-            document.getElementById('type').value = type;
-            
-            // Update button styles
-            document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.closest('.type-btn').classList.add('active');
-            
-            // Update category options
-            updateCategoryOptions(type);
-        }
+<script>
+const incomeCats = <?php echo json_encode($income_categories); ?>;
+const expenseCats = <?php echo json_encode($expense_categories); ?>;
 
-        function updateCategoryOptions(type) {
-            const categorySelect = document.getElementById('category');
-            categorySelect.innerHTML = '<option value="">Select a category</option>';
-            
-            if (type === 'income') {
-                const incomeCategories = ['Salary', 'Freelance', 'Investment Returns', 'Bonus', 'Gifts', 'Other Income'];
-                incomeCategories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    categorySelect.appendChild(option);
-                });
-            } else {
-                const expenseCategories = ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other Expense'];
-                expenseCategories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    categorySelect.appendChild(option);
-                });
-            }
-        }
-    </script>
-</body>
-</html>
+function selectType(type) {
+    document.getElementById('type').value = type;
+    const btnExp = document.getElementById('btn-expense');
+    const btnInc = document.getElementById('btn-income');
+
+    if (type === 'expense') {
+        btnExp.style.border = '2px solid #e74c3c';
+        btnExp.style.background = '#fee2e2';
+        btnExp.style.color = '#dc2626';
+        btnExp.style.fontWeight = '700';
+
+        btnInc.style.border = '2px solid #ddd';
+        btnInc.style.background = '#fafafa';
+        btnInc.style.color = '#666';
+        btnInc.style.fontWeight = '500';
+
+        populateCategories(expenseCats);
+    } else {
+        btnInc.style.border = '2px solid #27ae60';
+        btnInc.style.background = '#dcfce7';
+        btnInc.style.color = '#15803d';
+        btnInc.style.fontWeight = '700';
+
+        btnExp.style.border = '2px solid #ddd';
+        btnExp.style.background = '#fafafa';
+        btnExp.style.color = '#666';
+        btnExp.style.fontWeight = '500';
+
+        populateCategories(incomeCats);
+    }
+}
+
+function populateCategories(cats) {
+    const sel = document.getElementById('category');
+    sel.innerHTML = '<option value="">Select category</option>';
+    cats.forEach(function(c) {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+    });
+}
+</script>
+
+<?php include "includes/footer.php"; ?>
