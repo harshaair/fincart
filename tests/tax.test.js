@@ -86,6 +86,35 @@ function computeTaxOldRegime(grossIncome, deductions = 0, isSalaried = true) {
     };
 }
 
+// Pure JS implementation matching getIndianFinancialYear in includes/tax_helper.php
+function getIndianFinancialYear(dateInput = null) {
+    const d = dateInput ? new Date(dateInput) : new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1; // 1 to 12
+
+    let startYear, endYear;
+    if (month >= 4) {
+        startYear = year;
+        endYear = year + 1;
+    } else {
+        startYear = year - 1;
+        endYear = year;
+    }
+
+    const shortEnd = String(endYear).slice(-2);
+    const shortAyEnd = String(endYear + 1).slice(-2);
+
+    return {
+        startYear,
+        endYear,
+        startDate: `${startYear}-04-01`,
+        endDate: `${endYear}-03-31`,
+        fyLabel: `FY ${startYear}-${shortEnd}`,
+        ayLabel: `AY ${startYear + 1}-${shortAyEnd}`,
+        fyCode: `${startYear}-${shortEnd}`
+    };
+}
+
 describe('Indian Income Tax Engine - FY 2024-25', () => {
     describe('New Tax Regime', () => {
         it('applies standard deduction of ₹50,000 for salaried employees', () => {
@@ -154,6 +183,40 @@ describe('Indian Income Tax Engine - FY 2024-25', () => {
             const newRes = computeTaxNewRegime(1200000, true);
             const oldRes = computeTaxOldRegime(1200000, 150000, true);
             expect(newRes.totalTax).toBeLessThan(oldRes.totalTax);
+        });
+    });
+
+    describe('Indian Financial Year (FY) & Assessment Year (AY) Boundary Logic', () => {
+        it('maps November 2026 to FY 2026-27 and AY 2027-28', () => {
+            const fy = getIndianFinancialYear('2026-11-09');
+            expect(fy.startYear).toBe(2026);
+            expect(fy.endYear).toBe(2027);
+            expect(fy.startDate).toBe('2026-04-01');
+            expect(fy.endDate).toBe('2027-03-31');
+            expect(fy.fyLabel).toBe('FY 2026-27');
+            expect(fy.ayLabel).toBe('AY 2027-28');
+            expect(fy.fyCode).toBe('2026-27');
+        });
+
+        it('maps February 2026 to FY 2025-26 and AY 2026-27', () => {
+            const fy = getIndianFinancialYear('2026-02-15');
+            expect(fy.startYear).toBe(2025);
+            expect(fy.endYear).toBe(2026);
+            expect(fy.startDate).toBe('2025-04-01');
+            expect(fy.endDate).toBe('2026-03-31');
+            expect(fy.fyLabel).toBe('FY 2025-26');
+            expect(fy.ayLabel).toBe('AY 2026-27');
+            expect(fy.fyCode).toBe('2025-26');
+        });
+
+        it('correctly treats boundary dates (April 1st vs March 31st)', () => {
+            // April 1st starts the new FY
+            const apr1 = getIndianFinancialYear('2026-04-01');
+            expect(apr1.fyCode).toBe('2026-27');
+
+            // March 31st belongs to the previous FY
+            const mar31 = getIndianFinancialYear('2026-03-31');
+            expect(mar31.fyCode).toBe('2025-26');
         });
     });
 });

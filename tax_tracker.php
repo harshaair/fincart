@@ -51,10 +51,37 @@ if (isset($_POST['delete_id'])) {
     }
 }
 
-// Fetch all deductions for the user
-$deductions_sql = "SELECT * FROM tax_deductions WHERE user_id = ? ORDER BY deduction_date DESC";
-$deductions_stmt = $conn->prepare($deductions_sql);
-$deductions_stmt->bind_param("i", $user_id);
+// Resolve Statutory Indian Financial Year (April 1 to March 31)
+$available_fys = getAvailableFinancialYears(5);
+$selected_fy_code = trim($_GET['fy'] ?? '');
+$current_fy = getIndianFinancialYear();
+
+$is_all_years = ($selected_fy_code === 'all');
+$active_fy = null;
+
+if (!$is_all_years) {
+    foreach ($available_fys as $fy_item) {
+        if ($fy_item['fy_code'] === $selected_fy_code) {
+            $active_fy = $fy_item;
+            break;
+        }
+    }
+    if (!$active_fy) {
+        $active_fy = $current_fy;
+    }
+}
+
+// Fetch deductions for the user (scoped to FY or all)
+if ($is_all_years) {
+    $deductions_sql = "SELECT * FROM tax_deductions WHERE user_id = ? ORDER BY deduction_date DESC";
+    $deductions_stmt = $conn->prepare($deductions_sql);
+    $deductions_stmt->bind_param("i", $user_id);
+} else {
+    $deductions_sql = "SELECT * FROM tax_deductions WHERE user_id = ? AND deduction_date BETWEEN ? AND ? ORDER BY deduction_date DESC";
+    $deductions_stmt = $conn->prepare($deductions_sql);
+    $deductions_stmt->bind_param("iss", $user_id, $active_fy['start_date'], $active_fy['end_date']);
+}
+
 $deductions_stmt->execute();
 $deductions_result = $deductions_stmt->get_result();
 $deductions = [];
@@ -101,9 +128,41 @@ include "includes/navbar.php";
             <h1 style="font-size: 28px; margin-bottom: 6px;">Tax Deductions Tracker</h1>
             <p style="color: var(--text-muted);">Track your tax-saving investments and enforce statutory limits under the Indian Income Tax Act.</p>
         </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <!-- FY Selector -->
+            <form method="GET" action="tax_tracker.php" style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                <label for="fy" style="font-size: 13px; font-weight: 600; color: var(--text-dark); margin: 0;">FY Scoping:</label>
+                <select name="fy" id="fy" onchange="this.form.submit()" style="padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border-light, #ddd); font-size: 13px; background: #fff; font-weight: 600; color: var(--primary);">
+                    <?php foreach ($available_fys as $f): ?>
+                        <option value="<?php echo htmlspecialchars($f['fy_code']); ?>" <?php echo (!$is_all_years && $f['fy_code'] === $active_fy['fy_code']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($f['fy_label'] . ' (' . $f['ay_label'] . ')'); ?><?php echo $f['is_current'] ? ' • Current' : ''; ?>
+                        </option>
+                    <?php endforeach; ?>
+                    <option value="all" <?php echo $is_all_years ? 'selected' : ''; ?>>All Historical Records</option>
+                </select>
+            </form>
+            <a href="tax_planning.php?fy=<?php echo urlencode($active_fy['fy_code'] ?? ''); ?>" class="btn btn-secondary">&larr; Tax Planning</a>
+            <a href="tax_summary.php?fy=<?php echo urlencode($active_fy['fy_code'] ?? ''); ?>" class="btn btn-primary">Summary Report &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Active Scoping Banner -->
+    <div style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(26, 26, 26, 0.03)); border-left: 4px solid #d4af37; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-            <a href="tax_planning.php" class="btn btn-secondary">&larr; Back to Tax Planning</a>
-            <a href="tax_summary.php" class="btn btn-primary">Tax Summary Report &rarr;</a>
+            <strong style="color: var(--primary); font-size: 14px;">
+                <?php if ($is_all_years): ?>
+                    Displaying All Recorded Tax Deductions (All Historical Years)
+                <?php else: ?>
+                    Scoped to Statutory Financial Year: <?php echo htmlspecialchars($active_fy['fy_label']); ?> (<?php echo htmlspecialchars($active_fy['ay_label']); ?>)
+                <?php endif; ?>
+            </strong>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                <?php if (!$is_all_years): ?>
+                    Statutory Window: <?php echo date('d M Y', strtotime($active_fy['start_date'])); ?> to <?php echo date('d M Y', strtotime($active_fy['end_date'])); ?> (Section 80C &amp; 80D caps computed for this FY)
+                <?php else: ?>
+                    Select a specific Indian FY above to apply statutory Section 80C/80D caps for that fiscal cycle.
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 

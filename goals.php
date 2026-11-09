@@ -23,18 +23,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $target_amount = floatval($_POST['target_amount'] ?? 0);
     $current_amount = floatval($_POST['current_amount'] ?? 0);
     $deadline = $_POST['deadline'] ?? '';
+    $deduct_from_balance = !empty($_POST['deduct_from_balance']);
 
     if (empty($goal_name) || $target_amount <= 0 || $current_amount < 0 || empty($deadline)) {
         $error = 'Please fill all fields with valid positive values and a target deadline.';
     } else {
-        $sql = "INSERT INTO goals (user_id, goal_name, target_amount, current_amount, deadline, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("isdds", $user_id, $goal_name, $target_amount, $current_amount, $deadline);
-        
-        if ($stmt->execute()) {
-            $message = 'Financial goal successfully created!';
-        } else {
-            $error = 'Failed to create goal. Please try again.';
+        $conn->begin_transaction();
+        try {
+            $sql = "INSERT INTO goals (user_id, goal_name, target_amount, current_amount, deadline, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("isdds", $user_id, $goal_name, $target_amount, $current_amount, $deadline);
+            $stmt->execute();
+
+            if ($current_amount > 0 && $deduct_from_balance) {
+                // Record cash outflow in ledger transactions
+                $trans_sql = "INSERT INTO transactions (user_id, type, category, amount, date, description) VALUES (?, 'expense', 'Savings Transfer', ?, CURDATE(), ?)";
+                $trans_stmt = $conn->prepare($trans_sql);
+                $desc = "Initial funding for goal: " . $goal_name;
+                $trans_stmt->bind_param("ids", $user_id, $current_amount, $desc);
+                $trans_stmt->execute();
+            }
+
+            $conn->commit();
+            $message = 'Financial goal successfully created!' . ($current_amount > 0 && $deduct_from_balance ? ' Recorded initial funding of ₹' . number_format($current_amount, 2) . ' in expense ledger.' : '');
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error = 'Failed to create goal: ' . $e->getMessage();
         }
     }
 }
@@ -43,13 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_deposit') {
     $goal_id = intval($_POST['goal_id'] ?? 0);
     $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
+    $deduct_from_balance = !empty($_POST['deduct_from_balance']);
 
     if ($deposit_amount <= 0) {
         $error = 'Deposit amount must be greater than zero.';
     } else {
         $conn->begin_transaction();
         try {
-            $verify_sql = "SELECT current_amount, target_amount FROM goals WHERE id = ? AND user_id = ? FOR UPDATE";
+            $verify_sql = "SELECT goal_name, current_amount, target_amount FROM goals WHERE id = ? AND user_id = ? FOR UPDATE";
             $verify_stmt = $conn->prepare($verify_sql);
             $verify_stmt->bind_param("ii", $goal_id, $user_id);
             $verify_stmt->execute();
@@ -58,14 +73,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             if ($verify_result->num_rows > 0) {
                 $goal_data = $verify_result->fetch_assoc();
                 $new_amount = min($goal_data['current_amount'] + $deposit_amount, $goal_data['target_amount']);
+                $actual_added = $new_amount - $goal_data['current_amount'];
 
                 $sql = "UPDATE goals SET current_amount = ? WHERE id = ? AND user_id = ?";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("dii", $new_amount, $goal_id, $user_id);
                 $stmt->execute();
 
+                if ($deduct_from_balance && $actual_added > 0) {
+                    // Record cash outflow in ledger transactions
+                    $trans_sql = "INSERT INTO transactions (user_id, type, category, amount, date, description) VALUES (?, 'expense', 'Savings Transfer', ?, CURDATE(), ?)";
+                    $trans_stmt = $conn->prepare($trans_sql);
+                    $desc = "Deposit to goal: " . $goal_data['goal_name'];
+                    $trans_stmt->bind_param("ids", $user_id, $actual_added, $desc);
+                    $trans_stmt->execute();
+                }
+
                 $conn->commit();
-                $message = 'Deposit credited successfully to goal balance!';
+                $message = 'Deposit of ₹' . number_format($actual_added, 2) . ' credited successfully to goal balance!' . ($deduct_from_balance && $actual_added > 0 ? ' Deducted from cash balance in expense ledger.' : '');
             } else {
                 $conn->rollback();
                 $error = 'Goal not found.';
@@ -214,7 +239,17 @@ include "includes/navbar.php";
                     </div>
                 </div>
 
-                <button type="submit" class="btn-luxury btn-gold" style="padding: 12px 24px; margin-top: 10px;">
+                <div class="form-group-luxury" style="margin-top: 14px; margin-bottom: 8px;">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--text-dark);">
+                        <input type="checkbox" name="deduct_from_balance" value="1" checked style="width: 17px; height: 17px; margin-top: 2px; accent-color: var(--gold, #d4af37);">
+                        <span>Deduct initial deposit from cash balance (record expense transaction)</span>
+                    </label>
+                    <div style="font-size: 11.5px; color: var(--text-muted); margin-left: 27px; margin-top: 2px;">
+                        Only applies if Initial Deposit is greater than ₹0. Uncheck if tracking previously saved funds.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-luxury btn-gold" style="padding: 12px 24px; margin-top: 8px;">
                     Save Milestone Goal →
                 </button>
             </form>
@@ -306,7 +341,14 @@ include "includes/navbar.php";
                 <input type="number" id="deposit_amount" name="deposit_amount" class="input-luxury input-luxury-no-icon" step="0.01" min="1" placeholder="5000" required>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 24px;">
+            <div class="form-group-luxury" style="margin-top: 14px;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-dark);">
+                    <input type="checkbox" name="deduct_from_balance" value="1" checked style="width: 16px; height: 16px; margin-top: 2px; accent-color: var(--gold, #d4af37);">
+                    <span>Deduct from cash balance (record expense transaction)</span>
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 22px;">
                 <button type="submit" class="btn-luxury btn-gold" style="flex: 1;">Credit Deposit</button>
                 <button type="button" class="btn-luxury btn-outline" onclick="closeDepositModal()">Cancel</button>
             </div>

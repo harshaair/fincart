@@ -200,3 +200,81 @@ function applyStatutoryCaps($deductions_list) {
     ];
 }
 
+/**
+ * Computes Indian Financial Year (FY) and Assessment Year (AY) boundaries for a given date.
+ * Statutory Indian FY runs from April 1 to March 31 of the following year.
+ *
+ * @param string|int|null $date Date string (Y-m-d) or unix timestamp. Defaults to current date.
+ * @return array Array with start_date, end_date, start_year, end_year, fy_label, ay_label, fy_code
+ */
+function getIndianFinancialYear($date = null) {
+    if ($date === null || $date === '') {
+        $ts = time();
+    } elseif (is_numeric($date)) {
+        $ts = (int)$date;
+    } else {
+        $ts = strtotime($date);
+        if ($ts === false) $ts = time();
+    }
+
+    $year = (int)date('Y', $ts);
+    $month = (int)date('n', $ts);
+
+    if ($month >= 4) {
+        $start_year = $year;
+        $end_year = $year + 1;
+    } else {
+        $start_year = $year - 1;
+        $end_year = $year;
+    }
+
+    $start_date = sprintf('%04d-04-01', $start_year);
+    $end_date = sprintf('%04d-03-31', $end_year);
+    $short_end = substr((string)$end_year, -2);
+    $short_ay_end = substr((string)($end_year + 1), -2);
+
+    return [
+        'start_year' => $start_year,
+        'end_year' => $end_year,
+        'start_date' => $start_date,
+        'end_date' => $end_date,
+        'fy_label' => "FY {$start_year}-{$short_end}",
+        'ay_label' => "AY " . ($start_year + 1) . "-{$short_ay_end}",
+        'fy_code' => "{$start_year}-{$short_end}"
+    ];
+}
+
+/**
+ * Returns a list of Indian Financial Years for selection dropdowns.
+ *
+ * @param int $count Number of fiscal years to generate around the current FY.
+ * @return array List of FY data arrays.
+ */
+function getAvailableFinancialYears($count = 4) {
+    $current = getIndianFinancialYear();
+    $current_start = $current['start_year'];
+    $list = [];
+
+    // Include 1 future FY and ($count - 1) past FYs
+    for ($y = $current_start + 1; $y >= $current_start - ($count - 2); $y--) {
+        $start_date = sprintf('%04d-04-01', $y);
+        $end_year = $y + 1;
+        $short_end = substr((string)$end_year, -2);
+        $short_ay_end = substr((string)($end_year + 1), -2);
+
+        $list[] = [
+            'start_year' => $y,
+            'end_year' => $end_year,
+            'start_date' => $start_date,
+            'end_date' => sprintf('%04d-03-31', $end_year),
+            'fy_label' => "FY {$y}-{$short_end}",
+            'ay_label' => "AY " . ($y + 1) . "-{$short_ay_end}",
+            'fy_code' => "{$y}-{$short_end}",
+            'is_current' => ($y === $current_start)
+        ];
+    }
+
+    return $list;
+}
+
+

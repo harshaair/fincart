@@ -202,5 +202,46 @@ class TaxService {
             'savings' => $savings
         ];
     }
+
+    /**
+     * Computes Indian Financial Year (FY) and Assessment Year (AY) boundaries
+     * Financial Year runs from April 1 to March 31 of following calendar year.
+     */
+    public static function getFinancialYear($date = null): array {
+        if ($date === null || $date === '') {
+            $ts = time();
+        } elseif (is_numeric($date)) {
+            $ts = (int)$date;
+        } else {
+            $ts = strtotime($date);
+            if ($ts === false) $ts = time();
+        }
+
+        $year = (int)date('Y', $ts);
+        $month = (int)date('n', $ts);
+
+        if ($month >= 4) {
+            $start_year = $year;
+            $end_year = $year + 1;
+        } else {
+            $start_year = $year - 1;
+            $end_year = $year;
+        }
+
+        $start_date = sprintf('%04d-04-01', $start_year);
+        $end_date = sprintf('%04d-03-31', $end_year);
+        $short_end = substr((string)$end_year, -2);
+        $short_ay_end = substr((string)($end_year + 1), -2);
+
+        return [
+            'start_year' => $start_year,
+            'end_year' => $end_year,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'fy_label' => "FY {$start_year}-{$short_end}",
+            'ay_label' => "AY " . ($start_year + 1) . "-{$short_ay_end}",
+            'fy_code' => "{$start_year}-{$short_end}"
+        ];
+    }
 }
 

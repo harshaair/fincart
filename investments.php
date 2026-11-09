@@ -23,18 +23,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $amount = floatval($_POST['investment_amount'] ?? 0);
     $returns = floatval($_POST['current_value'] ?? 0);
     $type = trim($_POST['investment_type'] ?? 'Other');
+    $deduct_from_balance = !empty($_POST['deduct_from_balance']);
 
     if (empty($name) || $amount <= 0) {
         $error = 'Please fill all fields with valid positive values.';
     } else {
-        $sql = "INSERT INTO investments (user_id, name, amount, returns, type, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("isdds", $user_id, $name, $amount, $returns, $type);
-        
-        if ($stmt->execute()) {
-            $message = 'Investment asset successfully added to portfolio!';
-        } else {
-            $error = 'Failed to add investment. Please try again.';
+        $conn->begin_transaction();
+        try {
+            $sql = "INSERT INTO investments (user_id, name, amount, returns, type, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("isdds", $user_id, $name, $amount, $returns, $type);
+            $stmt->execute();
+
+            if ($deduct_from_balance) {
+                // Record cash outflow in ledger transactions
+                $trans_sql = "INSERT INTO transactions (user_id, type, category, amount, date, description) VALUES (?, 'expense', 'Investment', ?, CURDATE(), ?)";
+                $trans_stmt = $conn->prepare($trans_sql);
+                $desc = "Investment in " . $name . " (" . $type . ")";
+                $trans_stmt->bind_param("ids", $user_id, $amount, $desc);
+                $trans_stmt->execute();
+            }
+
+            $conn->commit();
+            $message = 'Investment asset successfully added to portfolio!' . ($deduct_from_balance ? ' Recorded cash outflow of ₹' . number_format($amount, 2) . ' in expense ledger.' : '');
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error = 'Failed to add investment: ' . $e->getMessage();
         }
     }
 }
@@ -219,6 +233,16 @@ include "includes/navbar.php";
                     <div class="form-group-luxury">
                         <label for="current_value">Current Valuation (₹)</label>
                         <input type="number" id="current_value" name="current_value" class="input-luxury input-luxury-no-icon" step="0.01" min="0" placeholder="54500" required>
+                    </div>
+
+                    <div class="form-group-luxury" style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--text-dark);">
+                            <input type="checkbox" name="deduct_from_balance" value="1" checked style="width: 17px; height: 17px; margin-top: 2px; accent-color: var(--gold, #d4af37);">
+                            <span>Deduct principal from cash balance (record expense transaction)</span>
+                        </label>
+                        <div style="font-size: 11.5px; color: var(--text-muted); margin-left: 27px; margin-top: 3px;">
+                            Uncheck if you are logging an existing historical asset without spending current cash.
+                        </div>
                     </div>
 
                     <button type="submit" class="btn-luxury btn-gold" style="width: 100%; padding: 13px; font-size: 14.5px;">

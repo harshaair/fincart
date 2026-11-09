@@ -1,6 +1,8 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
+require_once "includes/tax_helper.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -12,16 +14,41 @@ $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
+}
+
+// Resolve Statutory Indian Financial Year (April 1 to March 31)
+$available_fys = getAvailableFinancialYears(5);
+$selected_fy_code = trim($_GET['fy'] ?? '');
+$current_fy = getIndianFinancialYear();
+
+$active_fy = null;
+foreach ($available_fys as $fy_item) {
+    if ($fy_item['fy_code'] === $selected_fy_code) {
+        $active_fy = $fy_item;
+        break;
+    }
+}
+if (!$active_fy) {
+    $active_fy = $current_fy;
+}
+
+$start_date = $active_fy['start_date'];
+$end_date = $active_fy['end_date'];
+$fy_label = $active_fy['fy_label'];
+$ay_label = $active_fy['ay_label'];
+
 // Handle ITR submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_itr') {
-    $fy = $_POST['financial_year'];
-    $total_income = floatval($_POST['total_income']);
-    $total_deductions = floatval($_POST['total_deductions']);
-    $tax_paid = floatval($_POST['tax_paid']);
-    $notes = $_POST['notes'];
+    $fy = trim($_POST['financial_year'] ?? '');
+    $total_income = floatval($_POST['total_income'] ?? 0);
+    $total_deductions = floatval($_POST['total_deductions'] ?? 0);
+    $tax_paid = floatval($_POST['tax_paid'] ?? 0);
+    $notes = trim($_POST['notes'] ?? '');
 
     if (empty($fy) || $total_income <= 0) {
-        $error = 'Please fill in all required fields';
+        $error = 'Please fill in all required fields with valid positive values.';
     } else {
         $sql = "INSERT INTO itr_submissions (user_id, financial_year, total_income, total_deductions, tax_paid, submission_notes, status, submission_date) VALUES (?, ?, ?, ?, ?, ?, 'Draft', NOW())";
         $stmt = $conn->prepare($sql);
@@ -47,23 +74,22 @@ while ($row = $itr_result->fetch_assoc()) {
     $itr_records[] = $row;
 }
 
-// Get current year data
-$current_year = date('Y');
-$income_sql = "SELECT SUM(amount) as total FROM transactions WHERE user_id = ? AND type = 'income' AND YEAR(date) = ?";
+// Get Indian Financial Year data
+$income_sql = "SELECT SUM(amount) as total FROM transactions WHERE user_id = ? AND type = 'income' AND date BETWEEN ? AND ?";
 $income_stmt = $conn->prepare($income_sql);
-$income_stmt->bind_param("ii", $user_id, $current_year);
+$income_stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $income_stmt->execute();
 $income_result = $income_stmt->get_result();
 $income_row = $income_result->fetch_assoc();
-$current_income = $income_row['total'] ?? 0;
+$current_income = (float)($income_row['total'] ?? 0);
 
-$deduction_sql = "SELECT SUM(amount) as total FROM tax_deductions WHERE user_id = ? AND YEAR(deduction_date) = ?";
+$deduction_sql = "SELECT SUM(amount) as total FROM tax_deductions WHERE user_id = ? AND deduction_date BETWEEN ? AND ?";
 $deduction_stmt = $conn->prepare($deduction_sql);
-$deduction_stmt->bind_param("ii", $user_id, $current_year);
+$deduction_stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $deduction_stmt->execute();
 $deduction_result = $deduction_stmt->get_result();
 $deduction_row = $deduction_result->fetch_assoc();
-$current_deductions = $deduction_row['total'] ?? 0;
+$current_deductions = (float)($deduction_row['total'] ?? 0);
 
 // Form 16 simulation data
 $form16_details = [
@@ -499,9 +525,23 @@ $filing_deadlines = [
 
     <!-- Main Content -->
     <div class="container">
-        <div class="page-header">
-            <h1>📄 ITR Preparation Assistant</h1>
-            <p>Step-by-step guidance for Income Tax Return filing</p>
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h1>📄 ITR Preparation Assistant</h1>
+                <p>Statutory guidance for filing Income Tax Return (ITR) for <strong><?php echo htmlspecialchars($fy_label); ?> (<?php echo htmlspecialchars($ay_label); ?>)</strong></p>
+            </div>
+            <div>
+                <form method="GET" action="itr_preparation.php" style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                    <label for="fy" style="font-size: 13px; font-weight: 600; color: var(--text-dark); margin: 0;">Filing FY:</label>
+                    <select name="fy" id="fy" onchange="this.form.submit()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); font-size: 13.5px; background: #fff; font-weight: 600; color: var(--primary);">
+                        <?php foreach ($available_fys as $f): ?>
+                            <option value="<?php echo htmlspecialchars($f['fy_code']); ?>" <?php echo ($f['fy_code'] === $active_fy['fy_code']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($f['fy_label'] . ' (' . $f['ay_label'] . ')'); ?><?php echo $f['is_current'] ? ' • Current' : ''; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            </div>
         </div>
 
         <!-- Disclaimer -->
@@ -582,24 +622,24 @@ $filing_deadlines = [
 
         <!-- Current Year Data for Reference -->
         <div class="card">
-            <h2>Step 3: Verify Your Financial Data</h2>
+            <h2>Step 3: Verify Financial Data for <?php echo htmlspecialchars($fy_label); ?></h2>
             <p style="color: var(--text-light); margin-bottom: 20px;">
-                Here's a summary of your current financial year data from FinCart:
+                Statutory ledger summary from FinCart for period <?php echo date('d M Y', strtotime($start_date)); ?> to <?php echo date('d M Y', strtotime($end_date)); ?>:
             </p>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>Total Income (Current FY)</label>
+                    <label>Total Income (<?php echo htmlspecialchars($fy_label); ?>)</label>
                     <input type="text" value="₹<?php echo number_format($current_income, 0); ?>" readonly style="background: var(--off-white);">
                 </div>
                 <div class="form-group">
-                    <label>Total Deductions (Current FY)</label>
+                    <label>Total Deductions (<?php echo htmlspecialchars($fy_label); ?>)</label>
                     <input type="text" value="₹<?php echo number_format($current_deductions, 0); ?>" readonly style="background: var(--off-white);">
                 </div>
             </div>
 
             <div class="highlight-box">
-                <strong>⚠️ Important:</strong> These figures should match your official salary statements (Form 16) and tax deduction proofs. Verify before filing your ITR.
+                <strong>⚠️ Important:</strong> These figures should match your official salary statements (Form 16) and tax deduction proofs for <?php echo htmlspecialchars($fy_label); ?> (<?php echo htmlspecialchars($ay_label); ?>). Verify before submitting your ITR draft.
             </div>
         </div>
 
@@ -611,12 +651,19 @@ $filing_deadlines = [
             </p>
 
             <form method="POST">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="submit_itr">
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="financial_year">Financial Year</label>
-                        <input type="text" id="financial_year" name="financial_year" placeholder="e.g., 2023-24" required>
+                        <select id="financial_year" name="financial_year" style="width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; font-size: 14px; background: #fff;" required>
+                            <?php foreach ($available_fys as $f): ?>
+                                <option value="<?php echo htmlspecialchars($f['fy_code']); ?>" <?php echo ($f['fy_code'] === $active_fy['fy_code']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($f['fy_label'] . ' (' . $f['ay_label'] . ')'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="total_income">Total Income (₹)</label>

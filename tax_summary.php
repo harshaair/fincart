@@ -1,6 +1,8 @@
 <?php
-session_start();
+require_once "includes/security.php";
+init_secure_session();
 include "db.php";
+require_once "includes/tax_helper.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -9,6 +11,27 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+
+// Resolve Statutory Indian Financial Year (April 1 to March 31)
+$available_fys = getAvailableFinancialYears(5);
+$selected_fy_code = trim($_GET['fy'] ?? '');
+$current_fy = getIndianFinancialYear();
+
+$active_fy = null;
+foreach ($available_fys as $fy_item) {
+    if ($fy_item['fy_code'] === $selected_fy_code) {
+        $active_fy = $fy_item;
+        break;
+    }
+}
+if (!$active_fy) {
+    $active_fy = $current_fy;
+}
+
+$start_date = $active_fy['start_date'];
+$end_date = $active_fy['end_date'];
+$fy_label = $active_fy['fy_label'];
+$ay_label = $active_fy['ay_label'];
 
 // Get user name
 $user_sql = "SELECT full_name FROM users WHERE id = ?";
@@ -30,29 +53,28 @@ while ($row = $tax_result->fetch_assoc()) {
     $tax_calculations[] = $row;
 }
 
-// Get current year income
-$current_year = date('Y');
-$income_sql = "SELECT SUM(amount) as total_income FROM transactions WHERE user_id = ? AND type = 'income' AND YEAR(date) = ?";
+// Get Indian Financial Year income
+$income_sql = "SELECT SUM(amount) as total_income FROM transactions WHERE user_id = ? AND type = 'income' AND date BETWEEN ? AND ?";
 $income_stmt = $conn->prepare($income_sql);
-$income_stmt->bind_param("ii", $user_id, $current_year);
+$income_stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $income_stmt->execute();
 $income_result = $income_stmt->get_result();
 $income_row = $income_result->fetch_assoc();
-$current_year_income = $income_row['total_income'] ?? 0;
+$current_year_income = (float)($income_row['total_income'] ?? 0);
 
-// Get current year deductions
-$deduction_sql = "SELECT SUM(amount) as total_deductions FROM tax_deductions WHERE user_id = ? AND YEAR(deduction_date) = ?";
+// Get Indian Financial Year deductions
+$deduction_sql = "SELECT SUM(amount) as total_deductions FROM tax_deductions WHERE user_id = ? AND deduction_date BETWEEN ? AND ?";
 $deduction_stmt = $conn->prepare($deduction_sql);
-$deduction_stmt->bind_param("ii", $user_id, $current_year);
+$deduction_stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $deduction_stmt->execute();
 $deduction_result = $deduction_stmt->get_result();
 $deduction_row = $deduction_result->fetch_assoc();
-$current_year_deductions = $deduction_row['total_deductions'] ?? 0;
+$current_year_deductions = (float)($deduction_row['total_deductions'] ?? 0);
 
-// Get all transactions for expense analysis
-$all_trans_sql = "SELECT type, category, SUM(amount) as total FROM transactions WHERE user_id = ? AND YEAR(date) = ? GROUP BY type, category";
+// Get all transactions for expense analysis within Indian Financial Year
+$all_trans_sql = "SELECT type, category, SUM(amount) as total FROM transactions WHERE user_id = ? AND date BETWEEN ? AND ? GROUP BY type, category";
 $all_trans_stmt = $conn->prepare($all_trans_sql);
-$all_trans_stmt->bind_param("ii", $user_id, $current_year);
+$all_trans_stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $all_trans_stmt->execute();
 $all_trans_result = $all_trans_stmt->get_result();
 $category_analysis = [];
@@ -413,24 +435,39 @@ if ($latest_tax) {
 
     <!-- Main Content -->
     <div class="container">
-        <div class="page-header">
-            <h1>📊 Tax Summary Report</h1>
-            <p>Comprehensive overview of your tax situation for FY <?php echo $current_year; ?></p>
-            <button class="btn" style="margin-top: 20px;" onclick="window.print();">
-                🖨️ Generate Printable Tax Summary (PDF)
-            </button>
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h1>📊 Tax Summary Report</h1>
+                <p>Comprehensive statutory tax audit and reconciliation for <strong><?php echo htmlspecialchars($fy_label); ?> (<?php echo htmlspecialchars($ay_label); ?>)</strong></p>
+                <div style="font-size: 13px; color: var(--text-light); margin-top: 4px;">Period: <?php echo date('d M Y', strtotime($start_date)); ?> to <?php echo date('d M Y', strtotime($end_date)); ?></div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <form method="GET" action="tax_summary.php" style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                    <label for="fy" style="font-size: 13px; font-weight: 600; color: var(--text-dark); margin: 0;">Financial Year:</label>
+                    <select name="fy" id="fy" onchange="this.form.submit()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); font-size: 13.5px; background: #fff; font-weight: 600; color: var(--primary);">
+                        <?php foreach ($available_fys as $f): ?>
+                            <option value="<?php echo htmlspecialchars($f['fy_code']); ?>" <?php echo ($f['fy_code'] === $active_fy['fy_code']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($f['fy_label'] . ' (' . $f['ay_label'] . ')'); ?><?php echo $f['is_current'] ? ' • Current' : ''; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+                <button class="btn" style="margin-top: 0;" onclick="window.print();">
+                    🖨️ Print / Save PDF
+                </button>
+            </div>
         </div>
 
         <!-- Disclaimer -->
         <div class="disclaimer">
-            ⚠️ <strong>Report Disclaimer:</strong> This report is generated from your transaction and deduction records. It is for informational purposes only and does not constitute professional tax advice. Please consult with a qualified Chartered Accountant or tax professional before filing your ITR.
+            ⚠️ <strong>Report Disclaimer:</strong> This report is generated from your transaction and deduction records for <?php echo htmlspecialchars($fy_label); ?>. It is for informational purposes only and does not constitute professional tax advice. Please consult with a qualified Chartered Accountant before final ITR filing.
         </div>
 
         <!-- Current Year Overview -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value">₹<?php echo number_format($current_year_income, 0); ?></div>
-                <div class="stat-label">Gross Income (FY <?php echo $current_year; ?>)</div>
+                <div class="stat-label">Gross Income (<?php echo htmlspecialchars($fy_label); ?>)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">₹<?php echo number_format($current_year_deductions, 0); ?></div>
@@ -441,14 +478,14 @@ if ($latest_tax) {
                 <div class="stat-label">Taxable Income</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value"><?php echo $current_year_deductions > 0 ? round(($current_year_deductions / $current_year_income) * 100, 1) : 0; ?>%</div>
+                <div class="stat-value"><?php echo ($current_year_income > 0 && $current_year_deductions > 0) ? round(($current_year_deductions / $current_year_income) * 100, 1) : 0; ?>%</div>
                 <div class="stat-label">Deduction Ratio</div>
             </div>
         </div>
 
         <!-- Current Year Summary -->
         <div class="card">
-            <h2>FY <?php echo $current_year; ?> Income & Deduction Summary</h2>
+            <h2><?php echo htmlspecialchars($fy_label); ?> Income & Deduction Summary</h2>
 
             <div class="report-row">
                 <span class="report-label">Gross Income</span>
