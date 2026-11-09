@@ -49,7 +49,7 @@ include '../includes/admin_navbar.php';
                                     <small style="color: #666;"><?php echo htmlspecialchars($row['qualification'] ?? ''); ?> &bull; <?php echo (int)($row['experience_years'] ?? 0); ?> yrs exp</small>
                                 </td>
                                 <td>
-                                    <span class="badge badge-inf⭐><?php echo htmlspecialchars($row['professional_type']); ?></span><br>
+                                    <span class="badge badge-info"><?php echo htmlspecialchars($row['professional_type']); ?></span><br>
                                     <small style="color:#777;"><?php echo htmlspecialchars($row['specialization'] ?? ''); ?></small>
                                 </td>
                                 <td>

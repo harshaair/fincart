@@ -48,3 +48,4 @@ function render_page_header($props = []) {
     </section>
     <?php
 }
+

@@ -518,21 +518,90 @@
                 gap: 20px;
             }
 
+        /* Mobile Navbar */
+        .mobile-nav-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            z-index: 1002;
+        }
+
+        .mobile-nav-btn span {
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-nav-btn.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .mobile-nav-btn.open span:nth-child(2) { opacity: 0; }
+        .mobile-nav-btn.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        @media (max-width: 768px) {
+            .mobile-nav-btn {
+                display: flex;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                width: 100%;
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(20px);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+                padding: 24px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                border-bottom: 2px solid var(--accent);
+            }
+
+            .nav-links.open {
+                display: flex;
+            }
+
+            .nav-links a {
+                display: block;
+                padding: 12px 16px;
+                font-size: 16px;
+            }
+
+            .nav-links a.btn-login {
+                text-align: center;
+                margin-top: 10px;
+            }
+
             .hero-content h2 {
-                font-size: 36px;
+                font-size: 32px;
             }
 
             .section-title {
-                font-size: 36px;
-                margin-bottom: 50px;
+                font-size: 30px;
+                margin-bottom: 35px;
             }
 
             .mission-grid {
-                gap: 30px;
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .values-grid, .team-grid {
+                grid-template-columns: 1fr;
             }
 
             .stat-number {
-                font-size: 40px;
+                font-size: 36px;
             }
         }
     </style>
@@ -542,15 +611,20 @@
     <header class="navbar" id="navbar">
         <div class="container">
             <div class="logo">
-                <h1>Fincart</h1>
+                <h1 onclick="window.location.href='index.html'" style="cursor: pointer;">Fincart</h1>
             </div>
+            <button type="button" class="mobile-nav-btn" id="aboutNavBtn" aria-label="Toggle Navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <nav>
-                <ul class="nav-links">
+                <ul class="nav-links" id="aboutNavLinks">
                     <li><a href="index.html">Home</a></li>
                     <li><a href="service.html">Services</a></li>
                     <li><a href="aboutus.html">About Us</a></li>
                     <li><a href="#contact">Contact</a></li>
-                    <li><a href="login.html" class="btn-login">Login</a></li>
+                    <li><a href="login.php" class="btn-login">Login</a></li>
                 </ul>
             </nav>
         </div>
@@ -692,50 +766,50 @@
             <div class="team-grid">
                 <div class="team-card">
                     <div class="team-image">👨‍💼</div>
-                    <div class="team-inf⭐>
+                    <div class="team-info">
                         <div class="team-name">Michael Chen</div>
                         <div class="team-role">Chief Executive Officer</div>
-                        <div class="team-bi⭐>20+ years in finance. Former VP at leading investment firm with expertise in fintech innovation.</div>
+                        <div class="team-bio">20+ years in finance. Former VP at leading investment firm with expertise in fintech innovation.</div>
                     </div>
                 </div>
                 <div class="team-card">
                     <div class="team-image">👩‍💼</div>
-                    <div class="team-inf⭐>
+                    <div class="team-info">
                         <div class="team-name">Sarah Williams</div>
                         <div class="team-role">Chief Technology Officer</div>
-                        <div class="team-bi⭐>Tech visionary with 15+ years in software development and cloud architecture leadership.</div>
+                        <div class="team-bio">Tech visionary with 15+ years in software development and cloud architecture leadership.</div>
                     </div>
                 </div>
                 <div class="team-card">
                     <div class="team-image">👨‍💼</div>
-                    <div class="team-inf⭐>
+                    <div class="team-info">
                         <div class="team-name">Robert Johnson</div>
                         <div class="team-role">Chief Financial Officer</div>
-                        <div class="team-bi⭐>Certified CPA with 18 years of experience in financial planning and risk management.</div>
+                        <div class="team-bio">Certified CPA with 18 years of experience in financial planning and risk management.</div>
                     </div>
                 </div>
                 <div class="team-card">
                     <div class="team-image">👩‍💼</div>
-                    <div class="team-inf⭐>
+                    <div class="team-info">
                         <div class="team-name">Emma Rodriguez</div>
                         <div class="team-role">Head of Customer Success</div>
-                        <div class="team-bi⭐>Customer experience expert dedicated to building long-term client relationships and satisfaction.</div>
+                        <div class="team-bio">Customer experience expert dedicated to building long-term client relationships and satisfaction.</div>
                     </div>
                 </div>
                 <div class="team-card">
                     <div class="team-image">👨‍💼</div>
-                    <div class="team-inf⭐>
+                    <div class="team-info">
                         <div class="team-name">David Kumar</div>
                         <div class="team-role">Chief Investment Officer</div>
-                        <div class="team-bi⭐>Portfolio management expert with 16+ years optimizing investment strategies and returns.</div>
+                        <div class="team-bio">Portfolio management expert with 16+ years optimizing investment strategies and returns.</div>
                     </div>
                 </div>
                 <div class="team-card">
                     <div class="team-image">👩‍💼</div>
-                    <div class="team-inf⭐>
+                    <div class="team-info">
                         <div class="team-name">Lisa Anderson</div>
                         <div class="team-role">Head of Compliance</div>
-                        <div class="team-bi⭐>Regulatory compliance specialist ensuring adherence to global financial standards and regulations.</div>
+                        <div class="team-bio">Regulatory compliance specialist ensuring adherence to global financial standards and regulations.</div>
                     </div>
                 </div>
             </div>
@@ -787,7 +861,7 @@
             <div class="cta-content">
                 <h3>Ready to Take Control of Your Finances?</h3>
                 <p>Join thousands of satisfied users who have transformed their financial future with FinCart. Start your journey to financial success today.</p>
-                <a href="login.html" class="btn-primary">Get Started Now</a>
+                <a href="login.php" class="btn-primary">Get Started Now</a>
             </div>
         </div>
     </section>
@@ -807,6 +881,31 @@
                 navbar.classList.remove('scrolled');
             }
         });
+
+        // Mobile Nav Toggle
+        (function() {
+            const btn = document.getElementById('aboutNavBtn');
+            const links = document.getElementById('aboutNavLinks');
+            if (btn && links) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isOpen = links.classList.toggle('open');
+                    btn.classList.toggle('open', isOpen);
+                });
+                links.querySelectorAll('a').forEach(function(a) {
+                    a.addEventListener('click', function() {
+                        links.classList.remove('open');
+                        btn.classList.remove('open');
+                    });
+                });
+                document.addEventListener('click', function(e) {
+                    if (links.classList.contains('open') && !links.contains(e.target) && !btn.contains(e.target)) {
+                        links.classList.remove('open');
+                        btn.classList.remove('open');
+                    }
+                });
+            }
+        })();
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

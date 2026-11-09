@@ -53,7 +53,7 @@ include '../includes/admin_navbar.php';
                                 <td>#<?php echo (int)$row['id']; ?></td>
                                 <td><strong><?php echo htmlspecialchars($row['full_name'] ?? 'N/A'); ?></strong></td>
                                 <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                <td><span class="badge badge-inf⭐><?php echo htmlspecialchars($row['role']); ?></span></td>
+                                <td><span class="badge badge-info"><?php echo htmlspecialchars($row['role']); ?></span></td>
                                 <td>
                                     <?php if (!empty($row['verified'])): ?>
                                         <span class="badge badge-success">&#10003; Verified</span>

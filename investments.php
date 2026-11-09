@@ -664,7 +664,7 @@ $portfolio_by_type = [];
                 <div class="investments-list">
                     <?php foreach ($investments as $investment): ?>
                         <div class="investment-item <?php echo $investment['profit_loss'] >= 0 ? 'positive' : 'negative'; ?>">
-                            <div class="investment-inf⭐>
+                            <div class="investment-info">
                                 <h3 class="investment-name"><?php echo htmlspecialchars($investment['name']); ?></h3>
                                 
                                 <div class="investment-details">

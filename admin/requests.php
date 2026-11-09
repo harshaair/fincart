@@ -51,7 +51,7 @@ include '../includes/admin_navbar.php';
                                     <small style="color: #666;"><?php echo htmlspecialchars($row['user_email'] ?? 'N/A'); ?></small>
                                 </td>
                                 <td>
-                                    <span class="badge badge-inf⭐><?php echo htmlspecialchars($row['professional_type']); ?></span><br>
+                                    <span class="badge badge-info"><?php echo htmlspecialchars($row['professional_type']); ?></span><br>
                                     <small><?php echo htmlspecialchars($row['qualification'] ?? 'Not specified'); ?></small>
                                 </td>
                                 <td><?php echo htmlspecialchars($row['experience_years'] ?? '0'); ?> years</td>

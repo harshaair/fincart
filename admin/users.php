@@ -64,7 +64,7 @@ include '../includes/admin_navbar.php';
                                 <td>
                                     <?php
                                     $role = $row['role'];
-                                    if ($role === 'admin') echo '<span class="badge badge-inf⭐>Admin</span>';
+                                    if ($role === 'admin') echo '<span class="badge badge-info">Admin</span>';
                                     elseif ($role === 'professional') echo '<span class="badge badge-success">Professional</span>';
                                     elseif ($role === 'professional_pending') echo '<span class="badge badge-warning">Pending Approval</span>';
                                     else echo '<span class="badge badge-secondary" style="background:#eee; color:#444;">User</span>';

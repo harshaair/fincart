@@ -45,7 +45,7 @@ if (!$prof) {
             <?php if ($prof['experience_years']): ?><div class="info-item"><span class="info-label">Experience</span><span class="info-value"><?php echo $prof['experience_years']; ?> years</span></div><?php endif; ?>
             <?php if ($prof['city']): ?><div class="info-item"><span class="info-label">Location</span><span class="info-value"><?php echo htmlspecialchars($prof['city'] . ', ' . $prof['state']); ?></span></div><?php endif; ?>
             <?php if ($prof['languages']): ?><div class="info-item"><span class="info-label">Languages</span><span class="info-value"><?php echo htmlspecialchars($prof['languages']); ?></span></div><?php endif; ?>
-            <?php if ($prof['bio']): ?><div class="bi⭐><?php echo nl2br(htmlspecialchars($prof['bio'])); ?></div><?php endif; ?>
+            <?php if ($prof['bio']): ?><div class="bio"><?php echo nl2br(htmlspecialchars($prof['bio'])); ?></div><?php endif; ?>
             <?php if ($prof['consultation_fee']): ?><div class="consultation-fee">₹<?php echo number_format($prof['consultation_fee'],0); ?> /session</div><?php endif; ?>
 
             <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">

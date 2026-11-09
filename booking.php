@@ -495,7 +495,7 @@ $time_slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                         <div class="time-slots">
                             <?php foreach ($time_slots as $index => $slot): ?>
                                 <div class="time-slot">
-                                    <input type="radi⭐ id="slot_<?php echo $index; ?>" name="appointment_time" value="<?php echo $slot; ?>">
+                                    <input type="radio" id="slot_<?php echo $index; ?>" name="appointment_time" value="<?php echo $slot; ?>">
                                     <label for="slot_<?php echo $index; ?>"><?php echo date('h:i A', strtotime($slot)); ?></label>
                                 </div>
                             <?php endforeach; ?>

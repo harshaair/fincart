@@ -25,3 +25,4 @@ function render_alert($message, $type = 'info', $dismissible = true) {
     </div>
     <?php
 }
+

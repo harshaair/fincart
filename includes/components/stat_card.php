@@ -48,3 +48,4 @@ function render_stat_card($props = []) {
     </div>
     <?php
 }
+

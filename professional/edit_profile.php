@@ -192,8 +192,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="form-group">
-            <label for="bi⭐>Biography</label>
-            <textarea id="bi⭐ name="bi⭐ placeholder="Tell clients about your experience, approach, and expertise..."><?php echo htmlspecialchars($prof['bio'] ?? ''); ?></textarea>
+            <label for="bio">Biography</label>
+            <textarea id="bio" name="bio" placeholder="Tell clients about your experience, approach, and expertise..."><?php echo htmlspecialchars($prof['bio'] ?? ''); ?></textarea>
         </div>
 
         <div class="button-group">
