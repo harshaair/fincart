@@ -5,7 +5,7 @@ include "db.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.html');
+    header('Location: login.php');
     exit();
 }
 
@@ -19,21 +19,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Handle add investment
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_investment') {
-    $name = $_POST['investment_name'];
-    $amount = floatval($_POST['investment_amount']);
-    $returns = floatval($_POST['current_value']);
-    $type = $_POST['investment_type'] ?? 'Other';
+    $name = trim($_POST['investment_name'] ?? '');
+    $amount = floatval($_POST['investment_amount'] ?? 0);
+    $returns = floatval($_POST['current_value'] ?? 0);
+    $type = trim($_POST['investment_type'] ?? 'Other');
 
     if (empty($name) || $amount <= 0) {
-        $error = 'Please fill all fields with valid values';
+        $error = 'Please fill all fields with valid positive values.';
     } else {
         $sql = "INSERT INTO investments (user_id, name, amount, returns, type, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("isdds", $user_id, $name, $amount, $returns, $type);
         
         if ($stmt->execute()) {
-            $message = 'Investment added successfully!';
-            $_POST = array();
+            $message = 'Investment asset successfully added to portfolio!';
         } else {
             $error = 'Failed to add investment. Please try again.';
         }
@@ -42,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle update investment value
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_value') {
-    $investment_id = intval($_POST['investment_id']);
-    $new_returns = floatval($_POST['new_value']);
+    $investment_id = intval($_POST['investment_id'] ?? 0);
+    $new_returns = floatval($_POST['new_value'] ?? 0);
 
     // Verify investment belongs to user
     $verify_sql = "SELECT id FROM investments WHERE id = ? AND user_id = ?";
@@ -58,23 +57,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt->bind_param("dii", $new_returns, $investment_id, $user_id);
 
         if ($stmt->execute()) {
-            $message = 'Investment value updated successfully!';
+            $message = 'Current valuation updated successfully!';
         } else {
-            $error = 'Failed to update investment. Please try again.';
+            $error = 'Failed to update valuation. Please try again.';
         }
     } else {
-        $error = 'Investment not found.';
+        $error = 'Investment record not found.';
     }
 }
 
 // Handle delete investment
-if (isset($_POST['delete_id'])) {
-    $delete_id = intval($_POST['delete_id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_investment') {
+    $delete_id = intval($_POST['delete_id'] ?? 0);
     $sql = "DELETE FROM investments WHERE id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $delete_id, $user_id);
     if ($stmt->execute()) {
-        $message = 'Investment deleted successfully!';
+        $message = 'Investment removed from portfolio.';
+    } else {
+        $error = 'Failed to delete investment.';
     }
 }
 
@@ -86,10 +87,18 @@ $investments_stmt->execute();
 $investments_result = $investments_stmt->get_result();
 $investments = [];
 
+$portfolio_by_type = [];
+
 while ($row = $investments_result->fetch_assoc()) {
-    $row['profit_loss'] = $row['returns'];
-    $row['return_percentage'] = ($row['returns'] / $row['amount']) * 100;
+    $row['profit_loss'] = $row['returns'] - $row['amount'];
+    $row['return_percentage'] = $row['amount'] > 0 ? (($row['returns'] - $row['amount']) / $row['amount']) * 100 : 0;
     $investments[] = $row;
+
+    $t = $row['type'] ?: 'Equities';
+    if (!isset($portfolio_by_type[$t])) {
+        $portfolio_by_type[$t] = 0;
+    }
+    $portfolio_by_type[$t] += $row['returns'];
 }
 
 // Calculate portfolio summary
@@ -98,688 +107,302 @@ $total_returns = array_sum(array_column($investments, 'returns'));
 $total_profit_loss = $total_returns - $total_invested;
 $total_return = $total_invested > 0 ? ($total_profit_loss / $total_invested) * 100 : 0;
 
-// Group by investment type
-$portfolio_by_type = [];
+require_once "includes/components/stat_card.php";
+require_once "includes/components/page_header.php";
+require_once "includes/components/alert.php";
+
+$page_title = 'Asset Portfolio & Investments - FinCart';
+$extra_css = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>';
+
+include "includes/header.php";
+include "includes/navbar.php";
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investment Portfolio - FinCart</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #1a1a1a;
-            --secondary: #f8f6f3;
-            --accent: #d4af37;
-            --text-dark: #2c2c2c;
-            --text-light: #666;
-            --white: #ffffff;
-            --off-white: #fafaf9;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--off-white) 0%, var(--secondary) 100%);
-            color: var(--text-dark);
-            min-height: 100vh;
-        }
-
-        header {
-            position: sticky;
-            top: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
-            padding: 20px 0;
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .nav-link {
-            color: var(--text-dark);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--accent);
-        }
-
-        .logout-btn {
-            padding: 8px 20px;
-            background: var(--danger);
-            color: var(--white);
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            opacity: 0.9;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .page-header {
-            margin-bottom: 40px;
-        }
-
-        .page-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 42px;
-            color: var(--primary);
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-
-        .page-header p {
-            color: var(--text-light);
-            font-size: 16px;
-        }
-
-        .alert {
-            padding: 16px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .alert-success {
-            background: rgba(39, 174, 96, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-
-        .alert-danger {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: var(--white);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .card h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent);
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .summary-stat {
-            background: var(--off-white);
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .summary-stat.positive {
-            border-left-color: var(--success);
-        }
-
-        .summary-stat.negative {
-            border-left-color: var(--danger);
-        }
-
-        .summary-stat-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .summary-stat-label {
-            font-size: 13px;
-            color: var(--text-light);
-            margin-top: 5px;
-        }
-
-        .investments-list {
-            display: grid;
-            gap: 20px;
-        }
-
-        .investment-item {
-            background: var(--off-white);
-            padding: 25px;
-            border-radius: 15px;
-            border-left: 5px solid var(--accent);
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-        }
-
-        .investment-item.positive {
-            border-left-color: var(--success);
-            background: rgba(39, 174, 96, 0.05);
-        }
-
-        .investment-item.negative {
-            border-left-color: var(--danger);
-            background: rgba(231, 76, 60, 0.05);
-        }
-
-        .investment-info {
-            flex: 1;
-        }
-
-        .investment-name {
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        .investment-type {
-            display: inline-block;
-            padding: 4px 12px;
-            background: var(--info);
-            color: var(--white);
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .investment-details {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .detail-item {
-            color: var(--text-light);
-        }
-
-        .detail-value {
-            font-weight: 700;
-            color: var(--primary);
-            display: block;
-        }
-
-        .investment-return {
-            font-family: 'Playfair Display', serif;
-            font-size: 20px;
-            font-weight: 700;
-            text-align: right;
-            color: var(--success);
-            margin-bottom: 15px;
-        }
-
-        .investment-return.negative {
-            color: var(--danger);
-        }
-
-        .investment-actions {
-            display: flex;
-            gap: 8px;
-            flex-direction: column;
-            width: 120px;
-        }
-
-        .btn-action {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-update {
-            background: var(--info);
-            color: var(--white);
-        }
-
-        .btn-update:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-
-        .btn-delete {
-            background: var(--danger);
-            color: var(--white);
-        }
-
-        .btn-delete:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-top: 20px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-light);
-        }
-
-        .empty-state p {
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--white);
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--primary);
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-
-        @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .investment-item {
-                flex-direction: column;
-            }
-
-            .investment-actions {
-                width: 100%;
-                flex-direction: row;
-                margin-top: 15px;
-            }
-
-            .btn-action {
-                flex: 1;
-            }
-
-            .summary-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <h1>Fincart</h1>
+<main class="page-container" style="max-width: 1240px; margin: 0 auto; padding: 20px 24px;">
+    <?php
+    render_page_header([
+        'title'    => 'Asset & Investment Portfolio',
+        'subtitle' => 'Track your equities, mutual funds, precious metals, and real-time capital gains',
+        'badge'    => count($investments) . ' Holdings',
+        'actions'  => [
+            ['label' => '+ Log New Holding', 'href' => '#add-asset-card', 'class' => 'btn-gold'],
+            ['label' => 'Tax Impact & LTCG →', 'href' => 'tax_planning.php', 'class' => 'btn-outline']
+        ]
+    ]);
+
+    if (!empty($message)) {
+        render_alert($message, 'success');
+    }
+    if (!empty($error)) {
+        render_alert($error, 'danger');
+    }
+    ?>
+
+    <!-- Portfolio KPI Metric Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 28px;">
+        <?php
+        render_stat_card([
+            'title'      => 'Principal Invested',
+            'value'      => '₹' . number_format($total_invested, 2),
+            'icon'       => '💼',
+            'trend'      => count($investments) . ' Assets',
+            'trend_type' => 'neutral',
+            'subtitle'   => 'Total capital deployed'
+        ]);
+
+        render_stat_card([
+            'title'      => 'Current Valuation',
+            'value'      => '₹' . number_format($total_returns, 2),
+            'icon'       => '💎',
+            'trend'      => 'Market Mark',
+            'trend_type' => 'positive',
+            'subtitle'   => 'Live portfolio net worth'
+        ]);
+
+        render_stat_card([
+            'title'      => 'Net Gain / Loss',
+            'value'      => ($total_profit_loss >= 0 ? '+' : '') . '₹' . number_format($total_profit_loss, 2),
+            'icon'       => $total_profit_loss >= 0 ? '📈' : '📉',
+            'trend'      => ($total_profit_loss >= 0 ? '+' : '') . number_format($total_return, 1) . '% ROI',
+            'trend_type' => $total_profit_loss >= 0 ? 'positive' : 'negative',
+            'subtitle'   => 'Unrealized capital variance'
+        ]);
+
+        render_stat_card([
+            'title'      => 'Active Asset Classes',
+            'value'      => (string)max(1, count($portfolio_by_type)),
+            'icon'       => '📊',
+            'trend'      => 'Diversification',
+            'trend_type' => count($portfolio_by_type) >= 3 ? 'positive' : 'neutral',
+            'subtitle'   => 'Risk distribution'
+        ]);
+        ?>
+    </div>
+
+    <!-- Main Content Layout (Form + Distribution) -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 28px;">
+        <!-- Add Investment Card -->
+        <div class="card-luxury" id="add-asset-card">
+            <div class="card-luxury-header">
+                <h2 class="card-luxury-title">+ Add Investment Asset</h2>
+                <span class="badge-luxury badge-luxury-gold">Asset Intake</span>
             </div>
-            <div class="nav-links">
-                <a href="dashboard.php" class="nav-link">Dashboard</a>
-                <a href="transactions.php" class="nav-link">Transactions</a>
-                <a href="profile.php" class="nav-link">Settings</a>
-                <form method="POST" action="logout.php" style="display: inline;">
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <div class="container">
-        <div class="page-header">
-            <h1>Investment Portfolio</h1>
-            <p>Track and manage your investments across different asset classes</p>
-        </div>
-
-        <?php if ($message): ?>
-            <div class="alert alert-success">
-                <span>✓</span>
-                <span><?php echo htmlspecialchars($message); ?></span>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error): ?>
-            <div class="alert alert-danger">
-                <span>✕</span>
-                <span><?php echo htmlspecialchars($error); ?></span>
-            </div>
-        <?php endif; ?>
-
-        <div class="content-grid">
-            <!-- Add Investment Form -->
-            <div class="card">
-                <h2>Add Investment</h2>
+            <div class="card-luxury-body">
                 <form method="POST">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="action" value="add_investment">
 
-                    <div class="form-group">
-                        <label for="investment_name">Investment Name</label>
-                        <input type="text" id="investment_name" name="investment_name" placeholder="e.g., Apple Stocks" required>
+                    <div class="form-group-luxury">
+                        <label for="investment_name">Asset / Ticker Name</label>
+                        <input type="text" id="investment_name" name="investment_name" class="input-luxury input-luxury-no-icon" placeholder="e.g. Reliance Industries, Nifty 50 Index Fund" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="investment_amount">Amount Invested (₹)</label>
-                        <input type="number" id="investment_amount" name="investment_amount" step="0.01" min="0" placeholder="10000" required>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-luxury">
+                            <label for="investment_type">Asset Class</label>
+                            <select id="investment_type" name="investment_type" class="input-luxury input-luxury-no-icon" required>
+                                <option value="Equities">Direct Equities</option>
+                                <option value="Mutual Funds">Mutual Funds (SIP/Lump)</option>
+                                <option value="Gold & Commodities">Gold / Sovereign Gold Bonds</option>
+                                <option value="Fixed Deposit">Fixed Deposit / Debt</option>
+                                <option value="Real Estate">Real Estate / REITs</option>
+                                <option value="Other">Other Alternative Assets</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group-luxury">
+                            <label for="investment_amount">Principal (₹)</label>
+                            <input type="number" id="investment_amount" name="investment_amount" class="input-luxury input-luxury-no-icon" step="0.01" min="1" placeholder="50000" required>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="current_value">Current Value (₹)</label>
-                        <input type="number" id="current_value" name="current_value" step="0.01" min="0" placeholder="12000" required>
+                    <div class="form-group-luxury">
+                        <label for="current_value">Current Valuation (₹)</label>
+                        <input type="number" id="current_value" name="current_value" class="input-luxury input-luxury-no-icon" step="0.01" min="0" placeholder="54500" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="buy_date">Purchase Date</label>
-                        <input type="date" id="buy_date" name="buy_date" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Add Investment</button>
+                    <button type="submit" class="btn-luxury btn-gold" style="width: 100%; padding: 13px; font-size: 14.5px;">
+                        Log Asset to Portfolio →
+                    </button>
                 </form>
             </div>
+        </div>
 
-            <!-- Portfolio Summary -->
-            <div class="card">
-                <h2>Portfolio Summary</h2>
-                <div class="summary-grid">
-                    <div class="summary-stat">
-                        <div class="summary-stat-value">₹<?php echo number_format($total_invested, 2); ?></div>
-                        <div class="summary-stat-label">Total Invested</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="summary-stat-value">₹<?php echo number_format($total_returns, 2); ?></div>
-                        <div class="summary-stat-label">Total Returns</div>
-                    </div>
-                    <div class="summary-stat <?php echo $total_profit_loss >= 0 ? 'positive' : 'negative'; ?>">
-                        <div class="summary-stat-value"><?php echo ($total_profit_loss >= 0 ? '+' : ''); ?>₹<?php echo number_format($total_profit_loss, 2); ?></div>
-                        <div class="summary-stat-label">Profit/Loss</div>
-                    </div>
-                    <div class="summary-stat <?php echo $total_return >= 0 ? 'positive' : 'negative'; ?>">
-                        <div class="summary-stat-value"><?php echo ($total_return >= 0 ? '+' : ''); ?><?php echo number_format($total_return, 2); ?>%</div>
-                        <div class="summary-stat-label">Total Return</div>
-                    </div>
-                </div>
-
-                <?php if (count($portfolio_by_type) > 0): ?>
-                    <div class="chart-container">
+        <!-- Portfolio Allocation Chart -->
+        <div class="card-luxury">
+            <div class="card-luxury-header">
+                <h2 class="card-luxury-title">Asset Allocation Distribution</h2>
+                <span class="badge-luxury badge-luxury-gold">Weightage</span>
+            </div>
+            <div class="card-luxury-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px;">
+                <?php if (!empty($portfolio_by_type)): ?>
+                    <div style="position: relative; width: 100%; height: 260px;">
                         <canvas id="portfolioChart"></canvas>
+                    </div>
+                <?php else: ?>
+                    <div style="text-align: center; color: var(--text-muted); padding: 40px 10px;">
+                        <span style="font-size: 36px; display: block; margin-bottom: 8px;">📊</span>
+                        <p style="font-size: 14px;">No holdings registered yet. Add assets to view your diversification breakdown.</p>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
+    </div>
 
-        <!-- Investments List -->
-        <?php if (count($investments) > 0): ?>
-            <div class="card">
-                <h2>Your Investments</h2>
-                <div class="investments-list">
-                    <?php foreach ($investments as $investment): ?>
-                        <div class="investment-item <?php echo $investment['profit_loss'] >= 0 ? 'positive' : 'negative'; ?>">
-                            <div class="investment-info">
-                                <h3 class="investment-name"><?php echo htmlspecialchars($investment['name']); ?></h3>
-                                
-                                <div class="investment-details">
-                                    <div class="detail-item">
-                                        Amount: <span class="detail-value">₹<?php echo number_format($investment['amount'], 2); ?></span>
-                                    </div>
-                                    <div class="detail-item">
-                                        Returns: <span class="detail-value">₹<?php echo number_format($investment['returns'], 2); ?></span>
-                                    </div>
-                                    <div class="detail-item">
-                                        Return %: <span class="detail-value <?php echo $investment['return_percentage'] >= 0 ? 'style="color: var(--success);"' : 'style="color: var(--danger);"'; ?>">
-                                            <?php echo ($investment['return_percentage'] >= 0 ? '+' : ''); ?><?php echo number_format($investment['return_percentage'], 2); ?>%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="investment-actions">
-                                <button class="btn-action btn-update" onclick="openUpdateModal(<?php echo $investment['id']; ?>, <?php echo $investment['returns']; ?>)">Update Returns</button>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this investment?');">
-                                    <?php echo csrf_field(); ?>
-                                    <input type="hidden" name="delete_id" value="<?php echo $investment['id']; ?>">
-                                    <button type="submit" class="btn-action btn-delete">Delete</button>
-                                </form>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+    <!-- Holdings Table / List -->
+    <div class="card-luxury">
+        <div class="card-luxury-header">
+            <h2 class="card-luxury-title">Portfolio Holdings Ledger</h2>
+            <span class="badge-luxury badge-luxury-gold"><?php echo count($investments); ?> Recorded</span>
+        </div>
+        
+        <?php if (!empty($investments)): ?>
+            <div class="table-luxury-wrap">
+                <table class="table-luxury">
+                    <thead>
+                        <tr>
+                            <th>Asset Name</th>
+                            <th>Class</th>
+                            <th>Purchase Cost</th>
+                            <th>Current Value</th>
+                            <th>Unrealized P&L</th>
+                            <th>ROI %</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($investments as $inv): 
+                            $isProfit = $inv['profit_loss'] >= 0;
+                            $pColor = $isProfit ? 'var(--success)' : 'var(--danger)';
+                        ?>
+                            <tr>
+                                <td>
+                                    <strong style="color: var(--primary); font-size: 14.5px;"><?php echo htmlspecialchars($inv['name']); ?></strong>
+                                    <div style="font-size: 11.5px; color: var(--text-muted);">Added <?php echo date('d-M-Y', strtotime($inv['created_at'])); ?></div>
+                                </td>
+                                <td>
+                                    <span class="badge-luxury badge-luxury-gold"><?php echo htmlspecialchars($inv['type'] ?: 'Equity'); ?></span>
+                                </td>
+                                <td>₹<?php echo number_format($inv['amount'], 2); ?></td>
+                                <td><strong>₹<?php echo number_format($inv['returns'], 2); ?></strong></td>
+                                <td style="color: <?php echo $pColor; ?>; font-weight: 700;">
+                                    <?php echo ($isProfit ? '+' : '') . '₹' . number_format($inv['profit_loss'], 2); ?>
+                                </td>
+                                <td>
+                                    <span class="badge-luxury" style="background: <?php echo $isProfit ? 'var(--success-bg)' : 'var(--danger-bg)'; ?>; color: <?php echo $pColor; ?>;">
+                                        <?php echo ($isProfit ? '▲ +' : '▼ ') . number_format($inv['return_percentage'], 1); ?>%
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <button type="button" class="btn-luxury btn-outline" style="padding: 5px 12px; font-size: 12px;" onclick="openUpdateModal(<?php echo (int)$inv['id']; ?>, <?php echo (float)$inv['returns']; ?>, '<?php echo htmlspecialchars(addslashes($inv['name'])); ?>')">
+                                        Update Value
+                                    </button>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Remove this investment from portfolio?');">
+                                        <?php echo csrf_field(); ?>
+                                        <input type="hidden" name="action" value="delete_investment">
+                                        <input type="hidden" name="delete_id" value="<?php echo (int)$inv['id']; ?>">
+                                        <button type="submit" class="btn-luxury" style="padding: 5px 12px; font-size: 12px; background: #fee2e2; color: #dc2626;">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         <?php else: ?>
-            <div class="card">
-                <div class="empty-state">
-                    <p>📈 No investments yet. Start building your investment portfolio!</p>
-                </div>
+            <!-- Friendly Onboarding Empty State -->
+            <div style="text-align: center; padding: 60px 24px;">
+                <div style="font-size: 48px; margin-bottom: 12px;">📈</div>
+                <h3 style="font-size: 18px; color: var(--primary); margin-bottom: 8px;">Your Portfolio is Empty</h3>
+                <p style="color: var(--text-muted); font-size: 14px; max-width: 440px; margin: 0 auto 20px auto;">
+                    Track equities, mutual fund SIPs, gold, and fixed deposits with automated P&L analytics. Log your first asset above to begin!
+                </p>
+                <a href="#add-asset-card" class="btn-luxury btn-gold">+ Add Your First Asset</a>
             </div>
         <?php endif; ?>
     </div>
+</main>
 
-    <!-- Update Value Modal -->
-    <div id="updateModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Update Investment Value</h2>
-                <button class="close-btn" onclick="closeUpdateModal()">×</button>
-            </div>
-            <form method="POST">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="action" value="update_value">
-                <input type="hidden" id="modal_investment_id" name="investment_id" value="">
-
-                <div class="form-group">
-                    <label for="new_value">New Current Value (₹)</label>
-                    <input type="number" id="new_value" name="new_value" step="0.01" min="0" placeholder="0" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Update Value</button>
-            </form>
+<!-- Valuation Update Modal -->
+<div id="updateValuationModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h3 style="font-size: 18px; margin: 0;" id="modalAssetTitle">Update Current Valuation</h3>
+            <button type="button" onclick="closeUpdateModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
         </div>
+        <form method="POST">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="action" value="update_value">
+            <input type="hidden" id="modal_investment_id" name="investment_id" value="">
+
+            <div class="form-group-luxury">
+                <label for="modal_new_value">Latest Market Value (₹)</label>
+                <input type="number" id="modal_new_value" name="new_value" class="input-luxury input-luxury-no-icon" step="0.01" min="0" required>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 24px;">
+                <button type="submit" class="btn-luxury btn-gold" style="flex: 1;">Save Valuation</button>
+                <button type="button" class="btn-luxury btn-outline" onclick="closeUpdateModal()">Cancel</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <script>
-        function openUpdateModal(investmentId, currentValue) {
-            document.getElementById('modal_investment_id').value = investmentId;
-            document.getElementById('new_value').value = currentValue;
-            document.getElementById('updateModal').classList.add('active');
-            document.getElementById('new_value').focus();
-        }
+<script>
+function openUpdateModal(id, currentVal, name) {
+    document.getElementById('modal_investment_id').value = id;
+    document.getElementById('modal_new_value').value = currentVal;
+    document.getElementById('modalAssetTitle').textContent = 'Update: ' + name;
+    document.getElementById('updateValuationModal').style.display = 'flex';
+    document.getElementById('modal_new_value').focus();
+}
 
-        function closeUpdateModal() {
-            document.getElementById('updateModal').classList.remove('active');
-        }
+function closeUpdateModal() {
+    document.getElementById('updateValuationModal').style.display = 'none';
+}
 
-        // Close modal when clicking outside
-        document.getElementById('updateModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeUpdateModal();
-            }
-        });
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('updateValuationModal');
+    if (e.target === modal) closeUpdateModal();
+});
 
-        // Portfolio pie chart
-        const portfolioData = <?php echo json_encode($portfolio_by_type); ?>;
-        const types = Object.keys(portfolioData);
-        const values = Object.values(portfolioData);
+<?php if (!empty($portfolio_by_type)): ?>
+(function() {
+    const ctx = document.getElementById('portfolioChart');
+    if (!ctx) return;
+    const labels = <?php echo json_encode(array_keys($portfolio_by_type)); ?>;
+    const values = <?php echo json_encode(array_values($portfolio_by_type)); ?>;
 
-        if (types.length > 0) {
-            const ctx = document.getElementById('portfolioChart');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: types,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: [
-                            '#d4af37', '#27ae60', '#e74c3c', '#3498db',
-                            '#f39c12', '#9b59b6', '#1abc9c', '#34495e'
-                        ],
-                        borderColor: '#ffffff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: { family: "'Inter', sans-serif", size: 14 },
-                                padding: 15
-                            }
-                        }
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    '#d4af37', '#10b981', '#3b82f6', '#f59e0b',
+                    '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'
+                ],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { family: "'Inter', sans-serif", size: 12 },
+                        padding: 12
                     }
                 }
-            });
+            }
         }
-    </script>
-</body>
-</html>
+    });
+})();
+<?php endif; ?>
+</script>
+
+<?php include "includes/footer.php"; ?>
