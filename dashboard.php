@@ -41,34 +41,29 @@ if ($user['role'] === 'admin') {
     exit();
 }
 
-// Get current month and year
+// Get current month and comparison periods
 $current_month = date('Y-m');
 $last_month = date('Y-m', strtotime('-1 month'));
-
-// Calculate Total Balance (all time: income - expenses)
-$balance_sql = "SELECT 
-    COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as total_income,
-    COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expense
-    FROM transactions WHERE user_id = ?";
-$balance_stmt = $conn->prepare($balance_sql);
-$balance_stmt->bind_param("i", $user_id);
-$balance_stmt->execute();
-$balance_result = $balance_stmt->get_result();
-$balance_data = $balance_result->fetch_assoc();
-$total_balance = $balance_data['total_income'] - $balance_data['total_expense'];
-
-// Get balance up to end of last month for comparison
 $last_month_end = date('Y-m-t', strtotime('-1 month'));
-$last_month_balance_sql = "SELECT 
-    COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as total_income,
-    COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expense
-    FROM transactions WHERE user_id = ? AND date <= ?";
-$last_month_balance_stmt = $conn->prepare($last_month_balance_sql);
-$last_month_balance_stmt->bind_param("is", $user_id, $last_month_end);
-$last_month_balance_stmt->execute();
-$last_month_balance_result = $last_month_balance_stmt->get_result();
-$last_month_balance_data = $last_month_balance_result->fetch_assoc();
-$last_month_balance = $last_month_balance_data['total_income'] - $last_month_balance_data['total_expense'];
+
+// Consolidated single-trip executive metrics query (eliminates 4 sequential network round-trips)
+$metrics_sql = "SELECT 
+    COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS total_income,
+    COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS total_expense,
+    COALESCE(SUM(CASE WHEN type = 'income' AND date <= ? THEN amount ELSE 0 END), 0) AS last_month_income,
+    COALESCE(SUM(CASE WHEN type = 'expense' AND date <= ? THEN amount ELSE 0 END), 0) AS last_month_expense,
+    COALESCE(SUM(CASE WHEN type = 'income' AND DATE_FORMAT(date, '%Y-%m') = ? THEN amount ELSE 0 END), 0) AS monthly_income,
+    COALESCE(SUM(CASE WHEN type = 'expense' AND DATE_FORMAT(date, '%Y-%m') = ? THEN amount ELSE 0 END), 0) AS monthly_expense
+    FROM transactions WHERE user_id = ?";
+$metrics_stmt = $conn->prepare($metrics_sql);
+$metrics_stmt->bind_param("ssssi", $last_month_end, $last_month_end, $current_month, $current_month, $user_id);
+$metrics_stmt->execute();
+$m_data = $metrics_stmt->get_result()->fetch_assoc();
+
+$total_balance = (float)($m_data['total_income'] ?? 0) - (float)($m_data['total_expense'] ?? 0);
+$last_month_balance = (float)($m_data['last_month_income'] ?? 0) - (float)($m_data['last_month_expense'] ?? 0);
+$monthly_income = (float)($m_data['monthly_income'] ?? 0);
+$monthly_expense = (float)($m_data['monthly_expense'] ?? 0);
 
 // Calculate balance change percentage
 $balance_change = 0;
@@ -77,26 +72,6 @@ if ($last_month_balance != 0) {
 } elseif ($last_month_balance == 0 && $total_balance != 0) {
     $balance_change = 100;
 }
-
-// Get Monthly Income (current month)
-$monthly_income_sql = "SELECT COALESCE(SUM(amount), 0) as total FROM transactions 
-    WHERE user_id = ? AND type = 'income' AND DATE_FORMAT(date, '%Y-%m') = ?";
-$monthly_income_stmt = $conn->prepare($monthly_income_sql);
-$monthly_income_stmt->bind_param("is", $user_id, $current_month);
-$monthly_income_stmt->execute();
-$monthly_income_result = $monthly_income_stmt->get_result();
-$monthly_income_data = $monthly_income_result->fetch_assoc();
-$monthly_income = $monthly_income_data['total'];
-
-// Get Monthly Expenses (current month)
-$monthly_expense_sql = "SELECT COALESCE(SUM(amount), 0) as total FROM transactions 
-    WHERE user_id = ? AND type = 'expense' AND DATE_FORMAT(date, '%Y-%m') = ?";
-$monthly_expense_stmt = $conn->prepare($monthly_expense_sql);
-$monthly_expense_stmt->bind_param("is", $user_id, $current_month);
-$monthly_expense_stmt->execute();
-$monthly_expense_result = $monthly_expense_stmt->get_result();
-$monthly_expense_data = $monthly_expense_result->fetch_assoc();
-$monthly_expense = $monthly_expense_data['total'];
 
 // Calculate Savings Rate
 $savings_rate = 0;
