@@ -27,5 +27,5 @@ if ($res && $res['user_id']) {
     $upd->execute();
 }
 
-header('Location: professionals.php');
+header('Location: professionals.php?msg=' . urlencode('Professional status revoked and unlinked.'));
 exit();

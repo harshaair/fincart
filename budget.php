@@ -10,8 +10,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$message = '';
-$error = '';
+$message = trim($_GET['msg'] ?? '');
+$error = trim($_GET['err'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     enforce_csrf();
@@ -67,9 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     if ($copied > 0) {
-        $message = "Successfully copied $copied category budget limit(s) from " . date('F Y', strtotime($src_month . '-01')) . "!";
+        $msg = "Successfully copied $copied category budget limit(s) from " . date('F Y', strtotime($src_month . '-01')) . "!";
+        header("Location: budget.php?month=" . urlencode($target_month) . "&msg=" . urlencode($msg));
+        exit();
     } else {
-        $error = "No budgets found in " . date('F Y', strtotime($src_month . '-01')) . " to copy.";
+        $err = "No budgets found in " . date('F Y', strtotime($src_month . '-01')) . " to copy.";
+        header("Location: budget.php?month=" . urlencode($target_month) . "&err=" . urlencode($err));
+        exit();
     }
 }
 
@@ -103,7 +107,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         if ($stmt->execute()) {
-            $message = 'Budget limit saved for ' . date('F Y', strtotime($month_year . '-01')) . '!';
+            $msg = 'Budget limit saved for ' . date('F Y', strtotime($month_year . '-01')) . '!';
+            header("Location: budget.php?month=" . urlencode($month_year) . "&msg=" . urlencode($msg));
+            exit();
         } else {
             $error = 'Failed to save budget limit. Please try again.';
         }
@@ -117,7 +123,11 @@ if (isset($_POST['delete_id'])) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $delete_id, $user_id);
     if ($stmt->execute()) {
-        $message = 'Budget limit deleted successfully!';
+        header("Location: budget.php?month=" . urlencode($active_month) . "&msg=" . urlencode('Budget limit deleted successfully!'));
+        exit();
+    } else {
+        header("Location: budget.php?month=" . urlencode($active_month) . "&err=" . urlencode('Failed to delete budget limit.'));
+        exit();
     }
 }
 

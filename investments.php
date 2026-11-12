@@ -10,8 +10,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$message = '';
-$error = '';
+$message = trim($_GET['msg'] ?? '');
+$error = trim($_GET['err'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     enforce_csrf();
@@ -45,7 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
 
             $conn->commit();
-            $message = 'Investment asset successfully added to portfolio!' . ($deduct_from_balance ? ' Recorded cash outflow of ₹' . number_format($amount, 2) . ' in expense ledger.' : '');
+            $msg = 'Investment asset successfully added to portfolio!' . ($deduct_from_balance ? ' Recorded cash outflow of ₹' . number_format($amount, 2) . ' in expense ledger.' : '');
+            header("Location: investments.php?msg=" . urlencode($msg));
+            exit();
         } catch (Exception $e) {
             $conn->rollback();
             $error = 'Failed to add investment: ' . $e->getMessage();
@@ -71,7 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt->bind_param("dii", $new_returns, $investment_id, $user_id);
 
         if ($stmt->execute()) {
-            $message = 'Current valuation updated successfully!';
+            header("Location: investments.php?msg=" . urlencode('Current valuation updated successfully!'));
+            exit();
         } else {
             $error = 'Failed to update valuation. Please try again.';
         }
@@ -87,7 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $delete_id, $user_id);
     if ($stmt->execute()) {
-        $message = 'Investment removed from portfolio.';
+        header("Location: investments.php?msg=" . urlencode('Investment removed from portfolio.'));
+        exit();
     } else {
         $error = 'Failed to delete investment.';
     }

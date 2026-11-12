@@ -22,9 +22,20 @@ include '../includes/admin_navbar.php';
             <p class="admin-subtitle">Review credential submissions from CAs, financial advisors, and tax consultants.</p>
         </div>
         <div>
-            <a href="dashboard.php" class="btn btn-secondary btn-sm">← Back← Back to Dashboard</a>
+            <a href="dashboard.php" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
         </div>
     </div>
+
+    <?php if (isset($_GET['success'])): ?>
+        <div class="alert alert-success" style="background: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+            &#10003; <?php echo htmlspecialchars($_GET['success']); ?>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['error'])): ?>
+        <div class="alert alert-danger" style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+            &#9888; <?php echo htmlspecialchars($_GET['error']); ?>
+        </div>
+    <?php endif; ?>
 
     <div class="admin-card">
         <div class="table-responsive">

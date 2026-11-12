@@ -29,5 +29,5 @@ if ($user_id) {
     $upd->execute();
 }
 
-header('Location: professionals.php');
+header('Location: professionals.php?msg=' . urlencode('Professional listing deleted successfully.'));
 exit();

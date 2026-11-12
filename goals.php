@@ -10,8 +10,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$message = '';
-$error = '';
+$message = trim($_GET['msg'] ?? '');
+$error = trim($_GET['err'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     enforce_csrf();
@@ -45,7 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
 
             $conn->commit();
-            $message = 'Financial goal successfully created!' . ($current_amount > 0 && $deduct_from_balance ? ' Recorded initial funding of ₹' . number_format($current_amount, 2) . ' in expense ledger.' : '');
+            $msg = 'Financial goal successfully created!' . ($current_amount > 0 && $deduct_from_balance ? ' Recorded initial funding of ₹' . number_format($current_amount, 2) . ' in expense ledger.' : '');
+            header("Location: goals.php?msg=" . urlencode($msg));
+            exit();
         } catch (Exception $e) {
             $conn->rollback();
             $error = 'Failed to create goal: ' . $e->getMessage();
@@ -90,7 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
 
                 $conn->commit();
-                $message = 'Deposit of ₹' . number_format($actual_added, 2) . ' credited successfully to goal balance!' . ($deduct_from_balance && $actual_added > 0 ? ' Deducted from cash balance in expense ledger.' : '');
+                $msg = 'Deposit of ₹' . number_format($actual_added, 2) . ' credited successfully to goal balance!' . ($deduct_from_balance && $actual_added > 0 ? ' Deducted from cash balance in expense ledger.' : '');
+                header("Location: goals.php?msg=" . urlencode($msg));
+                exit();
             } else {
                 $conn->rollback();
                 $error = 'Goal not found.';
@@ -109,7 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $delete_id, $user_id);
     if ($stmt->execute()) {
-        $message = 'Goal removed.';
+        header("Location: goals.php?msg=" . urlencode('Goal removed.'));
+        exit();
     } else {
         $error = 'Failed to delete goal.';
     }
