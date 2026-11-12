@@ -14,6 +14,11 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
+// Clear persistent auth cookie
+if (function_exists('clear_auth_cookie')) {
+    clear_auth_cookie();
+}
+
 // Destroy session on server
 session_destroy();
 

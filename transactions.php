@@ -10,8 +10,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$message = '';
-$error = '';
+$message = trim($_GET['msg'] ?? '');
+$highlight_id = intval($_GET['highlight'] ?? 0);
+$error = trim($_GET['err'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     enforce_csrf();
@@ -148,6 +149,7 @@ include "includes/navbar.php";
         'badge'    => number_format($total_rows) . ' Entries',
         'actions'  => [
             ['label' => '+ Add Transaction', 'href' => 'add_transaction.php', 'class' => 'btn-gold'],
+            ['label' => '📄 Export Statement (PDF)', 'href' => 'statement_pdf.php?' . http_build_query($_GET), 'class' => 'btn-outline', 'target' => '_blank'],
             ['label' => 'Analytics & Trends →', 'href' => 'analytics.php', 'class' => 'btn-outline']
         ]
     ]);
@@ -254,9 +256,16 @@ include "includes/navbar.php";
                 </thead>
                 <tbody>
                     <?php if (!empty($transactions)): ?>
-                        <?php foreach ($transactions as $t): ?>
-                            <tr>
-                                <td style="color: var(--text-muted);"><?php echo (int)$t['id']; ?></td>
+                        <?php foreach ($transactions as $t): 
+                            $is_highlighted = ($highlight_id > 0 && (int)$t['id'] === $highlight_id);
+                        ?>
+                            <tr id="tx-row-<?php echo (int)$t['id']; ?>" style="<?php echo $is_highlighted ? 'background: rgba(39, 174, 96, 0.12); outline: 2px solid #27ae60;' : ''; ?>">
+                                <td style="color: var(--text-muted);">
+                                    <?php echo (int)$t['id']; ?>
+                                    <?php if ($is_highlighted): ?>
+                                        <span class="badge-luxury badge-luxury-success" style="font-size: 10px; margin-left: 4px; padding: 2px 6px;">NEW</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if ($t['type'] === 'income'): ?>
                                         <span class="badge-luxury badge-luxury-success" style="background: var(--success-bg); color: var(--success);">↑ Income</span>

@@ -83,4 +83,57 @@ describe('Authentication & Access Control Logic', () => {
             expect(Math.ceil(retryAfter / 60)).toBe(10);
         });
     });
+
+    describe('HMAC Signed Persistent Auth Cookie & Session Recovery', () => {
+        const crypto = require('crypto');
+        const secret = 'fincart_session_secret_key_2026';
+
+        function createAuthToken(userId, role, timestamp) {
+            const payload = `${userId}:${role}:${timestamp}`;
+            const sig = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+            return Buffer.from(`${payload}:${sig}`).toString('base64');
+        }
+
+        function verifyAuthToken(token) {
+            try {
+                const decoded = Buffer.from(token, 'base64').toString('utf8');
+                const parts = decoded.split(':');
+                if (parts.length !== 4) return null;
+                const [userId, role, timestamp, sig] = parts;
+                const expected = crypto.createHmac('sha256', secret).update(`${userId}:${role}:${timestamp}`).digest('hex');
+                if (sig !== expected) return null;
+                const now = Math.floor(Date.now() / 1000);
+                if (now - parseInt(timestamp, 10) > 86400 * 30) return null; // Expired
+                return { userId: parseInt(userId, 10), role };
+            } catch {
+                return null;
+            }
+        }
+
+        it('generates and cryptographically verifies valid persistent cookie token', () => {
+            const now = Math.floor(Date.now() / 1000);
+            const token = createAuthToken(42, 'user', now);
+            const verified = verifyAuthToken(token);
+            expect(verified).not.toBeNull();
+            expect(verified.userId).toBe(42);
+            expect(verified.role).toBe('user');
+        });
+
+        it('rejects tampered authentication cookie tokens', () => {
+            const now = Math.floor(Date.now() / 1000);
+            const token = createAuthToken(42, 'user', now);
+            // Tamper with payload by changing base64
+            const decoded = Buffer.from(token, 'base64').toString('utf8');
+            const tampered = Buffer.from(decoded.replace('user', 'admin')).toString('base64');
+            const verified = verifyAuthToken(tampered);
+            expect(verified).toBeNull();
+        });
+
+        it('rejects expired persistent cookie tokens (> 30 days)', () => {
+            const thirtyOneDaysAgo = Math.floor(Date.now() / 1000) - (86400 * 31);
+            const token = createAuthToken(42, 'user', thirtyOneDaysAgo);
+            const verified = verifyAuthToken(token);
+            expect(verified).toBeNull();
+        });
+    });
 });

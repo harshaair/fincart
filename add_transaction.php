@@ -31,8 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("issdss", $user_id, $type, $category, $amount, $description, $date);
         
         if ($stmt->execute()) {
-            $message = 'Transaction logged successfully to your ledger!';
-            $_POST = array();
+            $new_id = $conn->insert_id;
+            // Immediate redirect with flash message and row highlight to verify database persistence without manual refresh
+            header("Location: transactions.php?msg=" . urlencode("Transaction Recorded Successfully!") . "&highlight=" . $new_id);
+            exit();
         } else {
             $error = 'Failed to add transaction. Please try again.';
         }
@@ -66,7 +68,7 @@ include "includes/navbar.php";
         <?php endif; ?>
 
         <div class="card" style="padding: 32px 28px;">
-            <form method="POST">
+            <form method="POST" id="transactionForm" onsubmit="var btn=document.getElementById('saveTxBtn'); if(btn.disabled) return false; btn.disabled=true; btn.innerHTML='⏳ Recording Transaction...'; return true;">
                 <?php echo csrf_field(); ?>
                 
                 <!-- Type Selector -->
@@ -116,7 +118,7 @@ include "includes/navbar.php";
 
                 <!-- Submit / Cancel -->
                 <div style="display: flex; gap: 12px;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 13px; font-size: 14.5px;">Save Transaction &rarr;</button>
+                    <button type="submit" id="saveTxBtn" class="btn btn-primary" style="flex: 1; padding: 13px; font-size: 14.5px;">Save Transaction &rarr;</button>
                     <a href="transactions.php" class="btn btn-secondary" style="padding: 13px 20px;">Cancel</a>
                 </div>
             </form>

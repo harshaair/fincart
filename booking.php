@@ -63,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $book_stmt = $conn->prepare($book_sql);
                 $book_stmt->bind_param("iissss", $professional_id, $user_id, $appointment_date, $appointment_time, $consultation_type, $notes);
                 $book_stmt->execute();
+                $new_appointment_id = $conn->insert_id;
 
                 $conn->commit();
                 $message = 'Appointment booked successfully! You will receive a confirmation email shortly.';
@@ -86,6 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($admin_email) {
                     @mail($admin_email, $subject, $body, $headers);
                 }
+
+                // Redirect immediately to prevent re-submission collisions and provide instant confirmation feedback
+                header("Location: booking_confirmation.php?appointment_id=" . $new_appointment_id . "&success=1");
+                exit();
             }
         } catch (Exception $e) {
             $conn->rollback();
@@ -469,7 +474,7 @@ include "includes/navbar.php";
                     <div class="alert alert-danger">✕ <?php echo $error; ?></div>
                 <?php endif; ?>
 
-                <form method="POST">
+                <form method="POST" id="bookingForm" onsubmit="var btn=document.getElementById('bookingSubmitBtn'); if(btn.disabled) return false; btn.disabled=true; btn.innerHTML='⏳ Processing Booking...'; return true;">
                     <?php echo csrf_field(); ?>
                     <div class="form-group">
                         <label>Consultation Date</label>
@@ -486,7 +491,7 @@ include "includes/navbar.php";
                         <div class="time-slots">
                             <?php foreach ($time_slots as $index => $slot): ?>
                                 <div class="time-slot">
-                                    <input type="radio" id="slot_<?php echo $index; ?>" name="appointment_time" value="<?php echo $slot; ?>">
+                                    <input type="radio" id="slot_<?php echo $index; ?>" name="appointment_time" value="<?php echo $slot; ?>" required>
                                     <label for="slot_<?php echo $index; ?>"><?php echo date('h:i A', strtotime($slot)); ?></label>
                                 </div>
                             <?php endforeach; ?>
@@ -510,7 +515,7 @@ include "includes/navbar.php";
                         <textarea id="notes" name="notes" rows="5" placeholder="Tell the professional about your specific needs or questions..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn">Confirm Booking</button>
+                    <button type="submit" id="bookingSubmitBtn" class="btn">Confirm Booking</button>
                 </form>
 
                 <div style="margin-top: 20px; padding: 15px; background: var(--off-white); border-radius: 8px; font-size: 13px; color: var(--text-light);">

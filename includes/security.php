@@ -4,15 +4,184 @@
  * Production Security Engine for FinCart
  * 
  * Features:
- *  1. Hardened Session Management (HttpOnly, Secure, SameSite, Lifetime, Auto-Regeneration)
- *  2. Cryptographic CSRF Token Management & Verification
- *  3. IP-based Database Rate Limiting with Exponential Lockouts
- *  4. XSS & Input Sanitization Utilities
+ *  1. Distributed Database Session Management (system_sessions in TiDB Cloud)
+ *  2. Cryptographic Auth Cookie & Transparent Session Recovery
+ *  3. Cryptographic CSRF Token Management & Verification
+ *  4. IP-based Database Rate Limiting with Exponential Lockouts
+ *  5. XSS & Input Sanitization Utilities
  */
 
+/**
+ * Distributed Session Handler: Persists sessions in TiDB Cloud system_sessions table
+ * Eliminates random logouts caused by ephemeral Vercel/Lambda serverless containers.
+ */
+if (!class_exists('DatabaseSessionHandler')) {
+    class DatabaseSessionHandler implements SessionHandlerInterface {
+        private ?mysqli $conn = null;
+
+        private function getConn(): ?mysqli {
+            if ($this->conn && @$this->conn->ping()) {
+                return $this->conn;
+            }
+            global $conn;
+            if ($conn instanceof mysqli && @$conn->ping()) {
+                $this->conn = $conn;
+                return $this->conn;
+            }
+            // Lazy-load DB connection if available
+            $dbFile = __DIR__ . '/../db.php';
+            if (file_exists($dbFile)) {
+                @require_once $dbFile;
+                global $conn;
+                if ($conn instanceof mysqli && @$conn->ping()) {
+                    $this->conn = $conn;
+                    return $this->conn;
+                }
+            }
+            return null;
+        }
+
+        public function open($path, $name): bool {
+            return true;
+        }
+
+        public function close(): bool {
+            return true;
+        }
+
+        public function read($id): string|false {
+            $c = $this->getConn();
+            if (!$c) return '';
+            $stmt = @$c->prepare("SELECT data FROM system_sessions WHERE id = ? AND last_activity > ?");
+            if (!$stmt) return '';
+            $max_age = time() - 86400; // 24 hours
+            $stmt->bind_param("si", $id, $max_age);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            if ($row = $res->fetch_assoc()) {
+                return (string)($row['data'] ?? '');
+            }
+            return '';
+        }
+
+        public function write($id, $data): bool {
+            $c = $this->getConn();
+            if (!$c) return false;
+            $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+            $now = time();
+            $stmt = @$c->prepare("INSERT INTO system_sessions (id, user_id, data, last_activity) 
+                                 VALUES (?, ?, ?, ?) 
+                                 ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), data = VALUES(data), last_activity = VALUES(last_activity)");
+            if (!$stmt) return false;
+            $stmt->bind_param("sisi", $id, $user_id, $data, $now);
+            return (bool)$stmt->execute();
+        }
+
+        public function destroy($id): bool {
+            $c = $this->getConn();
+            if (!$c) return false;
+            $stmt = @$c->prepare("DELETE FROM system_sessions WHERE id = ?");
+            if (!$stmt) return false;
+            $stmt->bind_param("s", $id);
+            return (bool)$stmt->execute();
+        }
+
+        public function gc($maxlifetime): int|false {
+            $c = $this->getConn();
+            if (!$c) return 0;
+            $cutoff = time() - (int)$maxlifetime;
+            $stmt = @$c->prepare("DELETE FROM system_sessions WHERE last_activity < ?");
+            if (!$stmt) return 0;
+            $stmt->bind_param("i", $cutoff);
+            $stmt->execute();
+            return (int)$stmt->affected_rows;
+        }
+    }
+}
+
+/**
+ * Persistent Signed Cookie Session Recovery
+ */
+if (!function_exists('set_auth_cookie')) {
+    function set_auth_cookie(int $userId, string $role): void {
+        $secret = getenv('APP_KEY') ?: 'fincart_session_secret_key_2026';
+        $payload = $userId . ':' . $role . ':' . time();
+        $sig = hash_hmac('sha256', $payload, $secret);
+        $token = base64_encode($payload . ':' . $sig);
+        $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+
+        setcookie('fincart_remember', $token, [
+            'expires'  => time() + (86400 * 30), // 30 days
+            'path'     => '/',
+            'domain'   => '',
+            'secure'   => $is_https,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
+}
+
+if (!function_exists('clear_auth_cookie')) {
+    function clear_auth_cookie(): void {
+        setcookie('fincart_remember', '', [
+            'expires'  => time() - 86400,
+            'path'     => '/',
+            'domain'   => '',
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
+}
+
+if (!function_exists('restore_session_from_cookie')) {
+    function restore_session_from_cookie(): bool {
+        if (empty($_COOKIE['fincart_remember'])) return false;
+        $decoded = base64_decode($_COOKIE['fincart_remember'], true);
+        if (!$decoded) return false;
+        $parts = explode(':', $decoded);
+        if (count($parts) !== 4) return false;
+        [$userId, $role, $timestamp, $sig] = $parts;
+        $secret = getenv('APP_KEY') ?: 'fincart_session_secret_key_2026';
+        $expected = hash_hmac('sha256', "$userId:$role:$timestamp", $secret);
+        if (!hash_equals($expected, $sig)) return false;
+        if (time() - (int)$timestamp > (86400 * 30)) return false;
+
+        $dbFile = __DIR__ . '/../db.php';
+        if (file_exists($dbFile)) {
+            @require_once $dbFile;
+            global $conn;
+            if ($conn instanceof mysqli && @$conn->ping()) {
+                $uid = (int)$userId;
+                $stmt = $conn->prepare("SELECT id, full_name, email, role FROM users WHERE id = ?");
+                if ($stmt) {
+                    $stmt->bind_param("i", $uid);
+                    $stmt->execute();
+                    $res = $stmt->get_result();
+                    if ($user = $res->fetch_assoc()) {
+                        $_SESSION['user_id'] = (int)$user['id'];
+                        $_SESSION['user_name'] = !empty($user['full_name']) ? $user['full_name'] : 'User';
+                        $_SESSION['user_email'] = $user['email'];
+                        $_SESSION['role'] = $user['role'];
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
+
+/**
+ * Initializes hardened, distributed session management
+ */
 if (!function_exists('init_secure_session')) {
     function init_secure_session(): void {
         if (session_status() === PHP_SESSION_ACTIVE) {
+            if (empty($_SESSION['user_id'])) {
+                restore_session_from_cookie();
+            }
             return;
         }
 
@@ -24,22 +193,52 @@ if (!function_exists('init_secure_session')) {
         ini_set('session.use_strict_mode', '1');
 
         session_set_cookie_params([
-            'lifetime' => 86400,     // 24 hours
+            'lifetime' => 86400 * 7, // 7 days
             'path'     => '/',
-            'domain'   => '',        // Default to host
-            'secure'   => $is_https, // Only transmit over HTTPS in production
-            'httponly' => true,      // Prevent JavaScript cookie theft
-            'samesite' => 'Lax'      // Protect against cross-site request forgery while preserving navigation
+            'domain'   => '',
+            'secure'   => $is_https,
+            'httponly' => true,
+            'samesite' => 'Lax'
         ]);
 
-        session_start();
+        // Register DatabaseSessionHandler if headers not yet sent
+        if (!headers_sent() && class_exists('DatabaseSessionHandler')) {
+            $handler = new DatabaseSessionHandler();
+            session_set_save_handler($handler, true);
+        }
 
-        // Regenerate session periodically to guard against session fixation
-        if (!isset($_SESSION['__session_created_at'])) {
-            $_SESSION['__session_created_at'] = time();
-        } elseif (time() - $_SESSION['__session_created_at'] > 1800) { // 30 minutes
-            session_regenerate_id(true);
-            $_SESSION['__session_created_at'] = time();
+        @session_start();
+
+        // If session was empty, attempt transparent recovery from persistent auth cookie
+        if (empty($_SESSION['user_id'])) {
+            restore_session_from_cookie();
+        }
+    }
+}
+
+/**
+ * Ensures user is authenticated; if not, checks cookie recovery before redirecting
+ */
+if (!function_exists('require_auth')) {
+    function require_auth(string $required_role = ''): void {
+        init_secure_session();
+        if (empty($_SESSION['user_id'])) {
+            if (!restore_session_from_cookie()) {
+                header('Location: login.php');
+                exit();
+            }
+        }
+
+        if (!empty($required_role)) {
+            $user_role = $_SESSION['role'] ?? 'user';
+            if ($required_role === 'admin' && $user_role !== 'admin') {
+                header('Location: ../dashboard.php');
+                exit();
+            }
+            if ($required_role === 'professional' && !in_array($user_role, ['professional', 'professional_approved', 'professional_pending'])) {
+                header('Location: ../dashboard.php');
+                exit();
+            }
         }
     }
 }

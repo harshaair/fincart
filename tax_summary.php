@@ -62,14 +62,29 @@ $income_result = $income_stmt->get_result();
 $income_row = $income_result->fetch_assoc();
 $current_year_income = (float)($income_row['total_income'] ?? 0);
 
-// Get Indian Financial Year deductions
-$deduction_sql = "SELECT SUM(amount) as total_deductions FROM tax_deductions WHERE user_id = ? AND deduction_date BETWEEN ? AND ?";
+// Get Indian Financial Year deductions with statutory caps and 80C/80D breakdown
+$deduction_sql = "SELECT category, description, amount, deduction_date FROM tax_deductions WHERE user_id = ? AND deduction_date BETWEEN ? AND ?";
 $deduction_stmt = $conn->prepare($deduction_sql);
 $deduction_stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $deduction_stmt->execute();
 $deduction_result = $deduction_stmt->get_result();
-$deduction_row = $deduction_result->fetch_assoc();
-$current_year_deductions = (float)($deduction_row['total_deductions'] ?? 0);
+$deduction_rows = [];
+while ($row = $deduction_result->fetch_assoc()) {
+    $deduction_rows[] = $row;
+}
+
+$caps = applyStatutoryCaps($deduction_rows);
+$current_year_deductions = $caps['total_eligible'];
+$claimed_80c = $caps['claimed_80c'];
+$eligible_80c = $caps['eligible_80c'];
+$claimed_80d = $caps['claimed_80d'];
+$eligible_80d = $caps['eligible_80d'];
+$claimed_80ccd = $caps['claimed_80ccd'];
+$eligible_80ccd = $caps['eligible_80ccd'];
+$disallowed_deductions = $caps['disallowed_amount'];
+
+$new_regime_tax = computeTaxNewRegime($current_year_income, true);
+$old_regime_tax = computeTaxOldRegime($current_year_income, $current_year_deductions, true);
 
 // Get all transactions for expense analysis within Indian Financial Year
 $all_trans_sql = "SELECT type, category, SUM(amount) as total FROM transactions WHERE user_id = ? AND date BETWEEN ? AND ? GROUP BY type, category";
@@ -483,27 +498,111 @@ if ($latest_tax) {
             </div>
         </div>
 
-        <!-- Current Year Summary -->
+        <!-- Current Year Summary & Deduction Breakdown -->
         <div class="card">
-            <h2><?php echo htmlspecialchars($fy_label); ?> Income & Deduction Summary</h2>
+            <h2><?php echo htmlspecialchars($fy_label); ?> Statutory Income & Deduction Breakdown</h2>
 
             <div class="report-row">
-                <span class="report-label">Gross Income</span>
-                <span class="report-value">₹<?php echo number_format($current_year_income, 2); ?></span>
+                <span class="report-label">Gross Total Income (FY <?php echo htmlspecialchars($fy_label); ?>)</span>
+                <span class="report-value"><strong>₹<?php echo number_format($current_year_income, 2); ?></strong></span>
             </div>
 
             <div class="report-row">
-                <span class="report-label">Less: Total Deductions</span>
-                <span class="report-value">-₹<?php echo number_format($current_year_deductions, 2); ?></span>
+                <span class="report-label">Less: Standard Deduction (Section 16(ia) - Salaried)</span>
+                <span class="report-value" style="color: #27ae60;">-₹50,000.00</span>
+            </div>
+
+            <div class="report-row">
+                <div>
+                    <span class="report-label">Less: Section 80C Investments</span>
+                    <div style="font-size: 12px; color: var(--text-light);">
+                        EPF, PPF, ELSS, Life Insurance, Home Loan Principal • Statutory Limit: ₹1,50,000.00
+                        <br>Actual Claimed: <strong>₹<?php echo number_format($claimed_80c, 2); ?></strong> 
+                        <?php if ($claimed_80c == 0): ?>
+                            <span style="color: #888;">(No 80C records entered for this FY)</span>
+                        <?php elseif ($claimed_80c > 150000): ?>
+                            <span style="color: #e74c3c;">(Exceeds limit by ₹<?php echo number_format($claimed_80c - 150000, 2); ?> - Disallowed)</span>
+                        <?php else: ?>
+                            <span style="color: #27ae60;">(Fully eligible)</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <span class="report-value" style="color: #27ae60;">-₹<?php echo number_format($eligible_80c, 2); ?></span>
+            </div>
+
+            <div class="report-row">
+                <div>
+                    <span class="report-label">Less: Section 80D Health Insurance</span>
+                    <div style="font-size: 12px; color: var(--text-light);">
+                        Medical Insurance Premiums & Preventive Health Check-up • Limit: ₹25,000 (Self) / up to ₹50,000 (Parents)
+                        <br>Actual Claimed: <strong>₹<?php echo number_format($claimed_80d, 2); ?></strong>
+                        <?php if ($claimed_80d == 0): ?>
+                            <span style="color: #888;">(No health insurance records entered)</span>
+                        <?php else: ?>
+                            <span style="color: #27ae60;">(Eligible under Old Regime)</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <span class="report-value" style="color: #27ae60;">-₹<?php echo number_format($eligible_80d, 2); ?></span>
+            </div>
+
+            <?php if ($claimed_80ccd > 0): ?>
+            <div class="report-row">
+                <div>
+                    <span class="report-label">Less: Section 80CCD(1B) National Pension System</span>
+                    <div style="font-size: 12px; color: var(--text-light);">Exclusive extra NPS allowance • Limit: ₹50,000.00</div>
+                </div>
+                <span class="report-value" style="color: #27ae60;">-₹<?php echo number_format($eligible_80ccd, 2); ?></span>
+            </div>
+            <?php endif; ?>
+
+            <?php 
+            $other_eligible = max(0, $current_year_deductions - $eligible_80c - $eligible_80d - $eligible_80ccd);
+            if ($other_eligible > 0): 
+            ?>
+            <div class="report-row">
+                <span class="report-label">Less: Other Allowable Deductions (80E, 80G, 80TTA)</span>
+                <span class="report-value" style="color: #27ae60;">-₹<?php echo number_format($other_eligible, 2); ?></span>
+            </div>
+            <?php endif; ?>
+
+            <div class="report-row" style="background: #fafaf9; border-top: 2px solid #ddd; border-bottom: 2px solid #ddd; font-weight: 700;">
+                <span class="report-label">Total Allowable Deductions (Old Regime)</span>
+                <span class="report-value" style="color: #27ae60;">-₹<?php echo number_format($current_year_deductions + 50000, 2); ?></span>
             </div>
 
             <div class="total-row">
-                <span class="total-label">Estimated Taxable Income</span>
-                <span class="total-value">₹<?php echo number_format(max(0, $current_year_income - $current_year_deductions), 2); ?></span>
+                <span class="total-label">Estimated Taxable Income (Old Regime)</span>
+                <span class="total-value">₹<?php echo number_format(max(0, $current_year_income - ($current_year_deductions + 50000)), 2); ?></span>
+            </div>
+
+            <!-- Regime Comparison Box -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-top: 20px;">
+                <div style="padding: 16px; border: 2px solid <?php echo $new_regime_tax['total_tax'] <= $old_regime_tax['total_tax'] ? '#27ae60' : '#ddd'; ?>; border-radius: 10px; background: <?php echo $new_regime_tax['total_tax'] <= $old_regime_tax['total_tax'] ? '#f0fdf4' : '#fff'; ?>;">
+                    <div style="font-size: 12px; text-transform: uppercase; font-weight: 700; color: #666;">New Tax Regime (Sec 115BAC)</div>
+                    <div style="font-size: 22px; font-weight: 700; color: #111; margin: 6px 0;">₹<?php echo number_format($new_regime_tax['total_tax'], 2); ?></div>
+                    <div style="font-size: 12px; color: #666;">
+                        Standard Deduction: ₹50,000 | <strong>80C/80D: Not Allowed</strong> | Sec 87A Rebate: up to ₹7 Lakhs
+                    </div>
+                    <?php if ($new_regime_tax['total_tax'] <= $old_regime_tax['total_tax']): ?>
+                        <span style="display: inline-block; background: #27ae60; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-top: 8px;">✓ Recommended Regime</span>
+                    <?php endif; ?>
+                </div>
+
+                <div style="padding: 16px; border: 2px solid <?php echo $old_regime_tax['total_tax'] < $new_regime_tax['total_tax'] ? '#27ae60' : '#ddd'; ?>; border-radius: 10px; background: <?php echo $old_regime_tax['total_tax'] < $new_regime_tax['total_tax'] ? '#f0fdf4' : '#fff'; ?>;">
+                    <div style="font-size: 12px; text-transform: uppercase; font-weight: 700; color: #666;">Old Tax Regime</div>
+                    <div style="font-size: 22px; font-weight: 700; color: #111; margin: 6px 0;">₹<?php echo number_format($old_regime_tax['total_tax'], 2); ?></div>
+                    <div style="font-size: 12px; color: #666;">
+                        Std Deduction + 80C (₹<?php echo number_format($eligible_80c, 0); ?>) + 80D (₹<?php echo number_format($eligible_80d, 0); ?>) | Rebate up to ₹5 Lakhs
+                    </div>
+                    <?php if ($old_regime_tax['total_tax'] < $new_regime_tax['total_tax']): ?>
+                        <span style="display: inline-block; background: #27ae60; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-top: 8px;">✓ Recommended Regime</span>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="highlight-box">
-                <strong>💡 Tip:</strong> You can increase your deductions by tracking more eligible expenses and investments. Consider reviewing Section 80C, 80D, and other deduction categories.
+                <strong>💡 Statutory Regime Rule:</strong> Under Indian tax laws, Section 80C and Section 80D deductions are available exclusively under the <strong>Old Tax Regime</strong>. Under the default <strong>New Tax Regime (Section 115BAC)</strong>, 80C and 80D deductions are legally disallowed in exchange for lower tax slab rates.
             </div>
         </div>
 

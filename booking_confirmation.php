@@ -34,14 +34,19 @@ include "includes/navbar.php";
     <div style="max-width: 640px; margin: 30px auto; padding: 20px;">
         <div class="card" style="text-align: center; padding: 36px 28px;">
             <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
-            <h1 style="color: var(--success, #27ae60); font-size: 26px; font-weight: 700; margin-bottom: 10px;">Appointment Booked Successfully!</h1>
+            <h1 style="color: var(--success, #27ae60); font-size: 26px; font-weight: 700; margin-bottom: 10px;">Booking Confirmed!</h1>
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 28px;">
-                Your appointment request has been submitted. A notification has been dispatched to the advisor.
+                Your appointment request is saved and confirmed (Booking Reference #<?php echo htmlspecialchars((string)$appt['id']); ?>). A notification has been dispatched to the advisor.
             </p>
 
             <div style="background: var(--off-white, #fafaf9); border: 1px solid var(--border-light, #eee); border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 24px;">
                 <h3 style="font-size: 16px; margin-bottom: 14px; color: var(--primary);">Appointment Summary</h3>
                 
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Reference ID:</span>
+                    <span><strong style="color: var(--primary);">#<?php echo htmlspecialchars((string)$appt['id']); ?></strong></span>
+                </div>
+
                 <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
                     <span style="color: var(--text-muted); font-weight: 500;">Advisor:</span>
                     <span><strong><?php echo htmlspecialchars($appt['prof_name']); ?></strong> (<?php echo htmlspecialchars($appt['professional_type']); ?>)</span>
@@ -62,9 +67,13 @@ include "includes/navbar.php";
                     <span><?php echo htmlspecialchars($appt['consultation_type']); ?></span>
                 </div>
                 
-                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
-                    <span style="color: var(--text-muted); font-weight: 500;">Status:</span>
-                    <span class="badge badge-warning">⏳ Pending Approval</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Booking Status:</span>
+                    <?php if ($appt['status'] === 'confirmed'): ?>
+                        <span class="badge" style="background: #27ae60; color: #fff; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12.5px;">✓ Confirmed</span>
+                    <?php else: ?>
+                        <span class="badge" style="background: #f39c12; color: #fff; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12.5px;">⏳ <?php echo ucfirst(htmlspecialchars($appt['status'])); ?></span>
+                    <?php endif; ?>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px;">

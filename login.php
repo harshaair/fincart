@@ -97,6 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $role = isset($user['role']) ? strtolower(trim($user['role'])) : 'user';
             $_SESSION['role'] = $role;
 
+            // Set secure persistent cookie to survive serverless cold starts / multi-instance routing
+            if (function_exists('set_auth_cookie')) {
+                set_auth_cookie((int)$user['id'], $role);
+            }
+
             if ($role === 'admin') {
                 $target = "admin/dashboard.php";
             } elseif (in_array($role, ['professional', 'professional_approved', 'professional_pending'])) {

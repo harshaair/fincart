@@ -88,5 +88,29 @@ describe('Statutory Tax Deduction Caps', () => {
         expect(res.totalEligible).toBe(150000 + 35000 + 50000 + 10000); // 245000
         expect(res.disallowed).toBe(55000);
     });
+
+    it('returns exactly ZERO deductions when no entries are logged (never assumes default 1.5L)', () => {
+        const items = [];
+        const res = applyStatutoryCaps(items);
+        expect(res.claimed80c).toBe(0);
+        expect(res.eligible80c).toBe(0);
+        expect(res.claimed80d).toBe(0);
+        expect(res.eligible80d).toBe(0);
+        expect(res.totalClaimed).toBe(0);
+        expect(res.totalEligible).toBe(0);
+        expect(res.disallowed).toBe(0);
+    });
+
+    it('distinguishes between Section 80C and Section 80D without cross-bleeding limits', () => {
+        const items = [
+            { category: 'Section 80D - Health Insurance', amount: 30000 }
+        ];
+        const res = applyStatutoryCaps(items);
+        expect(res.claimed80c).toBe(0);
+        expect(res.eligible80c).toBe(0);
+        expect(res.claimed80d).toBe(30000);
+        expect(res.eligible80d).toBe(30000); // under 50k max cap
+        expect(res.totalEligible).toBe(30000);
+    });
 });
 
