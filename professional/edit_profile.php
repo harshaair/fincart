@@ -27,6 +27,7 @@ $error = '';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    enforce_csrf();
     $name = trim($_POST['name'] ?? '');
     $professional_type = trim($_POST['professional_type'] ?? '');
     $qualification = trim($_POST['qualification'] ?? '');
@@ -133,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="post">
+        <?php echo csrf_field(); ?>
         <div class="form-row">
             <div class="form-group">
                 <label for="name">Name *</label>

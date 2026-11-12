@@ -25,9 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $type = trim($_POST['investment_type'] ?? 'Other');
     $deduct_from_balance = !empty($_POST['deduct_from_balance']);
 
-    if (empty($name) || $amount <= 0) {
-        $error = 'Please fill all fields with valid positive values.';
+    if (empty($name) || $amount <= 0 || $amount > 99999999.99) {
+        $error = 'Please enter a valid investment name and amount between ₹0.01 and ₹99,999,999.99.';
     } else {
+        // If current valuation is omitted or zero, default to invested amount (BUG-019)
+        if ($returns <= 0 || $returns > 99999999.99) {
+            $returns = $amount;
+        }
         $conn->begin_transaction();
         try {
             $sql = "INSERT INTO investments (user_id, name, amount, returns, type, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
@@ -60,26 +64,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $investment_id = intval($_POST['investment_id'] ?? 0);
     $new_returns = floatval($_POST['new_value'] ?? 0);
 
-    // Verify investment belongs to user
-    $verify_sql = "SELECT id FROM investments WHERE id = ? AND user_id = ?";
-    $verify_stmt = $conn->prepare($verify_sql);
-    $verify_stmt->bind_param("ii", $investment_id, $user_id);
-    $verify_stmt->execute();
-    $verify_result = $verify_stmt->get_result();
-
-    if ($verify_result->num_rows > 0) {
-        $sql = "UPDATE investments SET returns = ? WHERE id = ? AND user_id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("dii", $new_returns, $investment_id, $user_id);
-
-        if ($stmt->execute()) {
-            header("Location: investments.php?msg=" . urlencode('Current valuation updated successfully!'));
-            exit();
-        } else {
-            $error = 'Failed to update valuation. Please try again.';
-        }
+    if ($new_returns < 0 || $new_returns > 99999999.99) {
+        $error = 'Valuation must be between ₹0 and ₹99,999,999.99.';
     } else {
-        $error = 'Investment record not found.';
+        // Verify investment belongs to user
+        $verify_sql = "SELECT id FROM investments WHERE id = ? AND user_id = ?";
+        $verify_stmt = $conn->prepare($verify_sql);
+        $verify_stmt->bind_param("ii", $investment_id, $user_id);
+        $verify_stmt->execute();
+        $verify_result = $verify_stmt->get_result();
+
+        if ($verify_result->num_rows > 0) {
+            $sql = "UPDATE investments SET returns = ? WHERE id = ? AND user_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("dii", $new_returns, $investment_id, $user_id);
+
+            if ($stmt->execute()) {
+                header("Location: investments.php?msg=" . urlencode('Current valuation updated successfully!'));
+                exit();
+            } else {
+                $error = 'Failed to update valuation. Please try again.';
+            }
+        } else {
+            $error = 'Investment record not found.';
+        }
     }
 }
 

@@ -55,19 +55,19 @@ function computeTaxNewRegime($gross_income, $is_salaried = true) {
     }
     $tax_after_rebate = max(0.0, $calculated_tax - $rebate_87a);
 
-    // Surcharge
+    // Statutory Surcharge (FY 2024-25 / AY 2025-26)
     $surcharge = 0.0;
-    if ($taxable_income > 5000000.0) {
+    if ($taxable_income > 20000000.0) { // Above ₹2 Crore: 25%
         $surcharge = $tax_after_rebate * 0.25;
-    } elseif ($taxable_income > 2000000.0) {
+    } elseif ($taxable_income > 10000000.0) { // Above ₹1 Crore: 15%
         $surcharge = $tax_after_rebate * 0.15;
-    } elseif ($taxable_income > 1000000.0 && $taxable_income > 5000000.0) {
+    } elseif ($taxable_income > 5000000.0) { // Above ₹50 Lakh: 10%
         $surcharge = $tax_after_rebate * 0.10;
     }
 
     // 4% Health & Education Cess
     $cess = ($tax_after_rebate + $surcharge) * 0.04;
-    $total_tax = $tax_after_rebate + $surcharge + $cess;
+    $total_tax = round($tax_after_rebate + $surcharge + $cess);
 
     return [
         'regime' => 'New Regime (FY 2024-25)',
@@ -124,17 +124,19 @@ function computeTaxOldRegime($gross_income, $eligible_deductions = 0.0, $is_sala
     }
     $tax_after_rebate = max(0.0, $calculated_tax - $rebate_87a);
 
-    // Surcharge
+    // Statutory Surcharge (FY 2024-25 / AY 2025-26)
     $surcharge = 0.0;
-    if ($taxable_income > 5000000.0) {
+    if ($taxable_income > 20000000.0) { // Above ₹2 Crore: 25%
         $surcharge = $tax_after_rebate * 0.25;
-    } elseif ($taxable_income > 2000000.0) {
+    } elseif ($taxable_income > 10000000.0) { // Above ₹1 Crore: 15%
         $surcharge = $tax_after_rebate * 0.15;
+    } elseif ($taxable_income > 5000000.0) { // Above ₹50 Lakh: 10%
+        $surcharge = $tax_after_rebate * 0.10;
     }
 
     // 4% Health & Education Cess
     $cess = ($tax_after_rebate + $surcharge) * 0.04;
-    $total_tax = $tax_after_rebate + $surcharge + $cess;
+    $total_tax = round($tax_after_rebate + $surcharge + $cess);
 
     return [
         'regime' => 'Old Regime',

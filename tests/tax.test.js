@@ -32,8 +32,18 @@ function computeTaxNewRegime(grossIncome, isSalaried = true) {
     }
     const taxAfterRebate = Math.max(0, baseTax - rebate87A);
 
-    const cess = taxAfterRebate * 0.04;
-    const totalTax = taxAfterRebate + cess;
+    // Statutory Surcharge (FY 2024-25 / AY 2025-26)
+    let surcharge = 0;
+    if (taxableIncome > 20000000) {
+        surcharge = taxAfterRebate * 0.25;
+    } else if (taxableIncome > 10000000) {
+        surcharge = taxAfterRebate * 0.15;
+    } else if (taxableIncome > 5000000) {
+        surcharge = taxAfterRebate * 0.10;
+    }
+
+    const cess = (taxAfterRebate + surcharge) * 0.04;
+    const totalTax = Math.round(taxAfterRebate + surcharge + cess);
 
     return {
         grossIncome,
@@ -41,6 +51,7 @@ function computeTaxNewRegime(grossIncome, isSalaried = true) {
         baseTax,
         rebate87A,
         taxAfterRebate,
+        surcharge,
         cess,
         totalTax
     };
@@ -72,8 +83,18 @@ function computeTaxOldRegime(grossIncome, deductions = 0, isSalaried = true) {
     }
     const taxAfterRebate = Math.max(0, baseTax - rebate87A);
 
-    const cess = taxAfterRebate * 0.04;
-    const totalTax = taxAfterRebate + cess;
+    // Statutory Surcharge (FY 2024-25 / AY 2025-26)
+    let surcharge = 0;
+    if (taxableIncome > 20000000) {
+        surcharge = taxAfterRebate * 0.25;
+    } else if (taxableIncome > 10000000) {
+        surcharge = taxAfterRebate * 0.15;
+    } else if (taxableIncome > 5000000) {
+        surcharge = taxAfterRebate * 0.10;
+    }
+
+    const cess = (taxAfterRebate + surcharge) * 0.04;
+    const totalTax = Math.round(taxAfterRebate + surcharge + cess);
 
     return {
         grossIncome,
@@ -81,6 +102,7 @@ function computeTaxOldRegime(grossIncome, deductions = 0, isSalaried = true) {
         baseTax,
         rebate87A,
         taxAfterRebate,
+        surcharge,
         cess,
         totalTax
     };
@@ -146,6 +168,34 @@ describe('Indian Income Tax Engine - FY 2024-25', () => {
             expect(res.rebate87A).toBe(0);
             expect(res.cess).toBe(2400);
             expect(res.totalTax).toBe(62400);
+        });
+
+        it('charges ZERO surcharge at ₹25 Lakh income (statutory threshold is ₹50 Lakh)', () => {
+            // Gross ₹25,00,000 - ₹50k std deduction = ₹24,50,000 taxable
+            // Base tax = 4,35,000
+            // Surcharge = 0 (under ₹50L)
+            // Cess 4% = 17,400
+            // Total = 4,52,400
+            const res = computeTaxNewRegime(2500000, true);
+            expect(res.taxableIncome).toBe(2450000);
+            expect(res.baseTax).toBe(435000);
+            expect(res.surcharge).toBe(0);
+            expect(res.cess).toBe(17400);
+            expect(res.totalTax).toBe(452400);
+        });
+
+        it('applies 10% surcharge when taxable income exceeds ₹50 Lakh', () => {
+            // Gross ₹60,50,000 - ₹50k = ₹60,00,000 taxable
+            // Base tax: 0-3L (0), 3-6L (15k), 6-9L (30k), 9-12L (45k), 12-15L (60k), >15L (45L @ 30% = 13.5L) = 15,00,000
+            // Surcharge: 10% of 15,00,000 = 1,50,000
+            // Cess: 4% of (15,00,000 + 1,50,000) = 66,000
+            // Total: 17,16,000
+            const res = computeTaxNewRegime(6050000, true);
+            expect(res.taxableIncome).toBe(6000000);
+            expect(res.baseTax).toBe(1500000);
+            expect(res.surcharge).toBe(150000);
+            expect(res.cess).toBe(66000);
+            expect(res.totalTax).toBe(1716000);
         });
     });
 

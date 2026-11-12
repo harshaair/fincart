@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("diss", $limit, $user_id, $category, $month_year);
         } else {
-            $sql = "INSERT INTO budgets (user_id, category, limit_amount, month_year) VALUES (?, ?, ?, ?)";
+            $sql = "INSERT INTO budgets (user_id, category, limit_amount, month_year) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE limit_amount = VALUES(limit_amount)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("isds", $user_id, $category, $limit, $month_year);
         }

@@ -6,7 +6,6 @@ require_once "includes/mailer.php";
 
 $message = '';
 $error = '';
-$reset_link_debug = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     enforce_csrf();
@@ -58,11 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ";
 
             sendFinCartEmail($email, $subject, $html_body);
-            $reset_link_debug = $reset_url; // Surface link directly on screen for testing convenience
         }
 
         $message = "If that email address is in our system, we have sent instructions to reset your password.";
     }
+}
 }
 
 $page_title = 'Forgot Password - FinCart';
@@ -107,12 +106,6 @@ $page_title = 'Forgot Password - FinCart';
 
     <?php if (!empty($message)): ?>
         <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
-        <?php if (!empty($reset_link_debug)): ?>
-            <div style="background: #f8f9fa; border: 1px dashed #d4af37; padding: 12px; border-radius: 8px; font-size: 13px; word-break: break-all; margin-bottom: 20px;">
-                <strong>Local Dev Link:</strong><br>
-                <a href="<?php echo htmlspecialchars($reset_link_debug); ?>" style="color: #d4af37;"><?php echo htmlspecialchars($reset_link_debug); ?></a>
-            </div>
-        <?php endif; ?>
     <?php endif; ?>
 
     <?php if (!empty($error)): ?>

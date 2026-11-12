@@ -54,7 +54,7 @@ $stmt = $conn->prepare("
     SELECT a.*, p.name as professional_name, p.professional_type, p.qualification, p.phone as prof_phone,
            r.rating as user_rating, r.review_text as user_review
     FROM appointments a 
-    JOIN professionals p ON a.professional_id = p.id
+    LEFT JOIN professionals p ON a.professional_id = p.id
     LEFT JOIN professional_ratings r ON r.appointment_id = a.id AND r.user_id = a.user_id
     WHERE a.user_id = ?
     ORDER BY a.appointment_date DESC, a.appointment_time DESC
@@ -93,8 +93,10 @@ include "includes/navbar.php";
                 <div class="card" style="padding: 22px;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                         <div>
-                            <h3 style="font-size: 18px; margin-bottom: 4px;"><?php echo htmlspecialchars($apt['professional_name']); ?></h3>
-                            <span class="badge badge-info"><?php echo htmlspecialchars($apt['professional_type']); ?></span>
+                            <h3 style="font-size: 18px; margin-bottom: 4px;"><?php echo htmlspecialchars($apt['professional_name'] ?? 'Archived Advisor (Listing Closed)'); ?></h3>
+                            <?php if (!empty($apt['professional_type'])): ?>
+                                <span class="badge badge-info"><?php echo htmlspecialchars($apt['professional_type']); ?></span>
+                            <?php endif; ?>
                             <span style="color: #666; font-size: 13px; margin-left: 8px;"><?php echo htmlspecialchars($apt['qualification'] ?? ''); ?></span>
                         </div>
                         <div>

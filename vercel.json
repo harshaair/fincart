@@ -25,6 +25,10 @@
       "dest": "/index.html"
     },
     {
+      "src": "/(\\..*|.*\\.sql|.*\\.env|package.*\\.json|fincart\\.sql)",
+      "status": 404
+    },
+    {
       "src": "/(.*)",
       "dest": "/api/index.php"
     }

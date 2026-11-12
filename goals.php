@@ -25,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $deadline = $_POST['deadline'] ?? '';
     $deduct_from_balance = !empty($_POST['deduct_from_balance']);
 
-    if (empty($goal_name) || $target_amount <= 0 || $current_amount < 0 || empty($deadline)) {
-        $error = 'Please fill all fields with valid positive values and a target deadline.';
+    if (empty($goal_name) || $target_amount <= 0 || $target_amount > 99999999.99 || $current_amount < 0 || $current_amount > 99999999.99 || empty($deadline)) {
+        $error = 'Please fill all fields with valid positive values (Target up to ₹99,999,999.99) and a target deadline.';
     } else {
         $conn->begin_transaction();
         try {
@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $deposit_amount = floatval($_POST['deposit_amount'] ?? 0);
     $deduct_from_balance = !empty($_POST['deduct_from_balance']);
 
-    if ($deposit_amount <= 0) {
-        $error = 'Deposit amount must be greater than zero.';
+    if ($deposit_amount <= 0 || $deposit_amount > 99999999.99) {
+        $error = 'Deposit amount must be between ₹0.01 and ₹99,999,999.99.';
     } else {
         $conn->begin_transaction();
         try {
@@ -131,8 +131,9 @@ $goals = [];
 while ($row = $goals_result->fetch_assoc()) {
     $row['percentage'] = $row['target_amount'] > 0 ? min(100, ($row['current_amount'] / $row['target_amount']) * 100) : 0;
     $row['remaining'] = max(0, $row['target_amount'] - $row['current_amount']);
-    $row['days_left'] = max(0, ceil((strtotime($row['deadline']) - time()) / (60 * 60 * 24)));
-    $row['status'] = $row['current_amount'] >= $row['target_amount'] ? 'Achieved' : (time() > strtotime($row['deadline']) ? 'Overdue' : 'In Progress');
+    $deadline_end_time = strtotime($row['deadline'] . ' 23:59:59');
+    $row['days_left'] = max(0, ceil(($deadline_end_time - time()) / (60 * 60 * 24)));
+    $row['status'] = $row['current_amount'] >= $row['target_amount'] ? 'Achieved' : (time() > $deadline_end_time ? 'Overdue' : 'In Progress');
     $goals[] = $row;
 }
 

@@ -49,8 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $date = $_POST['date'] ?? date('Y-m-d');
     $description = trim($_POST['description'] ?? '');
 
-    if ($amount <= 0 || empty($category) || empty($date)) {
-        $error = "Please provide valid transaction values.";
+    if ($amount <= 0 || $amount > 99999999.99 || empty($category) || empty($date)) {
+        $error = "Please provide valid transaction values (Amount must be between ₹0.01 and ₹99,999,999.99).";
     } else {
         $update_sql = "UPDATE transactions SET type = ?, category = ?, amount = ?, date = ?, description = ? WHERE id = ? AND user_id = ?";
         $update_stmt = $conn->prepare($update_sql);

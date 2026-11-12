@@ -69,6 +69,7 @@ $current_old_regime = computeTaxOldRegime($current_income, $current_eligible_ded
 // Interactive comparison calculator
 $calc_result = null;
 $calc_error = '';
+$save_success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gross_income_input = isset($_POST['gross_income']) ? max(0.0, floatval($_POST['gross_income'])) : $current_income;
@@ -108,6 +109,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'better_regime'  => $better_regime,
             'tax_difference' => $tax_difference
         ];
+
+        // If user requested to save projection to history
+        if (isset($_POST['action']) && $_POST['action'] === 'save_projection') {
+            $ins = $conn->prepare("INSERT INTO tax_planning (user_id, financial_year, gross_income, total_deductions, taxable_income, tax_slabs_used, estimated_tax, tax_bracket, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+            $slabs_json = json_encode(['better_regime' => $better_regime, 'new_tax' => $new_res['total_tax'], 'old_tax' => $old_res['total_tax']]);
+            $bracket = ($better_regime === 'new' ? 'New Regime (' . round($new_res['effective_rate'], 1) . '%)' : 'Old Regime (' . round($old_res['effective_rate'], 1) . '%)');
+            $est_tax = ($better_regime === 'new') ? $new_res['total_tax'] : $old_res['total_tax'];
+            $taxable_inc = ($better_regime === 'new') ? $new_res['taxable_income'] : $old_res['taxable_income'];
+            $tot_ded = ($better_regime === 'new') ? $new_res['standard_deduction'] : ($old_res['standard_deduction'] + $total_calc_deductions);
+            $fy_code = $active_fy['fy_code'];
+            $ins->bind_param("isdddsds", $user_id, $fy_code, $gross_income_input, $tot_ded, $taxable_inc, $slabs_json, $est_tax, $bracket);
+            if ($ins->execute()) {
+                $save_success = "Tax projection for FY " . htmlspecialchars($fy_code) . " saved successfully! View history in Tax Summary.";
+            } else {
+                $calc_error = "Failed to save projection: " . $conn->error;
+            }
+        }
     }
 }
 
@@ -255,11 +273,18 @@ include "includes/navbar.php";
                     <span style="font-size: 13.5px;"><strong>Salaried Individual</strong> (Entitled to ₹50,000 Standard Deduction under Sec 16(ia) in BOTH regimes)</span>
                 </label>
             </div>
-            <button type="submit" id="taxCompareBtn" class="btn btn-primary" style="padding: 11px 24px;">Calculate & Compare Regimes &rarr;</button>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" name="action" value="calculate" id="taxCompareBtn" class="btn btn-primary" style="padding: 11px 24px;">Calculate & Compare Regimes &rarr;</button>
+                <button type="submit" name="action" value="save_projection" class="btn btn-gold" style="padding: 11px 24px;">💾 Save Projection to History</button>
+            </div>
         </form>
 
+        <?php if (!empty($save_success)): ?>
+            <div class="alert alert-success">&#10003; <?php echo htmlspecialchars($save_success); ?></div>
+        <?php endif; ?>
+
         <?php if (!empty($calc_error)): ?>
-            <div class="alert alert-danger"><?php echo htmlspecialchars($calc_error); ?></div>
+            <div class="alert alert-danger">&#9888; <?php echo htmlspecialchars($calc_error); ?></div>
         <?php endif; ?>
 
         <?php if ($calc_result): ?>

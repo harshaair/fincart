@@ -17,9 +17,9 @@ class BudgetService {
             $monthYear = date('Y-m');
         }
 
-        // 1. Fetch configured budgets
-        $bStmt = $conn->prepare("SELECT id, category, limit_amount FROM budgets WHERE user_id = ? ORDER BY category ASC");
-        $bStmt->bind_param("i", $userId);
+        // 1. Fetch configured budgets for the requested month
+        $bStmt = $conn->prepare("SELECT id, category, limit_amount FROM budgets WHERE user_id = ? AND (month_year = ? OR month_year IS NULL OR month_year = '') ORDER BY category ASC");
+        $bStmt->bind_param("is", $userId, $monthYear);
         $bStmt->execute();
         $bRes = $bStmt->get_result();
 

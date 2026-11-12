@@ -23,8 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = $_POST['date'] ?? '';
 
     // Validation
-    if (empty($type) || empty($category) || $amount <= 0 || empty($date)) {
-        $error = 'Please fill all required fields with valid values.';
+    if (empty($type) || empty($category) || $amount <= 0 || $amount > 99999999.99 || empty($date)) {
+        $error = 'Please fill all required fields with valid values. Amount must be between ₹0.01 and ₹99,999,999.99.';
     } else {
         $sql = "INSERT INTO transactions (user_id, type, category, amount, description, date) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
@@ -88,7 +88,7 @@ include "includes/navbar.php";
                 <!-- Amount -->
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label for="amount" style="display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 8px;">Amount (₹)</label>
-                    <input type="number" id="amount" name="amount" class="form-control" step="0.01" min="0.01" placeholder="e.g. 2500" required autofocus style="font-size: 16px; font-weight: 600;">
+                    <input type="number" id="amount" name="amount" class="form-control" step="0.01" min="0.01" max="99999999.99" placeholder="e.g. 2500" required autofocus style="font-size: 16px; font-weight: 600;">
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">

@@ -53,6 +53,30 @@ if (!$realTarget || !str_starts_with($realTarget, $realRoot) || !is_file($realTa
 
 $ext = strtolower(pathinfo($realTarget, PATHINFO_EXTENSION));
 
+// Security: Block dotfiles, credentials, migrations, configuration, and internal paths
+$filename = basename($realTarget);
+$relative = str_replace('\\', '/', substr($realTarget, strlen($realRoot)));
+$forbiddenExtensions = ['env', 'sql', 'log', 'sh', 'yml', 'yaml', 'lock', 'config'];
+
+if (
+    str_starts_with($filename, '.')
+    || in_array($ext, $forbiddenExtensions, true)
+    || str_contains($relative, '/.')
+    || str_starts_with($relative, '/database/')
+    || str_starts_with($relative, '/tests/')
+    || str_starts_with($relative, '/tools/')
+    || str_starts_with($relative, '/node_modules/')
+    || $filename === 'fincart.sql'
+    || $filename === 'package.json'
+    || $filename === 'package-lock.json'
+) {
+    http_response_code(404);
+    echo "<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style='font-family:sans-serif;text-align:center;padding:50px;'>";
+    echo "<h1>404 - Page Not Found</h1><p>The requested page does not exist.</p>";
+    echo "<a href='/'>Return to FinCart Home</a></body></html>";
+    exit;
+}
+
 // Serve static assets with appropriate MIME types
 if ($ext !== 'php') {
     $mimes = [

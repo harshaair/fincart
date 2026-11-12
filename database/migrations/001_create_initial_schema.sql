@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS budgets (
   month_year varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY unique_user_category (user_id, category)
+  UNIQUE KEY unique_user_category_month (user_id, category, month_year)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS goals (

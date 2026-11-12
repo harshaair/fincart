@@ -33,11 +33,19 @@ include "includes/navbar.php";
 <div class="main-content">
     <div style="max-width: 640px; margin: 30px auto; padding: 20px;">
         <div class="card" style="text-align: center; padding: 36px 28px;">
-            <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
-            <h1 style="color: var(--success, #27ae60); font-size: 26px; font-weight: 700; margin-bottom: 10px;">Booking Confirmed!</h1>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 28px;">
-                Your appointment request is saved and confirmed (Booking Reference #<?php echo htmlspecialchars((string)$appt['id']); ?>). A notification has been dispatched to the advisor.
-            </p>
+            <?php if ($appt['status'] === 'confirmed'): ?>
+                <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
+                <h1 style="color: var(--success, #27ae60); font-size: 26px; font-weight: 700; margin-bottom: 10px;">Booking Confirmed!</h1>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 28px;">
+                    Your appointment has been confirmed (Booking Reference #<?php echo htmlspecialchars((string)$appt['id']); ?>).
+                </p>
+            <?php else: ?>
+                <div style="font-size: 64px; margin-bottom: 16px;">⏳</div>
+                <h1 style="color: var(--accent, #d4af37); font-size: 26px; font-weight: 700; margin-bottom: 10px;">Request Submitted for Review</h1>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 28px;">
+                    Your consultation request is saved (Booking Reference #<?php echo htmlspecialchars((string)$appt['id']); ?>). The advisor has been notified to review and accept your session.
+                </p>
+            <?php endif; ?>
 
             <div style="background: var(--off-white, #fafaf9); border: 1px solid var(--border-light, #eee); border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 24px;">
                 <h3 style="font-size: 16px; margin-bottom: 14px; color: var(--primary);">Appointment Summary</h3>

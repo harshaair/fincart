@@ -20,8 +20,11 @@ function sendFinCartEmail($to, $subject, $html_body, $alt_text = '') {
 
     $header_string = implode("\r\n", $headers);
 
-    // Log email to local file for dev inspection / verification
-    $log_dir = __DIR__ . '/../logs';
+    // Safe dev/audit logging (supports both traditional host and serverless /tmp filesystems)
+    $log_dir = (is_dir(__DIR__ . '/../logs') && is_writable(__DIR__ . '/../logs'))
+        ? (__DIR__ . '/../logs')
+        : ((is_writable(__DIR__ . '/..')) ? (__DIR__ . '/../logs') : (sys_get_temp_dir() . '/fincart_logs'));
+
     if (!is_dir($log_dir)) {
         @mkdir($log_dir, 0777, true);
     }
@@ -33,7 +36,9 @@ function sendFinCartEmail($to, $subject, $html_body, $alt_text = '') {
         $subject,
         strip_tags($html_body)
     );
-    @file_put_contents($log_dir . '/mail.log', $log_entry, FILE_APPEND);
+    if (is_dir($log_dir) && is_writable($log_dir)) {
+        @file_put_contents($log_dir . '/mail.log', $log_entry, FILE_APPEND);
+    }
 
     // Attempt native mail delivery (suppress warning if local sendmail is unconfigured)
     $sent = @mail($to, $subject, $html_body, $header_string);

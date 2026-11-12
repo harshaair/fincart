@@ -80,9 +80,10 @@ include '../includes/admin_navbar.php';
                                             <input type="hidden" name="user_id" value="<?php echo (int)$row['user_id']; ?>">
                                             <button type="submit" class="btn btn-primary btn-sm" style="background: #27ae60;">Approve</button>
                                         </form>
-                                        <form method="POST" action="reject_professional.php" style="display:inline;" onsubmit="return confirm('Reject this application?');">
+                                        <form method="POST" action="reject_professional.php" style="display:inline;" onsubmit="var r = prompt('Please specify the reason for rejecting this applicant:', 'Insufficient credential documentation'); if (r === null) return false; this.reason.value = r.trim() || 'No reason provided'; return true;">
                                             <?php echo csrf_field(); ?>
                                             <input type="hidden" name="application_id" value="<?php echo (int)$row['id']; ?>">
+                                            <input type="hidden" name="reason" value="">
                                             <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                                         </form>
                                     </div>

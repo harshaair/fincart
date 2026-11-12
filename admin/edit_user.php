@@ -31,7 +31,7 @@ include '../includes/admin_navbar.php';
             <p class="admin-subtitle">Update user profile, permissions, and account verification status.</p>
         </div>
         <div>
-            <a href="users.php" class="btn btn-secondary btn-sm">← Back← Back to Users</a>
+            <a href="users.php" class="btn btn-secondary btn-sm">← Back to Users</a>
         </div>
     </div>
 

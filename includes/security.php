@@ -11,6 +11,47 @@
  *  5. XSS & Input Sanitization Utilities
  */
 
+if (!function_exists('load_fincart_env')) {
+    function load_fincart_env(): void {
+        $envFile = __DIR__ . '/../.env';
+        if (file_exists($envFile)) {
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line === '' || str_starts_with($line, '#')) continue;
+                if (str_contains($line, '=')) {
+                    [$k, $v] = explode('=', $line, 2);
+                    $k = trim($k);
+                    $v = trim($v, " \t\n\r\0\x0B\"'");
+                    if (getenv($k) === false) {
+                        putenv("$k=$v");
+                        $_ENV[$k] = $v;
+                        $_SERVER[$k] = $v;
+                    }
+                }
+            }
+        }
+    }
+}
+load_fincart_env();
+
+if (!function_exists('get_app_key')) {
+    function get_app_key(): string {
+        $key = getenv('APP_KEY');
+        if (!empty($key) && is_string($key)) {
+            return $key;
+        }
+        $secretFile = sys_get_temp_dir() . '/.fincart_app_key';
+        if (file_exists($secretFile)) {
+            $cached = trim((string)@file_get_contents($secretFile));
+            if (!empty($cached)) return $cached;
+        }
+        $newKey = bin2hex(random_bytes(32));
+        @file_put_contents($secretFile, $newKey);
+        return $newKey;
+    }
+}
+
 /**
  * Distributed Session Handler: Persists sessions in TiDB Cloud system_sessions table
  * Eliminates random logouts caused by ephemeral Vercel/Lambda serverless containers.
@@ -104,7 +145,7 @@ if (!class_exists('DatabaseSessionHandler')) {
  */
 if (!function_exists('set_auth_cookie')) {
     function set_auth_cookie(int $userId, string $role): void {
-        $secret = getenv('APP_KEY') ?: 'fincart_session_secret_key_2026';
+        $secret = get_app_key();
         $payload = $userId . ':' . $role . ':' . time();
         $sig = hash_hmac('sha256', $payload, $secret);
         $token = base64_encode($payload . ':' . $sig);
@@ -143,7 +184,7 @@ if (!function_exists('restore_session_from_cookie')) {
         $parts = explode(':', $decoded);
         if (count($parts) !== 4) return false;
         [$userId, $role, $timestamp, $sig] = $parts;
-        $secret = getenv('APP_KEY') ?: 'fincart_session_secret_key_2026';
+        $secret = get_app_key();
         $expected = hash_hmac('sha256', "$userId:$role:$timestamp", $secret);
         if (!hash_equals($expected, $sig)) return false;
         if (time() - (int)$timestamp > (86400 * 30)) return false;

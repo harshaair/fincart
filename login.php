@@ -4,17 +4,24 @@ init_secure_session();
 include "db.php";
 
 // If user is already logged in, redirect them directly to their appropriate dashboard
+// (Unless they are a standard user applying to become a verified professional)
 if (isset($_SESSION['user_id'])) {
     $role = $_SESSION['role'] ?? 'user';
-    if ($role === 'admin') {
-        header("Location: admin/dashboard.php");
-        exit();
-    } elseif (in_array($role, ['professional', 'professional_approved', 'professional_pending'])) {
-        header("Location: professional/dashboard.php");
-        exit();
-    } else {
-        header("Location: dashboard.php");
-        exit();
+    $isProApplication = (isset($_GET['role']) && $_GET['role'] === 'professional')
+                     && (isset($_GET['tab']) && $_GET['tab'] === 'signup')
+                     && ($role === 'user');
+
+    if (!$isProApplication) {
+        if ($role === 'admin') {
+            header("Location: admin/dashboard.php");
+            exit();
+        } elseif (in_array($role, ['professional', 'professional_approved', 'professional_pending'])) {
+            header("Location: professional/dashboard.php");
+            exit();
+        } else {
+            header("Location: dashboard.php");
+            exit();
+        }
     }
 }
 
@@ -38,18 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // CSRF verification
-    if (!empty($_POST['csrf_token'])) {
-        if (!verify_csrf_token($_POST['csrf_token'])) {
-            $msg = "Security token expired or invalid. Please refresh and try again.";
-            if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode(['status' => 'error', 'message' => $msg]);
-                exit();
-            }
-            header("Location: login.php?error=" . urlencode($msg));
+    // Strict CSRF verification
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        $msg = "Security token expired or invalid. Please refresh and try again.";
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'error', 'message' => $msg]);
             exit();
         }
+        header("Location: login.php?error=" . urlencode($msg));
+        exit();
     }
 
     // Rate Limiting (5 attempts per 15 minutes per IP)
@@ -365,7 +370,7 @@ $success_param = isset($_GET['success']) ? trim($_GET['success']) : '';
                     <label for="proFullName">Full Name & Honorific</label>
                     <div class="input-luxury-wrap">
                         <span class="input-icon">👤</span>
-                        <input type="text" id="proFullName" name="full_name" class="input-luxury" placeholder="e.g. CA Rajesh Sharma" required autocomplete="name">
+                        <input type="text" id="proFullName" name="full_name" class="input-luxury" value="<?php echo htmlspecialchars($_SESSION['user_name'] ?? ''); ?>" placeholder="e.g. CA Rajesh Sharma" required autocomplete="name">
                     </div>
                 </div>
 
@@ -374,7 +379,7 @@ $success_param = isset($_GET['success']) ? trim($_GET['success']) : '';
                         <label for="proEmail">Professional Email</label>
                         <div class="input-luxury-wrap">
                             <span class="input-icon">✉️</span>
-                            <input type="email" id="proEmail" name="email" class="input-luxury" placeholder="ca@practice.com" required autocomplete="email">
+                            <input type="email" id="proEmail" name="email" class="input-luxury" value="<?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?>" placeholder="ca@practice.com" required autocomplete="email" <?php echo isset($_SESSION['user_id']) ? 'readonly style="background: #f3f4f6;"' : ''; ?>>
                         </div>
                     </div>
                     <div class="form-group-luxury">
@@ -388,10 +393,10 @@ $success_param = isset($_GET['success']) ? trim($_GET['success']) : '';
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                     <div class="form-group-luxury">
-                        <label for="proPassword">Portal Password</label>
+                        <label for="proPassword"><?php echo isset($_SESSION['user_id']) ? 'Current / Portal Password' : 'Portal Password'; ?></label>
                         <div class="input-luxury-wrap">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="proPassword" name="password" class="input-luxury" placeholder="Min 8 characters" required autocomplete="new-password">
+                            <input type="password" id="proPassword" name="password" class="input-luxury" placeholder="<?php echo isset($_SESSION['user_id']) ? 'Optional (Already logged in)' : 'Min 8 characters'; ?>" <?php echo !isset($_SESSION['user_id']) ? 'required' : ''; ?> autocomplete="new-password">
                         </div>
                     </div>
                     <div class="form-group-luxury">

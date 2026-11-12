@@ -103,11 +103,11 @@ if ($method === 'POST') {
     $date = trim($payload['date'] ?? date('Y-m-d'));
     $desc = trim($payload['description'] ?? '');
 
-    if (!in_array($type, ['income', 'expense'], true) || empty($category) || $amount <= 0 || empty($date)) {
+    if (!in_array($type, ['income', 'expense'], true) || empty($category) || $amount <= 0 || $amount > 99999999.99 || empty($date)) {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'error'   => 'Invalid input. Please provide valid type, category, amount > 0, and date.'
+            'error'   => 'Invalid input. Please provide valid type, category, amount (0.01 to 99999999.99), and date.'
         ]);
         exit();
     }
@@ -121,6 +121,71 @@ if ($method === 'POST') {
             'message' => 'Transaction created successfully',
             'transaction_id' => $conn->insert_id
         ]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error']);
+    }
+    exit();
+}
+
+if ($method === 'PUT') {
+    enforce_csrf();
+    $raw = file_get_contents('php://input');
+    $payload = json_decode($raw, true) ?? [];
+
+    $transaction_id = (int)($payload['id'] ?? ($payload['transaction_id'] ?? 0));
+    $type = trim($payload['type'] ?? '');
+    $category = trim($payload['category'] ?? '');
+    $amount = (float)($payload['amount'] ?? 0);
+    $date = trim($payload['date'] ?? '');
+    $desc = trim($payload['description'] ?? '');
+
+    if ($transaction_id <= 0 || !in_array($type, ['income', 'expense'], true) || empty($category) || $amount <= 0 || $amount > 99999999.99 || empty($date)) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error'   => 'Invalid input. Please provide valid id, type, category, amount (0.01 to 99999999.99), and date.'
+        ]);
+        exit();
+    }
+
+    $stmt = $conn->prepare("UPDATE transactions SET type = ?, category = ?, amount = ?, description = ?, date = ? WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ssdssii", $type, $category, $amount, $desc, $date, $transaction_id, $user_id);
+    if ($stmt->execute()) {
+        if ($stmt->affected_rows > 0 || $stmt->errno === 0) {
+            echo json_encode(['success' => true, 'message' => 'Transaction updated successfully']);
+        } else {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Transaction not found or unauthorized']);
+        }
+    } else {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error']);
+    }
+    exit();
+}
+
+if ($method === 'DELETE') {
+    enforce_csrf();
+    $raw = file_get_contents('php://input');
+    $payload = json_decode($raw, true) ?? [];
+    $transaction_id = (int)($payload['id'] ?? ($payload['transaction_id'] ?? ($_GET['id'] ?? 0)));
+
+    if ($transaction_id <= 0) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Valid transaction id required']);
+        exit();
+    }
+
+    $stmt = $conn->prepare("DELETE FROM transactions WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $transaction_id, $user_id);
+    if ($stmt->execute()) {
+        if ($stmt->affected_rows > 0) {
+            echo json_encode(['success' => true, 'message' => 'Transaction deleted successfully']);
+        } else {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Transaction not found or unauthorized']);
+        }
     } else {
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Database error']);

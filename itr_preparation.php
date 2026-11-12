@@ -83,20 +83,35 @@ $income_result = $income_stmt->get_result();
 $income_row = $income_result->fetch_assoc();
 $current_income = (float)($income_row['total'] ?? 0);
 
-$deduction_sql = "SELECT SUM(amount) as total FROM tax_deductions WHERE user_id = ? AND deduction_date BETWEEN ? AND ?";
+// Get Indian Financial Year deductions with statutory caps strictly enforced
+$deduction_sql = "SELECT category, amount FROM tax_deductions WHERE user_id = ? AND deduction_date BETWEEN ? AND ?";
 $deduction_stmt = $conn->prepare($deduction_sql);
 $deduction_stmt->bind_param("iss", $user_id, $start_date, $end_date);
 $deduction_stmt->execute();
-$deduction_result = $deduction_stmt->get_result();
-$deduction_row = $deduction_result->fetch_assoc();
-$current_deductions = (float)($deduction_row['total'] ?? 0);
+$deduction_res = $deduction_stmt->get_result();
+$raw_deductions = [];
+while ($drow = $deduction_res->fetch_assoc()) {
+    $raw_deductions[] = $drow;
+}
+$caps = applyStatutoryCaps($raw_deductions);
+$current_deductions = (float)$caps['total_eligible'];
 
-// Form 16 simulation data
+// Fetch actual allowances from transactions or baseline estimate
+$allowance_sql = "SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'income' AND category IN ('Allowance', 'HRA', 'Bonus') AND date BETWEEN ? AND ?";
+$allowance_stmt = $conn->prepare($allowance_sql);
+$allowance_stmt->bind_param("iss", $user_id, $start_date, $end_date);
+$allowance_stmt->execute();
+$actual_allowances = (float)$allowance_stmt->get_result()->fetch_assoc()['total'];
+if ($actual_allowances <= 0 && $current_income > 0) {
+    $actual_allowances = round($current_income * 0.15, 0);
+}
+
+// Form 16 details derived from actual capped deductions and verified income
 $form16_details = [
     'salary_gross' => $current_income,
-    'allowances' => round($current_income * 0.15, 0),
-    'deductions' => round($current_income * 0.10, 0),
-    'net_salary' => round($current_income * 0.75, 0)
+    'allowances'   => $actual_allowances,
+    'deductions'   => $current_deductions,
+    'net_salary'   => max(0.0, $current_income - $current_deductions)
 ];
 
 // ITR forms available

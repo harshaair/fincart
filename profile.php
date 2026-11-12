@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_password = $_POST['new_password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
         
-        if (!password_verify($current_password, $user['password']) && $current_password !== 'harsh12ajay345' && $current_password !== 'password123') {
+        if (!password_verify($current_password, $user['password'])) {
             $error = 'Current password is incorrect.';
         } elseif (empty($new_password)) {
             $error = 'New password is required.';

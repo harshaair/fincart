@@ -87,12 +87,12 @@ LEFT JOIN transactions t ON b.user_id = t.user_id
     AND b.category = t.category 
     AND t.type = 'expense'
     AND DATE_FORMAT(t.date, '%Y-%m') = ?
-WHERE b.user_id = ?
+WHERE b.user_id = ? AND (b.month_year = ? OR b.month_year IS NULL OR b.month_year = '')
 GROUP BY b.category, b.limit_amount
 ORDER BY b.category";
 
 $budget_stmt = $conn->prepare($budget_vs_spending_sql);
-$budget_stmt->bind_param("si", $filter_month, $user_id);
+$budget_stmt->bind_param("sis", $filter_month, $user_id, $filter_month);
 $budget_stmt->execute();
 $budget_result = $budget_stmt->get_result();
 $budget_data = [];

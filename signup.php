@@ -18,11 +18,9 @@ if (!$rate['allowed']) {
 }
 
 // CSRF validation
-if (!empty($_POST['csrf_token'])) {
-    if (!verify_csrf_token($_POST['csrf_token'])) {
-        echo "Security token validation failed. Please refresh the page.";
-        exit();
-    }
+if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+    echo "Security token validation failed. Please refresh the page.";
+    exit();
 }
 
 $name = trim($_POST['name']);

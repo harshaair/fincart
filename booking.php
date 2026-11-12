@@ -59,16 +59,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $conn->rollback();
                 $error = 'This time slot is already booked. Please select another.';
             } else {
-                $book_sql = "INSERT INTO appointments (professional_id, user_id, appointment_date, appointment_time, consultation_type, notes, status) VALUES (?, ?, ?, ?, ?, ?, 'confirmed')";
+                $book_sql = "INSERT INTO appointments (professional_id, user_id, appointment_date, appointment_time, consultation_type, notes, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')";
                 $book_stmt = $conn->prepare($book_sql);
                 $book_stmt->bind_param("iissss", $professional_id, $user_id, $appointment_date, $appointment_time, $consultation_type, $notes);
                 $book_stmt->execute();
                 $new_appointment_id = $conn->insert_id;
 
                 $conn->commit();
-                $message = 'Appointment booked successfully! You will receive a confirmation email shortly.';
+                $message = 'Appointment request submitted successfully! You will receive confirmation once the advisor reviews the slot.';
 
-                // Send email notifications
+                // Send email notifications to Advisor, Admin, and Client (BUG-025)
                 $prof_email = $professional['email'] ?? null;
                 $admin_email = null;
                 $a = $conn->query("SELECT email FROM users WHERE role = 'admin' LIMIT 1");
@@ -77,18 +77,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $admin_email = $admin_row['email'];
                 }
 
-                $subject = "New appointment booked with " . $professional['name'];
-                $body = "Hello,\n\nAn appointment has been booked on " . $appointment_date . " at " . $appointment_time . " by " . htmlspecialchars($_SESSION['user_name']) . ".\n\nDetails:\nProfessional: " . $professional['name'] . "\nUser: " . htmlspecialchars($_SESSION['user_name']) . " (" . htmlspecialchars($user_id) . ")\nNotes: " . htmlspecialchars($notes) . "\n\nPlease login to the portal to view details.\n";
-                $headers = 'From: no-reply@fincart.local' . "\r\n" . 'Reply-To: no-reply@fincart.local' . "\r\n";
+                $user_email = $_SESSION['user_email'] ?? null;
+                if (!$user_email) {
+                    $u_res = $conn->query("SELECT email FROM users WHERE id = " . (int)$user_id);
+                    if ($u_res && $u_row = $u_res->fetch_assoc()) {
+                        $user_email = $u_row['email'];
+                    }
+                }
+
+                $subject = "New consultation request for " . $professional['name'] . " (#" . $new_appointment_id . ")";
+                $body = "Hello,\n\nA new consultation request has been booked on " . $appointment_date . " at " . $appointment_time . " by " . htmlspecialchars($_SESSION['user_name']) . ".\n\nDetails:\nProfessional: " . $professional['name'] . "\nClient: " . htmlspecialchars($_SESSION['user_name']) . " (" . htmlspecialchars((string)$user_id) . ")\nNotes: " . htmlspecialchars($notes) . "\n\nPlease login to the Expert Portal to accept or decline the session.\n";
 
                 if ($prof_email) {
-                    @mail($prof_email, $subject, $body, $headers);
+                    sendFinCartEmail($prof_email, $subject, nl2br($body));
                 }
                 if ($admin_email) {
-                    @mail($admin_email, $subject, $body, $headers);
+                    sendFinCartEmail($admin_email, $subject, nl2br($body));
+                }
+                if ($user_email) {
+                    $client_subject = "Consultation Request Submitted - FinCart (#" . $new_appointment_id . ")";
+                    $client_body = "Hello " . htmlspecialchars($_SESSION['user_name']) . ",\n\nYour consultation request with " . $professional['name'] . " on " . $appointment_date . " at " . $appointment_time . " has been received.\n\nStatus: Pending Advisor Confirmation\n\nYou will receive a notification as soon as the advisor accepts the session.\n\nThank you,\nFinCart Team";
+                    sendFinCartEmail($user_email, $client_subject, nl2br($client_body));
                 }
 
-                // Redirect immediately to prevent re-submission collisions and provide instant confirmation feedback
+                // Redirect immediately to confirmation view
                 header("Location: booking_confirmation.php?appointment_id=" . $new_appointment_id . "&success=1");
                 exit();
             }

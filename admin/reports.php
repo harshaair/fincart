@@ -38,7 +38,7 @@ include '../includes/admin_navbar.php';
             <p class="admin-subtitle">Live health status, platform metrics, and recent transaction audit trail.</p>
         </div>
         <div>
-            <a href="dashboard.php" class="btn btn-secondary btn-sm">← Back← Back to Dashboard</a>
+            <a href="dashboard.php" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
         </div>
     </div>
 

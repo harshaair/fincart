@@ -113,8 +113,19 @@ class TaxService {
         }
 
         $tax_after_rebate = max(0.00, $tax_before_rebate - $rebate_87a);
-        $cess = $tax_after_rebate * self::HEALTH_AND_EDUCATION_CESS_RATE;
-        $total_tax = round($tax_after_rebate + $cess);
+
+        // Statutory Surcharge (FY 2024-25 / AY 2025-26)
+        $surcharge = 0.00;
+        if ($taxable_income > 20000000.00) { // Above ₹2 Crore: 25%
+            $surcharge = $tax_after_rebate * 0.25;
+        } elseif ($taxable_income > 10000000.00) { // Above ₹1 Crore: 15%
+            $surcharge = $tax_after_rebate * 0.15;
+        } elseif ($taxable_income > 5000000.00) { // Above ₹50 Lakh: 10%
+            $surcharge = $tax_after_rebate * 0.10;
+        }
+
+        $cess = ($tax_after_rebate + $surcharge) * self::HEALTH_AND_EDUCATION_CESS_RATE;
+        $total_tax = round($tax_after_rebate + $surcharge + $cess);
 
         return [
             'gross_income' => $gross_income,
@@ -122,6 +133,8 @@ class TaxService {
             'taxable_income' => $taxable_income,
             'tax_before_rebate' => $tax_before_rebate,
             'rebate_87a' => $rebate_87a,
+            'tax_after_rebate' => $tax_after_rebate,
+            'surcharge' => $surcharge,
             'cess' => $cess,
             'total_tax' => $total_tax,
             'effective_rate' => $gross_income > 0 ? round(($total_tax / $gross_income) * 100, 2) : 0.00,
@@ -168,8 +181,19 @@ class TaxService {
         }
 
         $tax_after_rebate = max(0.00, $tax_before_rebate - $rebate_87a);
-        $cess = $tax_after_rebate * self::HEALTH_AND_EDUCATION_CESS_RATE;
-        $total_tax = round($tax_after_rebate + $cess);
+
+        // Statutory Surcharge (FY 2024-25 / AY 2025-26)
+        $surcharge = 0.00;
+        if ($taxable_income > 20000000.00) { // Above ₹2 Crore: 25%
+            $surcharge = $tax_after_rebate * 0.25;
+        } elseif ($taxable_income > 10000000.00) { // Above ₹1 Crore: 15%
+            $surcharge = $tax_after_rebate * 0.15;
+        } elseif ($taxable_income > 5000000.00) { // Above ₹50 Lakh: 10%
+            $surcharge = $tax_after_rebate * 0.10;
+        }
+
+        $cess = ($tax_after_rebate + $surcharge) * self::HEALTH_AND_EDUCATION_CESS_RATE;
+        $total_tax = round($tax_after_rebate + $surcharge + $cess);
 
         return [
             'gross_income' => $gross_income,
@@ -178,6 +202,8 @@ class TaxService {
             'taxable_income' => $taxable_income,
             'tax_before_rebate' => $tax_before_rebate,
             'rebate_87a' => $rebate_87a,
+            'tax_after_rebate' => $tax_after_rebate,
+            'surcharge' => $surcharge,
             'cess' => $cess,
             'total_tax' => $total_tax,
             'effective_rate' => $gross_income > 0 ? round(($total_tax / $gross_income) * 100, 2) : 0.00,

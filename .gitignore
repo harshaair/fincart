@@ -6,6 +6,7 @@ logs/
 .env
 .env.*
 TESTER_RUNBOOK.md
+SYSTEM_AUDIT_REPORT.md
 .DS_Store
 Thumbs.db
 
