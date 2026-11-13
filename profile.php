@@ -131,7 +131,7 @@ include "includes/navbar.php";
                 </div>
 
                 <div class="card-luxury-body">
-                    <form method="POST" id="profileForm" onsubmit="var btn=document.getElementById('saveProfileBtn'); if(btn.disabled) return false; btn.disabled=true; btn.innerHTML='⏳ Saving Profile Changes...'; return true;">
+                    <form method="POST" id="profileForm" data-turbo="false">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="action" value="update_profile">
 
@@ -163,7 +163,7 @@ include "includes/navbar.php";
                             </div>
                         </div>
 
-                        <button type="submit" id="saveProfileBtn" class="btn-luxury btn-gold" style="width: 100%; padding: 13px; font-size: 14.5px; font-weight: 700;">
+                        <button type="submit" id="saveProfileBtn" class="btn-luxury btn-gold" data-loading-text="⏳ Saving Profile Changes..." style="width: 100%; padding: 13px; font-size: 14.5px; font-weight: 700;">
                             Save Profile Changes
                         </button>
                     </form>
@@ -186,7 +186,7 @@ include "includes/navbar.php";
             </div>
 
             <div class="card-luxury-body">
-                <form method="POST" id="passwordForm" onsubmit="return validatePasswordChange();">
+                <form method="POST" id="passwordForm" data-turbo="false" onsubmit="return validatePasswordChange();">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="action" value="change_password">
 
@@ -228,7 +228,7 @@ include "includes/navbar.php";
                         <div id="pwMatchNote" style="font-size: 11.5px; margin-top: 4px; display: none;"></div>
                     </div>
 
-                    <button type="submit" id="updatePwdBtn" class="btn-luxury btn-outline" style="width: 100%; padding: 13px; font-size: 14.5px; border-color: var(--accent); color: var(--primary); font-weight: 700;">
+                    <button type="submit" id="updatePwdBtn" class="btn-luxury btn-outline" data-loading-text="⏳ Updating Password..." style="width: 100%; padding: 13px; font-size: 14.5px; border-color: var(--accent); color: var(--primary); font-weight: 700;">
                         Update Password Credentials
                     </button>
                 </form>
@@ -321,10 +321,6 @@ window.validatePasswordChange = function() {
         alert('New password and confirmation do not match.');
         return false;
     }
-    const btn = document.getElementById('updatePwdBtn');
-    if (btn.disabled) return false;
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Updating Password...';
     return true;
 };
 </script>

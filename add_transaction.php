@@ -68,7 +68,7 @@ include "includes/navbar.php";
         <?php endif; ?>
 
         <div class="card" style="padding: 32px 28px;">
-            <form method="POST" id="transactionForm" onsubmit="var btn=document.getElementById('saveTxBtn'); if(btn.disabled) return false; btn.disabled=true; btn.innerHTML='⏳ Recording Transaction...'; return true;">
+            <form method="POST" id="transactionForm" data-turbo="false">
                 <?php echo csrf_field(); ?>
                 
                 <!-- Type Selector -->
@@ -118,7 +118,7 @@ include "includes/navbar.php";
 
                 <!-- Submit / Cancel -->
                 <div style="display: flex; gap: 12px;">
-                    <button type="submit" id="saveTxBtn" class="btn btn-primary" style="flex: 1; padding: 13px; font-size: 14.5px;">Save Transaction &rarr;</button>
+                    <button type="submit" id="saveTxBtn" class="btn btn-primary" data-loading-text="⏳ Recording Transaction..." style="flex: 1; padding: 13px; font-size: 14.5px;">Save Transaction &rarr;</button>
                     <a href="transactions.php" class="btn btn-secondary" style="padding: 13px 20px;">Cancel</a>
                 </div>
             </form>

@@ -42,8 +42,8 @@ if (is_dir($targetFile)) {
 $realTarget = realpath($targetFile);
 $realRoot = realpath($root);
 
-// Security: Prevent directory traversal outside project root
-if (!$realTarget || !str_starts_with($realTarget, $realRoot) || !is_file($realTarget)) {
+// Security: Prevent directory traversal outside project root or self-recursion
+if (!$realTarget || !str_starts_with($realTarget, $realRoot) || !is_file($realTarget) || $realTarget === realpath(__FILE__)) {
     http_response_code(404);
     echo "<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style='font-family:sans-serif;text-align:center;padding:50px;'>";
     echo "<h1>404 - Page Not Found</h1><p>The requested page <code>" . htmlspecialchars($path) . "</code> does not exist.</p>";

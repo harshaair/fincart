@@ -14,15 +14,17 @@ if (!$conn) {
     die("Database initialization error.");
 }
 
-// Set connection timeout
-$conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 10);
+// Set connection timeout (fail fast on network issues)
+$conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
 
-// Enable TLS/SSL for cloud databases (e.g. TiDB Cloud Serverless)
+// Enable TLS/SSL and connection pooling for remote cloud databases (e.g. TiDB Cloud Serverless)
+$connect_host = ($host !== 'localhost' && $host !== '127.0.0.1' && !str_starts_with($host, 'p:')) ? ('p:' . $host) : $host;
+
 if ($host !== 'localhost' && $host !== '127.0.0.1') {
     $conn->ssl_set(NULL, NULL, NULL, NULL, NULL);
-    $connected = @$conn->real_connect($host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL);
+    $connected = @$conn->real_connect($connect_host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL);
 } else {
-    $connected = @$conn->real_connect($host, $user, $pass, $db, $port);
+    $connected = @$conn->real_connect($connect_host, $user, $pass, $db, $port);
 }
 
 if (!$connected) {

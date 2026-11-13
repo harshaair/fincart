@@ -486,7 +486,7 @@ include "includes/navbar.php";
                     <div class="alert alert-danger">✕ <?php echo $error; ?></div>
                 <?php endif; ?>
 
-                <form method="POST" id="bookingForm" onsubmit="var btn=document.getElementById('bookingSubmitBtn'); if(btn.disabled) return false; btn.disabled=true; btn.innerHTML='⏳ Processing Booking...'; return true;">
+                <form method="POST" id="bookingForm" data-turbo="false">
                     <?php echo csrf_field(); ?>
                     <div class="form-group">
                         <label>Consultation Date</label>
@@ -527,7 +527,7 @@ include "includes/navbar.php";
                         <textarea id="notes" name="notes" rows="5" placeholder="Tell the professional about your specific needs or questions..."></textarea>
                     </div>
 
-                    <button type="submit" id="bookingSubmitBtn" class="btn">Confirm Booking</button>
+                    <button type="submit" id="bookingSubmitBtn" class="btn" data-loading-text="⏳ Processing Booking...">Confirm Booking</button>
                 </form>
 
                 <div style="margin-top: 20px; padding: 15px; background: var(--off-white); border-radius: 8px; font-size: 13px; color: var(--text-light);">

@@ -17,7 +17,14 @@ if (!isset($page_title)) {
     <!-- Global Chart.js (Cached Once) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <!-- Turbo Drive for Instant SPA Transitions -->
+    <meta name="turbo-cache-control" content="no-cache">
     <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.12/dist/turbo.es2017-umd.js"></script>
+    <script>
+        // Prevent Turbo from intercepting HTML forms (forms submit natively for reliable PRG redirects)
+        document.addEventListener('turbo:submit-start', function(e) {
+            e.preventDefault();
+        });
+    </script>
     <style>
         .turbo-progress-bar {
             height: 3px;

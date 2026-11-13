@@ -243,7 +243,7 @@ include "includes/navbar.php";
             Simulate your gross income and itemized deductions (Section 80C, Section 80D, NPS) to determine whether the New or Old Regime minimizes your statutory liability.
         </p>
 
-        <form method="POST" id="taxCompareForm" onsubmit="var btn=document.getElementById('taxCompareBtn'); if(btn.disabled) return false; btn.disabled=true; btn.innerHTML='⏳ Calculating Regimes...'; return true;" style="margin-bottom: 25px;">
+        <form method="POST" id="taxCompareForm" data-turbo="false" style="margin-bottom: 25px;">
             <?php echo csrf_field(); ?>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 18px;">
                 <div class="form-group">
@@ -274,8 +274,8 @@ include "includes/navbar.php";
                 </label>
             </div>
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button type="submit" name="action" value="calculate" id="taxCompareBtn" class="btn btn-primary" style="padding: 11px 24px;">Calculate & Compare Regimes &rarr;</button>
-                <button type="submit" name="action" value="save_projection" class="btn btn-gold" style="padding: 11px 24px;">💾 Save Projection to History</button>
+                <button type="submit" name="action" value="calculate" id="taxCompareBtn" class="btn btn-primary" data-loading-text="⏳ Calculating..." style="padding: 11px 24px;">Calculate & Compare Regimes &rarr;</button>
+                <button type="submit" name="action" value="save_projection" class="btn btn-gold" data-loading-text="💾 Saving..." style="padding: 11px 24px;">💾 Save Projection to History</button>
             </div>
         </form>
 

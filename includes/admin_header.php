@@ -16,7 +16,14 @@ if (!isset($page_title)) {
     <link rel="stylesheet" href="/assets/css/main.css">
     <link rel="stylesheet" href="/assets/css/admin.css">
     <!-- Turbo Drive for Instant SPA Transitions -->
+    <meta name="turbo-cache-control" content="no-cache">
     <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.12/dist/turbo.es2017-umd.js"></script>
+    <script>
+        // Prevent Turbo from intercepting HTML forms (forms submit natively for reliable PRG redirects)
+        document.addEventListener('turbo:submit-start', function(e) {
+            e.preventDefault();
+        });
+    </script>
     <style>
         .turbo-progress-bar {
             height: 3px;

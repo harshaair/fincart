@@ -40,8 +40,13 @@ function sendFinCartEmail($to, $subject, $html_body, $alt_text = '') {
         @file_put_contents($log_dir . '/mail.log', $log_entry, FILE_APPEND);
     }
 
-    // Attempt native mail delivery (suppress warning if local sendmail is unconfigured)
-    $sent = @mail($to, $subject, $html_body, $header_string);
+    // Attempt native mail delivery only if sendmail / MTA is configured to prevent blocking socket timeouts
+    $is_serverless = !empty(getenv('VERCEL')) || !empty(getenv('AWS_LAMBDA_FUNCTION_NAME'));
+    $has_sendmail = !empty(ini_get('sendmail_path'));
+    
+    if (!$is_serverless && ($has_sendmail || strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN')) {
+        @mail($to, $subject, $html_body, $header_string);
+    }
 
     return true; // Return true as notification has been securely logged and processed
 }
