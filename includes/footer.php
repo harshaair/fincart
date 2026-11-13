@@ -89,7 +89,6 @@
                     submitBtn.innerHTML = loadingText;
                 }
                 submitBtn.style.opacity = '0.75';
-                submitBtn.style.pointerEvents = 'none';
 
                 // Auto-recovery failsafe: restore submit button after 5 seconds so user is never trapped
                 setTimeout(function() {
