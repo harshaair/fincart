@@ -105,12 +105,19 @@ $inv_80c_stmt->execute();
 $inv_80c_row = $inv_80c_stmt->get_result()->fetch_assoc();
 $portfolio_80c = (float)($inv_80c_row['total_80c'] ?? 0);
 
-// Compute statutory capped deductions
+// Compute statutory capped deductions safely
 $caps = applyStatutoryCaps($raw_deductions);
-$combined_80c = $caps['claimed_80c'] + $portfolio_80c;
+$claimed_80c = (float)($caps['claimed_80c'] ?? 0);
+$claimed_80d = (float)($caps['claimed_80d'] ?? 0);
+$eligible_80d = (float)($caps['eligible_80d'] ?? 0);
+$total_claimed_ded = (float)($caps['total_claimed'] ?? 0);
+$total_eligible_ded = (float)($caps['total_eligible'] ?? 0);
+
+$combined_80c = $claimed_80c + $portfolio_80c;
 $eligible_combined_80c = min($combined_80c, LIMIT_SECTION_80C);
-$current_eligible_deductions = $eligible_combined_80c + $caps['eligible_80d'] + $caps['eligible_other'];
-$current_claimed_deductions = $combined_80c + $caps['claimed_80d'] + ($caps['total_claimed'] - $caps['claimed_80c'] - $caps['claimed_80d']);
+$other_eligible_ded = max(0.0, $total_eligible_ded - ($caps['eligible_80c'] ?? 0) - $eligible_80d);
+$current_eligible_deductions = $eligible_combined_80c + $eligible_80d + $other_eligible_ded;
+$current_claimed_deductions = $combined_80c + $claimed_80d + max(0.0, $total_claimed_ded - $claimed_80c - $claimed_80d);
 
 // ---------------------------------------------------------
 // 4. Computation (Interactive or Auto-Sync Default)
@@ -124,8 +131,8 @@ $is_post_calc = ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($_POST['actio
 if ($is_post_calc) {
     $gross_income_input = isset($_POST['gross_income']) ? max(0.0, floatval($_POST['gross_income'])) : $current_income;
     $input_80c   = isset($_POST['deduction_80c']) ? max(0.0, floatval($_POST['deduction_80c'])) : $combined_80c;
-    $input_80d   = isset($_POST['deduction_80d']) ? max(0.0, floatval($_POST['deduction_80d'])) : $caps['claimed_80d'];
-    $input_other = isset($_POST['deduction_other']) ? max(0.0, floatval($_POST['deduction_other'])) : max(0.0, $caps['total_claimed'] - $caps['claimed_80c'] - $caps['claimed_80d']);
+    $input_80d   = isset($_POST['deduction_80d']) ? max(0.0, floatval($_POST['deduction_80d'])) : $claimed_80d;
+    $input_other = isset($_POST['deduction_other']) ? max(0.0, floatval($_POST['deduction_other'])) : $other_eligible_ded;
     $is_salaried = isset($_POST['is_salaried']) ? (bool)$_POST['is_salaried'] : true;
 
     // Apply statutory limits strictly
@@ -154,7 +161,8 @@ if ($is_post_calc) {
         'old'            => $old_res,
         'better_regime'  => $better_regime,
         'tax_difference' => $tax_difference,
-        'is_autosynced'  => false
+        'has_actual_income' => true,
+        'is_simulated'   => true
     ];
 
     if ($_POST['action'] === 'save_projection') {
@@ -167,20 +175,20 @@ if ($is_post_calc) {
         $fy_code = $active_fy['fy_code'];
         $ins->bind_param("isdddsds", $user_id, $fy_code, $gross_income_input, $tot_ded, $taxable_inc, $slabs_json, $est_tax, $bracket);
         if ($ins->execute()) {
-            $save_success = "Tax projection for FY " . htmlspecialchars($fy_code) . " saved successfully to history below!";
+            $save_success = "Tax projection for " . htmlspecialchars($fy_label) . " saved to history!";
         } else {
             $calc_error = "Failed to save projection: " . $conn->error;
         }
     }
 } else {
-    // Zero-Friction Default: Automatically pre-compute live regime verdict from ledger & investments
-    $auto_gross = $current_income > 0 ? $current_income : 850000.00;
+    // Initial load: reflect actual user ledger inflow and portfolio assets
+    $auto_gross = $current_income;
     $auto_80c = $combined_80c;
-    $auto_80d = $caps['claimed_80d'];
-    $auto_other = max(0.0, $caps['total_claimed'] - $caps['claimed_80c'] - $caps['claimed_80d']);
-    $auto_elig_80c = min($auto_80c, LIMIT_SECTION_80C);
-    $auto_elig_80d = min($auto_80d, LIMIT_SECTION_80D_PARENTS);
-    $auto_tot_ded = $auto_elig_80c + $auto_elig_80d + $auto_other;
+    $auto_80d = $claimed_80d;
+    $auto_other = $other_eligible_ded;
+    $auto_elig_80c = $eligible_combined_80c;
+    $auto_elig_80d = $eligible_80d;
+    $auto_tot_ded = $current_eligible_deductions;
 
     $new_res = computeTaxNewRegime($auto_gross, true);
     $old_res = computeTaxOldRegime($auto_gross, $auto_tot_ded, true);
@@ -201,7 +209,8 @@ if ($is_post_calc) {
         'old'            => $old_res,
         'better_regime'  => $better_regime,
         'tax_difference' => $tax_difference,
-        'is_autosynced'  => true
+        'has_actual_income' => ($current_income > 0),
+        'is_simulated'   => false
     ];
 }
 
@@ -220,421 +229,415 @@ include "includes/navbar.php";
 ?>
 
 <div class="main-content">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 12px 16px;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 12px 16px;">
         
         <!-- Header & FY Switcher -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
             <div>
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                    <h1 style="font-size: 26px; margin: 0;">Smart Tax Optimizer</h1>
-                    <span style="background: rgba(212,175,55,0.15); color: var(--primary); border: 1px solid rgba(212,175,55,0.3); padding: 3px 10px; border-radius: 14px; font-size: 11.5px; font-weight: 700; text-transform: uppercase;">FY <?php echo htmlspecialchars($fy_label); ?></span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h1 style="font-size: 24px; margin: 0; font-weight: 700;">Smart Tax Optimizer</h1>
+                    <span style="background: rgba(212,175,55,0.15); color: var(--primary); border: 1px solid rgba(212,175,55,0.3); padding: 3px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 700;"><?php echo htmlspecialchars($fy_label); ?></span>
                 </div>
-                <p style="color: var(--text-muted); font-size: 14px; margin: 0;">
-                    1-Click Auto-Sync from Transactions & Investments • New vs Old Regime Optimization with Section 87A rebate
+                <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
+                    Instant New vs. Old Tax Regime comparison • Section 87A rebate & 80C optimization
                 </p>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <!-- Fiscal Year Picker -->
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <form method="GET" action="tax_planning.php" style="margin: 0; display: inline-flex; align-items: center; gap: 6px;">
-                    <label for="fy" style="font-size: 13px; font-weight: 600; color: var(--text-dark); margin: 0;">Period:</label>
-                    <select name="fy" id="fy" onchange="this.form.submit()" style="padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13px; background: #fff; font-weight: 600; color: var(--primary);">
+                    <select name="fy" id="fy" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12.5px; background: #fff; font-weight: 600; color: var(--primary);">
                         <?php foreach ($available_fys as $f): ?>
                             <option value="<?php echo htmlspecialchars($f['fy_code']); ?>" <?php echo ($f['fy_code'] === $active_fy['fy_code']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($f['fy_label'] . ' (' . $f['ay_label'] . ')'); ?><?php echo $f['is_current'] ? ' • Current' : ''; ?>
+                                <?php echo htmlspecialchars($f['fy_label']); ?><?php echo $f['is_current'] ? ' • Current' : ''; ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </form>
-                <!-- 1-Click Auto-Sync Button -->
-                <a href="tax_planning.php?fy=<?php echo urlencode($active_fy['fy_code']); ?>" class="btn btn-gold btn-sm" style="font-size: 13px; font-weight: 600;">⚡ Auto-Sync from Records</a>
-                <a href="#deductions" class="btn btn-secondary btn-sm" style="font-size: 13px;">+ Add Deduction</a>
+                <a href="tax_planning.php?fy=<?php echo urlencode($active_fy['fy_code']); ?>" class="btn btn-secondary btn-sm" style="font-size: 12px;">↺ Auto-Sync</a>
             </div>
         </div>
 
         <?php if (!empty($message)): ?>
-            <div class="alert alert-success" style="margin-bottom: 20px;">&#10003; <?php echo htmlspecialchars($message); ?></div>
+            <div class="alert alert-success" style="margin-bottom: 16px;">&#10003; <?php echo htmlspecialchars($message); ?></div>
         <?php endif; ?>
         <?php if (!empty($save_success)): ?>
-            <div class="alert alert-success" style="margin-bottom: 20px;">&#10003; <?php echo htmlspecialchars($save_success); ?></div>
+            <div class="alert alert-success" style="margin-bottom: 16px;">&#10003; <?php echo htmlspecialchars($save_success); ?></div>
         <?php endif; ?>
         <?php if (!empty($error) || !empty($calc_error)): ?>
-            <div class="alert alert-danger" style="margin-bottom: 20px;">&#9888; <?php echo htmlspecialchars($error ?: $calc_error); ?></div>
+            <div class="alert alert-danger" style="margin-bottom: 16px;">&#9888; <?php echo htmlspecialchars($error ?: $calc_error); ?></div>
         <?php endif; ?>
 
-        <!-- HERO VERDICT CARD: Instant, Unmistakable Tax Advice -->
-        <?php if ($calc_result): ?>
-            <?php 
-                $is_new_better = ($calc_result['better_regime'] === 'new');
-                $diff = $calc_result['tax_difference'];
-            ?>
-            <div style="background: <?php echo $is_new_better ? 'linear-gradient(135deg, #f0fdf4 0%, #e6f7ec 100%)' : 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)'; ?>; border: 1.5px solid <?php echo $is_new_better ? '#86efac' : '#fde047'; ?>; border-radius: var(--radius-md); padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+        <!-- HERO VERDICT CARD -->
+        <?php 
+            $has_inc = $calc_result['has_actual_income'];
+            $is_new = ($calc_result['better_regime'] === 'new');
+            $diff = $calc_result['tax_difference'];
+        ?>
+
+        <?php if (!$has_inc && !$calc_result['is_simulated']): ?>
+            <!-- Clean Zero Income State with 1-Click Salary Scenario Presets -->
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); padding: 22px 24px; margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <span style="font-size: 22px;"><?php echo $diff == 0 ? '⚖️' : '🏆'; ?></span>
-                            <h2 style="font-size: 20px; font-weight: 800; color: <?php echo $is_new_better ? '#15803d' : '#854d0e'; ?>; margin: 0;">
+                            <span style="font-size: 20px;">✨</span>
+                            <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">Zero Tax Liability: ₹0.00 Inflow Recorded</h2>
+                        </div>
+                        <p style="font-size: 13.5px; color: #475569; margin: 0;">
+                            No income transactions have been logged for <strong><?php echo htmlspecialchars($fy_label); ?></strong>. Your net tax liability is <strong>₹0.00</strong>.
+                        </p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Test Salary:</span>
+                        <button type="button" class="btn btn-sm" style="background: #fff; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 600;" onclick="testSalary(750000)">💼 ₹7.5L</button>
+                        <button type="button" class="btn btn-sm" style="background: #fff; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 600;" onclick="testSalary(1000000)">💼 ₹10L</button>
+                        <button type="button" class="btn btn-sm" style="background: #fff; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 600;" onclick="testSalary(1200000)">💼 ₹12L</button>
+                        <button type="button" class="btn btn-sm" style="background: #fff; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 600;" onclick="testSalary(1500000)">💼 ₹15L</button>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <!-- Highlighted Winner Card -->
+            <div style="background: <?php echo $is_new ? 'linear-gradient(135deg, #f0fdf4 0%, #e6f7ec 100%)' : 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)'; ?>; border: 1.5px solid <?php echo $is_new ? '#86efac' : '#fde047'; ?>; border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <span style="font-size: 20px;">🏆</span>
+                            <h2 style="font-size: 18.5px; font-weight: 800; color: <?php echo $is_new ? '#15803d' : '#854d0e'; ?>; margin: 0;">
                                 <?php if ($diff == 0): ?>
-                                    Both Regimes Result in Identical ₹0 Tax Liability!
-                                <?php elseif ($is_new_better): ?>
+                                    Zero Net Tax in Both Regimes (Sec 87A Full Rebate)!
+                                <?php elseif ($is_new): ?>
                                     Recommended: New Tax Regime (Section 115BAC)
                                 <?php else: ?>
-                                    Recommended: Old Tax Regime (With Itemized Deductions)
+                                    Recommended: Old Tax Regime (With Deductions)
                                 <?php endif; ?>
                             </h2>
                         </div>
-                        <p style="font-size: 14px; color: <?php echo $is_new_better ? '#166534' : '#713f12'; ?>; margin: 0; line-height: 1.5;">
+                        <p style="font-size: 13.5px; color: <?php echo $is_new ? '#166534' : '#713f12'; ?>; margin: 0;">
                             <?php if ($diff == 0): ?>
-                                Under Section 87A rebate, your taxable income is eligible for 100% tax relief in both regimes.
-                            <?php elseif ($is_new_better): ?>
-                                Choosing the <strong>New Tax Regime</strong> saves you <strong>₹<?php echo number_format($diff, 2); ?></strong> in annual taxes compared to the Old Regime.
+                                Section 87A rebate wipes out 100% of your tax up to ₹7,00,000 taxable income.
+                            <?php elseif ($is_new): ?>
+                                The <strong>New Tax Regime</strong> saves you <strong>₹<?php echo number_format($diff, 2); ?></strong> in annual taxes over the Old Regime.
                             <?php else: ?>
-                                Your itemized deductions under Section 80C and 80D save you <strong>₹<?php echo number_format($diff, 2); ?></strong> compared to the New Regime.
+                                Your allowable Chapter VI-A deductions save you <strong>₹<?php echo number_format($diff, 2); ?></strong> compared to the New Regime.
                             <?php endif; ?>
-                            <?php if (!empty($calc_result['is_autosynced'])): ?>
-                                <span style="display: inline-block; background: rgba(0,0,0,0.06); padding: 2px 8px; border-radius: 10px; font-size: 11.5px; font-weight: 600; margin-left: 6px;">⚡ Auto-Synced from your Ledger & Portfolio</span>
+                            <?php if (!$calc_result['is_simulated']): ?>
+                                <span style="background: rgba(0,0,0,0.06); padding: 1px 6px; border-radius: 8px; font-size: 11px; font-weight: 600; margin-left: 6px;">⚡ Auto-Synced from Ledger</span>
+                            <?php else: ?>
+                                <span style="background: rgba(0,0,0,0.06); padding: 1px 6px; border-radius: 8px; font-size: 11px; font-weight: 600; margin-left: 6px;">Simulated Scenario</span>
                             <?php endif; ?>
                         </p>
                     </div>
-                    <div style="display: flex; gap: 16px; align-items: center;">
-                        <div style="text-align: right; background: #ffffff; padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid rgba(0,0,0,0.08);">
-                            <div style="font-size: 11.5px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">New Regime Tax</div>
-                            <div style="font-size: 18px; font-weight: 800; color: <?php echo $is_new_better ? '#15803d' : 'var(--text-dark)'; ?>;">₹<?php echo number_format($calc_result['new']['total_tax'], 2); ?></div>
-                        </div>
-                        <div style="text-align: right; background: #ffffff; padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid rgba(0,0,0,0.08);">
-                            <div style="font-size: 11.5px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Old Regime Tax</div>
-                            <div style="font-size: 18px; font-weight: 800; color: <?php echo !$is_new_better ? '#854d0e' : 'var(--text-dark)'; ?>;">₹<?php echo number_format($calc_result['old']['total_tax'], 2); ?></div>
-                        </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button type="button" class="btn btn-sm" style="background: #fff; border: 1px solid rgba(0,0,0,0.1); font-size: 12px;" onclick="testSalary(1000000)">Test ₹10L</button>
+                        <button type="button" class="btn btn-sm" style="background: #fff; border: 1px solid rgba(0,0,0,0.1); font-size: 12px;" onclick="testSalary(1500000)">Test ₹15L</button>
                     </div>
                 </div>
             </div>
         <?php endif; ?>
 
-        <!-- Live Portfolio & Deduction Telemetry -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px;">
-            <div class="stat-card">
-                <div class="stat-label">FY Inflow (Ledger)</div>
-                <div class="stat-value">₹<?php echo number_format($current_income, 2); ?></div>
-                <div class="stat-description">Total income in <?php echo htmlspecialchars($fy_label); ?></div>
-            </div>
-            <div class="stat-card" style="border-left: 4px solid var(--accent, #d4af37);">
-                <div class="stat-label">Section 80C Assets</div>
-                <div class="stat-value">₹<?php echo number_format($eligible_combined_80c, 2); ?></div>
-                <div class="stat-description">
-                    Portfolio + Claimed: ₹<?php echo number_format($combined_80c, 0); ?> / Cap: ₹1.5L
+        <!-- SIDE-BY-SIDE REGIME COMPARISON CARDS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-bottom: 24px;">
+            
+            <!-- NEW REGIME CARD -->
+            <div style="background: #ffffff; border: 2px solid <?php echo $is_new ? '#22c55e' : 'var(--border-color)'; ?>; border-radius: var(--radius-md); padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); position: relative;">
+                <?php if ($is_new): ?>
+                    <span style="position: absolute; top: -11px; right: 18px; background: #15803d; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">★ Recommended</span>
+                <?php endif; ?>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+                    <h3 style="font-size: 16px; margin: 0; font-weight: 700; color: var(--primary);">New Tax Regime</h3>
+                    <span style="font-size: 12px; color: var(--text-muted);">Section 115BAC Default</span>
+                </div>
+                <div style="font-size: 26px; font-weight: 800; color: <?php echo $is_new ? '#15803d' : 'var(--text-dark)'; ?>; margin-bottom: 4px;">
+                    ₹<?php echo number_format($calc_result['new']['total_tax'], 2); ?>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                    Effective Rate: <strong><?php echo number_format($calc_result['new']['effective_rate'], 1); ?>%</strong>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; display: grid; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Gross Income:</span>
+                        <strong>₹<?php echo number_format($calc_result['new']['gross_income'], 2); ?></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Standard Deduction (Sec 16):</span>
+                        <span style="color: #15803d; font-weight: 600;">-₹<?php echo number_format($calc_result['new']['standard_deduction'], 2); ?></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Chapter VI-A Deductions:</span>
+                        <span style="color: #94a3b8; font-size: 12px;">Disallowed by law</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Taxable Income:</span>
+                        <strong>₹<?php echo number_format($calc_result['new']['taxable_income'], 2); ?></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Section 87A Rebate:</span>
+                        <span><?php echo $calc_result['new']['rebate_87a'] > 0 ? '<strong style="color: #15803d;">-₹' . number_format($calc_result['new']['rebate_87a'], 2) . ' (100% Relief)</strong>' : '₹0.00'; ?></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Health & Education Cess (4%):</span>
+                        <span>₹<?php echo number_format($calc_result['new']['cess'], 2); ?></span>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card" style="border-left: 4px solid #27ae60);">
-                <div class="stat-label">Section 80D Health Cover</div>
-                <div class="stat-value">₹<?php echo number_format($caps['eligible_80d'], 2); ?></div>
-                <div class="stat-description">Claimed: ₹<?php echo number_format($caps['claimed_80d'], 0); ?> / Cap: ₹25k-50k</div>
+
+            <!-- OLD REGIME CARD -->
+            <div style="background: #ffffff; border: 2px solid <?php echo !$is_new ? '#22c55e' : 'var(--border-color)'; ?>; border-radius: var(--radius-md); padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); position: relative;">
+                <?php if (!$is_new): ?>
+                    <span style="position: absolute; top: -11px; right: 18px; background: #15803d; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; text-transform: uppercase;">★ Recommended</span>
+                <?php endif; ?>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+                    <h3 style="font-size: 16px; margin: 0; font-weight: 700; color: var(--primary);">Old Tax Regime</h3>
+                    <span style="font-size: 12px; color: var(--text-muted);">With Itemized Deductions</span>
+                </div>
+                <div style="font-size: 26px; font-weight: 800; color: <?php echo !$is_new ? '#15803d' : 'var(--text-dark)'; ?>; margin-bottom: 4px;">
+                    ₹<?php echo number_format($calc_result['old']['total_tax'], 2); ?>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                    Effective Rate: <strong><?php echo number_format($calc_result['old']['effective_rate'], 1); ?>%</strong>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; display: grid; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Gross Income:</span>
+                        <strong>₹<?php echo number_format($calc_result['old']['gross_income'], 2); ?></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Standard Deduction (Sec 16):</span>
+                        <span style="color: #15803d; font-weight: 600;">-₹<?php echo number_format($calc_result['old']['standard_deduction'], 2); ?></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Allowable Deductions (80C/80D):</span>
+                        <span style="color: #15803d; font-weight: 600;">-₹<?php echo number_format($calc_result['deductions'], 2); ?></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Taxable Income:</span>
+                        <strong>₹<?php echo number_format($calc_result['old']['taxable_income'], 2); ?></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Section 87A Rebate:</span>
+                        <span><?php echo $calc_result['old']['rebate_87a'] > 0 ? '<strong style="color: #15803d;">-₹' . number_format($calc_result['old']['rebate_87a'], 2) . ' (100% Relief)</strong>' : '₹0.00'; ?></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Health & Education Cess (4%):</span>
+                        <span>₹<?php echo number_format($calc_result['old']['cess'], 2); ?></span>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Allowable Deductions</div>
-                <div class="stat-value">₹<?php echo number_format($current_eligible_deductions, 2); ?></div>
-                <div class="stat-description">Old Regime (80C + 80D + others)</div>
-            </div>
+
         </div>
 
-        <!-- Interactive Comparison & Simulator Form -->
-        <div class="card" style="margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <h2 style="font-size: 20px; margin: 0 0 4px 0;">Interactive Regime Simulator</h2>
-                    <p style="color: var(--text-muted); font-size: 13.5px; margin: 0;">
-                        Tweak your projected gross income and deduction claims to simulate custom scenarios.
-                    </p>
-                </div>
-                <a href="tax_planning.php?fy=<?php echo urlencode($active_fy['fy_code']); ?>" class="btn btn-secondary btn-sm" style="font-size: 12.5px;">↺ Reset to Actual Records</a>
+        <!-- 1-ROW FAST SCENARIO SIMULATOR -->
+        <div class="card" style="margin-bottom: 24px; padding: 18px 22px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                <h3 style="font-size: 15px; margin: 0; font-weight: 700;">Simulate Salary & Deductions</h3>
+                <span style="font-size: 12px; color: var(--text-muted);">Instant Recalculation</span>
             </div>
-
-            <form method="POST" id="taxCompareForm" data-turbo="false" style="margin-bottom: 20px;">
+            <form method="POST" id="taxSimForm" data-turbo="false">
                 <?php echo csrf_field(); ?>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 16px;">
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">Annual Gross Income (₹)</label>
-                        <input type="number" step="1000" min="0" name="gross_income" class="form-control" value="<?php echo htmlspecialchars($calc_result ? $calc_result['gross_income'] : ($current_income > 0 ? $current_income : 850000)); ?>" required>
-                        <small style="color: var(--text-muted); font-size: 11px;">Salary, freelancing, interest, etc.</small>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Annual Salary / Income (₹)</label>
+                        <input type="number" step="1000" min="0" id="gross_income" name="gross_income" class="form-control" value="<?php echo htmlspecialchars($calc_result['gross_income'] > 0 ? $calc_result['gross_income'] : 850000); ?>" required style="font-size: 13.5px; font-weight: 600;">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">Section 80C Investments (₹)</label>
-                        <input type="number" step="1000" min="0" max="150000" name="deduction_80c" class="form-control" value="<?php echo htmlspecialchars($calc_result ? $calc_result['input_80c'] : $combined_80c); ?>">
-                        <small style="color: var(--text-muted); font-size: 11px;">EPF, PPF, ELSS, Life Ins. (Cap ₹1.5L)</small>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Section 80C Assets (Max ₹1.5L)</label>
+                        <input type="number" step="1000" min="0" max="150000" id="deduction_80c" name="deduction_80c" class="form-control" value="<?php echo htmlspecialchars($calc_result['input_80c']); ?>" style="font-size: 13.5px;">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">Section 80D Health Cover (₹)</label>
-                        <input type="number" step="1000" min="0" max="100000" name="deduction_80d" class="form-control" value="<?php echo htmlspecialchars($calc_result ? $calc_result['input_80d'] : $caps['claimed_80d']); ?>">
-                        <small style="color: var(--text-muted); font-size: 11px;">Self/family (₹25k) + Parents (₹50k)</small>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Section 80D Health Cover (Max ₹50k)</label>
+                        <input type="number" step="1000" min="0" max="100000" id="deduction_80d" name="deduction_80d" class="form-control" value="<?php echo htmlspecialchars($calc_result['input_80d']); ?>" style="font-size: 13.5px;">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">Other Deductions (80CCD, 80E) (₹)</label>
-                        <input type="number" step="1000" min="0" name="deduction_other" class="form-control" value="<?php echo htmlspecialchars($calc_result ? $calc_result['input_other'] : max(0, $caps['total_claimed'] - $caps['claimed_80c'] - $caps['claimed_80d'])); ?>">
-                        <small style="color: var(--text-muted); font-size: 11px;">NPS Tier-1 up to ₹50k, education loan</small>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Other (NPS 80CCD, 80E)</label>
+                        <input type="number" step="1000" min="0" name="deduction_other" class="form-control" value="<?php echo htmlspecialchars($calc_result['input_other']); ?>" style="font-size: 13.5px;">
                     </div>
                 </div>
-
-                <div style="margin-bottom: 16px;">
-                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" name="is_salaried" value="1" <?php echo (!isset($calc_result) || $calc_result['is_salaried']) ? 'checked' : ''; ?>>
-                        <span style="font-size: 13px;"><strong>Salaried Professional</strong> (Entitled to ₹50,000 Standard Deduction under Sec 16(ia) in BOTH regimes)</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12.5px;">
+                        <input type="checkbox" name="is_salaried" value="1" <?php echo $calc_result['is_salaried'] ? 'checked' : ''; ?>>
+                        <span>Salaried (Entitled to ₹50,000 standard deduction)</span>
                     </label>
-                </div>
-
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button type="submit" name="action" value="calculate" class="btn btn-primary" data-loading-text="⏳ Calculating..." style="padding: 10px 20px;">Recalculate & Compare &rarr;</button>
-                    <button type="submit" name="action" value="save_projection" class="btn btn-gold" data-loading-text="💾 Saving..." style="padding: 10px 20px;">💾 Save Projection to History</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" name="action" value="calculate" class="btn btn-primary btn-sm" style="padding: 7px 16px;">⚡ Recalculate</button>
+                        <button type="submit" name="action" value="save_projection" class="btn btn-gold btn-sm" style="padding: 7px 16px;">💾 Save to History</button>
+                    </div>
                 </div>
             </form>
-
-            <!-- Detailed Comparison Table -->
-            <?php if ($calc_result): ?>
-                <div class="table-responsive" style="margin-top: 20px;">
-                    <table class="custom-table" style="font-size: 13.5px;">
-                        <thead>
-                            <tr style="background: var(--off-white);">
-                                <th style="width: 40%;">Tax Component</th>
-                                <th style="width: 30%;">New Regime (FY 2024-25 Default)</th>
-                                <th style="width: 30%;">Old Regime</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Gross Total Income</td>
-                                <td>₹<?php echo number_format($calc_result['new']['gross_income'], 2); ?></td>
-                                <td>₹<?php echo number_format($calc_result['old']['gross_income'], 2); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Standard Deduction (Salaried - Sec 16(ia))</td>
-                                <td>-₹<?php echo number_format($calc_result['new']['standard_deduction'], 2); ?></td>
-                                <td>-₹<?php echo number_format($calc_result['old']['standard_deduction'], 2); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Section 80C Deduction (EPF/PPF/ELSS - Cap ₹1.5L)</td>
-                                <td><span style="color: #999;">❌ Disallowed under Sec 115BAC</span></td>
-                                <td>-₹<?php echo number_format($calc_result['eligible_80c'], 2); ?> <small style="color: #666;">(Claimed: ₹<?php echo number_format($calc_result['input_80c'], 0); ?>)</small></td>
-                            </tr>
-                            <tr>
-                                <td>Section 80D Health Insurance (Cap ₹25k-50k)</td>
-                                <td><span style="color: #999;">❌ Disallowed under Sec 115BAC</span></td>
-                                <td>-₹<?php echo number_format($calc_result['eligible_80d'], 2); ?> <small style="color: #666;">(Claimed: ₹<?php echo number_format($calc_result['input_80d'], 0); ?>)</small></td>
-                            </tr>
-                            <tr>
-                                <td>Other Eligible Deductions (80CCD NPS, 80E, 80TTA)</td>
-                                <td><span style="color: #999;">❌ Disallowed</span></td>
-                                <td>-₹<?php echo number_format($calc_result['eligible_other'], 2); ?></td>
-                            </tr>
-                            <tr style="background: var(--off-white); font-weight: 700;">
-                                <td>Net Taxable Income</td>
-                                <td>₹<?php echo number_format($calc_result['new']['taxable_income'], 2); ?></td>
-                                <td>₹<?php echo number_format($calc_result['old']['taxable_income'], 2); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Calculated Slab Tax</td>
-                                <td>₹<?php echo number_format($calc_result['new']['base_tax'], 2); ?></td>
-                                <td>₹<?php echo number_format($calc_result['old']['base_tax'], 2); ?></td>
-                            </tr>
-                            <tr>
-                                <td>Section 87A Tax Rebate</td>
-                                <td>
-                                    <?php if ($calc_result['new']['rebate_87a'] > 0): ?>
-                                        <span style="color: #15803d; font-weight: 700;">-₹<?php echo number_format($calc_result['new']['rebate_87a'], 2); ?> (100% Rebate up to ₹7L)</span>
-                                    <?php else: ?>
-                                        ₹0.00
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($calc_result['old']['rebate_87a'] > 0): ?>
-                                        <span style="color: #15803d; font-weight: 700;">-₹<?php echo number_format($calc_result['old']['rebate_87a'], 2); ?> (100% Rebate up to ₹5L)</span>
-                                    <?php else: ?>
-                                        ₹0.00
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Health & Education Cess (4%)</td>
-                                <td>₹<?php echo number_format($calc_result['new']['cess'], 2); ?></td>
-                                <td>₹<?php echo number_format($calc_result['old']['cess'], 2); ?></td>
-                            </tr>
-                            <tr style="background: var(--secondary); font-size: 15.5px; font-weight: 800;">
-                                <td>Total Net Tax Payable</td>
-                                <td style="color: <?php echo $calc_result['better_regime'] === 'new' ? '#15803d' : 'inherit'; ?>;">
-                                    ₹<?php echo number_format($calc_result['new']['total_tax'], 2); ?>
-                                    <?php if ($calc_result['better_regime'] === 'new'): ?><span class="badge badge-success" style="margin-left: 6px;">✓ Winner</span><?php endif; ?>
-                                </td>
-                                <td style="color: <?php echo $calc_result['better_regime'] === 'old' ? '#15803d' : 'inherit'; ?>;">
-                                    ₹<?php echo number_format($calc_result['old']['total_tax'], 2); ?>
-                                    <?php if ($calc_result['better_regime'] === 'old'): ?><span class="badge badge-success" style="margin-left: 6px;">✓ Winner</span><?php endif; ?>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
         </div>
 
-        <!-- TECHNICAL DEEP-DIVE (COLLAPSIBLE ACCORDION FOR RECRUITERS & ENGINEERS) -->
-        <details style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-            <summary style="font-size: 15px; font-weight: 700; cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: space-between;">
-                <span>🔍 Technical Deep-Dive: Finance Act Engine & Mathematical Architecture (Inspect for Engineering Review)</span>
-                <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Click to expand</span>
+        <!-- MODULE 1: ITEMIZED DEDUCTIONS TRACKER (COLLAPSIBLE) -->
+        <details id="deductions" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 16px;">
+            <summary style="font-size: 14.5px; font-weight: 700; cursor: pointer; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                <span>📋 Itemized Deductions Tracker (Chapter VI-A) — <?php echo count($raw_deductions); ?> Claimed</span>
+                <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Expand / Collapse</span>
             </summary>
             
-            <div style="margin-top: 18px; font-size: 13.5px; line-height: 1.6; color: var(--text-dark); border-top: 1px solid var(--border-color); padding-top: 16px;">
-                <h4 style="font-size: 14.5px; margin: 0 0 8px 0; color: var(--primary);">1. Domain-Driven Design & Pure Functional Engine</h4>
-                <p style="color: var(--text-muted); margin-bottom: 14px;">
-                    The computation engine is decoupled from HTTP presentation and database layers inside <code>services/TaxService.php</code> (namespace <code>FinCart\Services\TaxService</code>). All calculations are implemented as side-effect free, deterministic pure functions (<code>computeNewRegime()</code>, <code>computeOldRegime()</code>, <code>applyStatutoryCaps()</code>) ensuring mathematical repeatability.
+            <div style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+                <!-- Add Deduction Form -->
+                <form method="POST" style="background: #fafaf9; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="action" value="add_deduction">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <label style="font-size: 11.5px; font-weight: 600; display: block; margin-bottom: 3px;">Category</label>
+                            <select name="ded_category" class="form-control" required style="font-size: 12.5px;">
+                                <option value="80C - PPF / ELSS / Life Insurance">80C - PPF / ELSS / LIC (Max ₹1.5L)</option>
+                                <option value="80D - Health Insurance (Self/Family)">80D - Health Self/Family (Max ₹25k)</option>
+                                <option value="80D - Health Insurance (Senior Parents)">80D - Health Parents (Max ₹50k)</option>
+                                <option value="80CCD(1B) - NPS Contribution">80CCD(1B) - NPS (Max ₹50k)</option>
+                                <option value="80E - Education Loan Interest">80E - Education Loan</option>
+                                <option value="80TTA - Savings Account Interest">80TTA - Savings Interest (Max ₹10k)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 11.5px; font-weight: 600; display: block; margin-bottom: 3px;">Amount (₹)</label>
+                            <input type="number" step="100" min="1" max="9999999" name="ded_amount" class="form-control" placeholder="e.g. 50000" required style="font-size: 12.5px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11.5px; font-weight: 600; display: block; margin-bottom: 3px;">Date</label>
+                            <input type="date" name="ded_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required style="font-size: 12.5px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11.5px; font-weight: 600; display: block; margin-bottom: 3px;">Description</label>
+                            <input type="text" name="ded_desc" class="form-control" placeholder="e.g. HDFC ELSS, LIC" style="font-size: 12.5px;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm" style="padding: 6px 14px; font-size: 12px;">+ Record Deduction</button>
+                </form>
+
+                <?php if (!empty($raw_deductions)): ?>
+                    <div class="table-responsive">
+                        <table class="custom-table" style="font-size: 12.5px;">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($raw_deductions as $d): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($d['deduction_date']); ?></td>
+                                        <td><strong><?php echo htmlspecialchars($d['category']); ?></strong></td>
+                                        <td><?php echo htmlspecialchars($d['description'] ?: '—'); ?></td>
+                                        <td>₹<?php echo number_format($d['amount'], 2); ?></td>
+                                        <td>
+                                            <form method="POST" style="margin: 0; display: inline;" onsubmit="return confirm('Remove this deduction?');">
+                                                <?php echo csrf_field(); ?>
+                                                <input type="hidden" name="action" value="delete_deduction">
+                                                <input type="hidden" name="deduction_id" value="<?php echo intval($d['id']); ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm" style="padding: 2px 7px; font-size: 11px;">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin: 0; text-align: center; padding: 10px;">
+                        No deductions recorded for this period yet.
+                    </p>
+                <?php endif; ?>
+            </div>
+        </details>
+
+        <!-- MODULE 2: SAVED PROJECTIONS HISTORY (COLLAPSIBLE) -->
+        <?php if (!empty($saved_projections)): ?>
+            <details style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 16px;">
+                <summary style="font-size: 14.5px; font-weight: 700; cursor: pointer; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <span>📜 Saved Projections History (<?php echo count($saved_projections); ?> Entries)</span>
+                    <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Expand / Collapse</span>
+                </summary>
+                <div style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+                    <div class="table-responsive">
+                        <table class="custom-table" style="font-size: 12.5px;">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Period</th>
+                                    <th>Gross Income</th>
+                                    <th>Taxable Income</th>
+                                    <th>Estimated Tax</th>
+                                    <th>Recommended Strategy</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($saved_projections as $p): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars(date('d M Y', strtotime($p['created_at']))); ?></td>
+                                        <td><strong><?php echo htmlspecialchars($p['financial_year']); ?></strong></td>
+                                        <td>₹<?php echo number_format($p['gross_income'], 2); ?></td>
+                                        <td>₹<?php echo number_format($p['taxable_income'], 2); ?></td>
+                                        <td style="font-weight: 700; color: var(--primary);">₹<?php echo number_format($p['estimated_tax'], 2); ?></td>
+                                        <td><span class="badge badge-success"><?php echo htmlspecialchars($p['tax_bracket']); ?></span></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </details>
+        <?php endif; ?>
+
+        <!-- MODULE 3: TECHNICAL ARCHITECTURE & SLABS (COLLAPSIBLE FOR INTERVIEWERS) -->
+        <details style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 24px;">
+            <summary style="font-size: 14.5px; font-weight: 700; cursor: pointer; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                <span>🔍 Technical Deep-Dive: Finance Act Engine & Mathematical Architecture</span>
+                <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Inspect for Engineering Review</span>
+            </summary>
+            
+            <div style="margin-top: 14px; font-size: 13px; line-height: 1.6; color: var(--text-dark); border-top: 1px solid var(--border-color); padding-top: 14px;">
+                <h4 style="font-size: 14px; margin: 0 0 6px 0; color: var(--primary);">1. Domain-Driven Design & Stateless Computation</h4>
+                <p style="color: var(--text-muted); margin-bottom: 12px;">
+                    Implemented inside <code>services/TaxService.php</code> (namespace <code>FinCart\Services\TaxService</code>). All calculations are implemented as side-effect free, deterministic pure functions (<code>computeNewRegime()</code>, <code>computeOldRegime()</code>, <code>applyStatutoryCaps()</code>) completely decoupled from database queries or HTTP state.
                 </p>
 
-                <h4 style="font-size: 14.5px; margin: 0 0 8px 0; color: var(--primary);">2. Statutory Indian Finance Act (FY 2024-25 / AY 2025-26) Specifications</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 14px;">
-                    <div style="padding: 12px 14px; background: #fafaf9; border: 1px solid var(--border-color); border-radius: 4px;">
+                <h4 style="font-size: 14px; margin: 0 0 6px 0; color: var(--primary);">2. Statutory Finance Act (FY 2024-25 / AY 2025-26) Rules</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                    <div style="padding: 10px 12px; background: #fafaf9; border: 1px solid var(--border-color); border-radius: 4px;">
                         <strong>Default New Regime (Section 115BAC):</strong>
-                        <ul style="margin: 6px 0 0 18px; padding: 0; font-size: 12.5px; color: #555;">
-                            <li>₹0 – ₹3,00,000: 0%</li>
-                            <li>₹3,00,001 – ₹6,00,000: 5%</li>
-                            <li>₹6,00,001 – ₹9,00,000: 10%</li>
-                            <li>₹9,00,001 – ₹12,00,000: 15%</li>
-                            <li>₹12,00,001 – ₹15,00,000: 20%</li>
-                            <li>Above ₹15,00,000: 30%</li>
-                            <li><strong>Section 87A Rebate:</strong> 100% rebate up to ₹7,00,000 taxable income (Max ₹25,000).</li>
+                        <ul style="margin: 4px 0 0 16px; padding: 0; font-size: 12px; color: #555;">
+                            <li>₹0 – ₹3L: Nil | ₹3L – ₹6L: 5% | ₹6L – ₹9L: 10%</li>
+                            <li>₹9L – ₹12L: 15% | ₹12L – ₹15L: 20% | Above ₹15L: 30%</li>
+                            <li><strong>Section 87A Rebate:</strong> 100% rebate up to ₹7,00,000 taxable income.</li>
                         </ul>
                     </div>
-                    <div style="padding: 12px 14px; background: #fafaf9; border: 1px solid var(--border-color); border-radius: 4px;">
-                        <strong>Old Tax Regime & Statutory Caps:</strong>
-                        <ul style="margin: 6px 0 0 18px; padding: 0; font-size: 12.5px; color: #555;">
-                            <li>₹0 – ₹2,50,000: 0% | ₹2.5L – ₹5L: 5% | ₹5L – ₹10L: 20% | Above ₹10L: 30%</li>
-                            <li><strong>Standard Deduction:</strong> ₹50,000 under Sec 16(ia) for salaried in BOTH regimes.</li>
-                            <li><strong>Section 80C Cap:</strong> Strict boundary clamping to min(claimed, ₹1,50,000).</li>
-                            <li><strong>Section 80CCD(1B):</strong> Additional NPS cap of ₹50,000.</li>
-                            <li><strong>Health & Education Cess:</strong> 4% surcharge on net tax liability.</li>
+                    <div style="padding: 10px 12px; background: #fafaf9; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <strong>Old Tax Regime:</strong>
+                        <ul style="margin: 4px 0 0 16px; padding: 0; font-size: 12px; color: #555;">
+                            <li>₹0 – ₹2.5L: Nil | ₹2.5L – ₹5L: 5% | ₹5L – ₹10L: 20% | >₹10L: 30%</li>
+                            <li><strong>Standard Deduction:</strong> ₹50,000 for salaried in BOTH regimes.</li>
+                            <li><strong>Section 80C Limit:</strong> Clamped strictly to min(claimed, ₹1.5L).</li>
+                            <li><strong>Health & Education Cess:</strong> Flat 4% on net tax.</li>
                         </ul>
                     </div>
                 </div>
 
-                <h4 style="font-size: 14.5px; margin: 0 0 8px 0; color: var(--primary);">3. Automated Verification & Regression Safeguards</h4>
+                <h4 style="font-size: 14px; margin: 0 0 6px 0; color: var(--primary);">3. Automated Verification</h4>
                 <p style="color: var(--text-muted); margin-bottom: 0;">
-                    Verified via <strong>14 automated PHP unit tests</strong> in <code>tests/php/test_tax_service.php</code> and <strong>11 Vitest frontend assertions</strong> in <code>tests/tax.test.js</code>. Tests validate edge discontinuities including 7,00,000 threshold rebate cutoff, deduction capping, and cross-regime breakeven points.
+                    Verified via <strong>14 automated PHP unit tests</strong> (<code>tests/php/test_tax_service.php</code>) and <strong>11 Vitest frontend assertions</strong> (<code>tests/tax.test.js</code>).
                 </p>
             </div>
         </details>
 
-        <!-- EMBEDDED ITEMISED DEDUCTIONS TRACKER -->
-        <div class="card" id="deductions" style="margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <h2 style="font-size: 18px; margin: 0 0 4px 0;">Itemized Deductions Tracker (Chapter VI-A)</h2>
-                    <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Record eligible investments to optimize liability under the Old Regime.</p>
-                </div>
-            </div>
-
-            <!-- Inline Add Deduction Form -->
-            <form method="POST" style="background: #fafaf9; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px;">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="action" value="add_deduction">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px;">
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Category</label>
-                        <select name="ded_category" class="form-control" required style="font-size: 13px;">
-                            <option value="80C - PPF / ELSS / Life Insurance">80C - PPF / ELSS / Life Insurance (Max ₹1.5L)</option>
-                            <option value="80D - Health Insurance (Self/Family)">80D - Health Insurance Self/Family (Max ₹25k)</option>
-                            <option value="80D - Health Insurance (Senior Parents)">80D - Health Insurance Parents (Max ₹50k)</option>
-                            <option value="80CCD(1B) - NPS Contribution">80CCD(1B) - NPS Tier 1 (Max ₹50k)</option>
-                            <option value="80E - Education Loan Interest">80E - Education Loan Interest</option>
-                            <option value="80TTA - Savings Account Interest">80TTA - Savings Interest (Max ₹10k)</option>
-                            <option value="80G - Charitable Donations">80G - Charitable Donations</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Amount (₹)</label>
-                        <input type="number" step="100" min="1" max="9999999" name="ded_amount" class="form-control" placeholder="e.g. 50000" required style="font-size: 13px;">
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Date</label>
-                        <input type="date" name="ded_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required style="font-size: 13px;">
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Description / Institution</label>
-                        <input type="text" name="ded_desc" class="form-control" placeholder="e.g. SBI Life, HDFC ELSS" style="font-size: 13px;">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm" style="padding: 7px 16px;">+ Record Deduction</button>
-            </form>
-
-            <!-- Deductions Table -->
-            <?php if (!empty($raw_deductions)): ?>
-                <div class="table-responsive">
-                    <table class="custom-table" style="font-size: 13px;">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Category</th>
-                                <th>Description</th>
-                                <th>Amount</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($raw_deductions as $d): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($d['deduction_date']); ?></td>
-                                    <td><strong><?php echo htmlspecialchars($d['category']); ?></strong></td>
-                                    <td><?php echo htmlspecialchars($d['description'] ?: '—'); ?></td>
-                                    <td>₹<?php echo number_format($d['amount'], 2); ?></td>
-                                    <td>
-                                        <form method="POST" style="margin: 0; display: inline;" onsubmit="return confirm('Remove this deduction record?');">
-                                            <?php echo csrf_field(); ?>
-                                            <input type="hidden" name="action" value="delete_deduction">
-                                            <input type="hidden" name="deduction_id" value="<?php echo intval($d['id']); ?>">
-                                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 3px 8px; font-size: 11px;">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <p style="font-size: 13px; color: var(--text-muted); margin: 0; text-align: center; padding: 16px;">
-                    No manual deductions recorded for FY <?php echo htmlspecialchars($fy_label); ?>. Use the form above to record Chapter VI-A claims.
-                </p>
-            <?php endif; ?>
-        </div>
-
-        <!-- SAVED PROJECTIONS HISTORY -->
-        <?php if (!empty($saved_projections)): ?>
-            <div class="card">
-                <h2 style="font-size: 18px; margin: 0 0 12px 0;">Saved Projections History</h2>
-                <div class="table-responsive">
-                    <table class="custom-table" style="font-size: 13px;">
-                        <thead>
-                            <tr>
-                                <th>Saved Date</th>
-                                <th>Financial Year</th>
-                                <th>Gross Income</th>
-                                <th>Total Deductions</th>
-                                <th>Taxable Income</th>
-                                <th>Estimated Tax</th>
-                                <th>Verdict Bracket</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($saved_projections as $p): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars(date('d M Y, h:i A', strtotime($p['created_at']))); ?></td>
-                                    <td><strong><?php echo htmlspecialchars($p['financial_year']); ?></strong></td>
-                                    <td>₹<?php echo number_format($p['gross_income'], 2); ?></td>
-                                    <td>₹<?php echo number_format($p['total_deductions'], 2); ?></td>
-                                    <td>₹<?php echo number_format($p['taxable_income'], 2); ?></td>
-                                    <td style="font-weight: 700; color: var(--primary);">₹<?php echo number_format($p['estimated_tax'], 2); ?></td>
-                                    <td><span class="badge badge-success"><?php echo htmlspecialchars($p['tax_bracket']); ?></span></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        <?php endif; ?>
-
     </div>
 </div>
+
+<script>
+function testSalary(amount) {
+    const input = document.getElementById('gross_income');
+    const form = document.getElementById('taxSimForm');
+    if (input && form) {
+        input.value = amount;
+        form.submit();
+    }
+}
+</script>
 
 <?php include "includes/footer.php"; ?>
