@@ -204,6 +204,22 @@ include "includes/navbar.php";
         ?>
     </div>
 
+    <!-- 1-Tap Quick Expense Shortcuts -->
+    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">⚡</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Quick Log:</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <a href="add_transaction.php?type=expense&category=Food&amount=50&desc=Chai%20/%20Coffee" class="btn btn-sm" style="background: #fafaf9; border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none;">☕ ₹50 Tea/Coffee</a>
+            <a href="add_transaction.php?type=expense&category=Transportation&amount=200&desc=Uber%20/%20Auto" class="btn btn-sm" style="background: #fafaf9; border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none;">🚕 ₹200 Cab/Auto</a>
+            <a href="add_transaction.php?type=expense&category=Food&amount=500&desc=Daily%20Groceries" class="btn btn-sm" style="background: #fafaf9; border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none;">🛒 ₹500 Groceries</a>
+            <a href="add_transaction.php?type=expense&category=Transportation&amount=1000&desc=Petrol%20/%20Fuel" class="btn btn-sm" style="background: #fafaf9; border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none;">⛽ ₹1,000 Fuel</a>
+            <a href="add_transaction.php?type=expense&category=Food&amount=350&desc=Dining%20/%20Swiggy" class="btn btn-sm" style="background: #fafaf9; border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none;">🍕 ₹350 Dining</a>
+            <a href="add_transaction.php?type=income&category=Salary&amount=50000&desc=Monthly%20Salary" class="btn btn-sm" style="background: #f0fdf4; border: 1px solid #86efac; color: #15803d; border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none;">💼 +₹50k Salary</a>
+        </div>
+    </div>
+
     <!-- Filters Bar -->
     <div class="card-luxury" style="margin-bottom: 24px;">
         <div class="card-luxury-body" style="padding: 16px 20px;">

@@ -22,12 +22,9 @@ $user_role = $_SESSION['role'] ?? 'user';
                 <li><a href="dashboard.php" class="<?php echo $current_page === 'dashboard.php' ? 'active' : ''; ?>">Dashboard</a></li>
                 <li><a href="transactions.php" class="<?php echo in_array($current_page, ['transactions.php', 'add_transaction.php']) ? 'active' : ''; ?>">Transactions</a></li>
                 <li><a href="budget.php" class="<?php echo $current_page === 'budget.php' ? 'active' : ''; ?>">Budgets</a></li>
-                <li><a href="investments.php" class="<?php echo $current_page === 'investments.php' ? 'active' : ''; ?>">Investments</a></li>
-                <li><a href="goals.php" class="<?php echo $current_page === 'goals.php' ? 'active' : ''; ?>">Goals</a></li>
-                <li><a href="analytics.php" class="<?php echo $current_page === 'analytics.php' ? 'active' : ''; ?>">Analytics</a></li>
-                <li><a href="tax_planning.php" class="<?php echo in_array($current_page, ['tax_planning.php', 'tax_tracker.php', 'tax_summary.php', 'itr_preparation.php']) ? 'active' : ''; ?>">Tax Planning</a></li>
-                <li><a href="professionals.php" class="<?php echo in_array($current_page, ['professionals.php', 'booking.php']) ? 'active' : ''; ?>">Experts</a></li>
-                <li><a href="my_appointments.php" class="<?php echo $current_page === 'my_appointments.php' ? 'active' : ''; ?>">Appointments</a></li>
+                <li><a href="investments.php" class="<?php echo in_array($current_page, ['investments.php', 'goals.php']) ? 'active' : ''; ?>">Investments</a></li>
+                <li><a href="tax_planning.php" class="<?php echo in_array($current_page, ['tax_planning.php', 'tax_tracker.php', 'tax_summary.php', 'itr_preparation.php']) ? 'active' : ''; ?>">Tax Optimizer</a></li>
+                <li><a href="professionals.php" class="<?php echo in_array($current_page, ['professionals.php', 'booking.php', 'my_appointments.php']) ? 'active' : ''; ?>">CA Experts</a></li>
             </ul>
 
             <div class="nav-actions">
